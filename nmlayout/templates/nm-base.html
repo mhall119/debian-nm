@@ -1,0 +1,45 @@
+{% extends "debian-base.html" %}
+
+{% block title %}Debian New Member Front Desk{% endblock %}
+
+{% block head_meta %}
+<link rev="made" href="mailto:nm@debian.org">
+<meta name="Language" content="English">
+<meta name="Author"   content="Enrico Zini, enrico@debian.org">
+{% endblock %}
+
+{% block head_resources %}
+  {{block.super}}
+  <link type="text/css" rel="stylesheet" media="all" href="{{ MEDIA_URL }}css/nm.css" />
+{% endblock %}
+
+{% block section %}<a href="{% url home %}">NM</a>{% endblock %}
+
+{% block searchbox %}
+{% comment %}No search feature in NM site yet{% endcomment %}
+{% endblock %}
+
+{% block navbar %}
+  <li><a href="http://www.debian.org/devel/join/newmaint">NM Corner</a></li>
+  <li><a href="http://wiki.debian.org/Keysigning">Keysigning</a></li>
+{% endblock %}
+
+{% block breadcrumbs %}<a href="{% url home %}">nm</a>{% endblock %}
+
+{% block relatedpages %}
+{% comment %}
+    <a href="{% url search_packages %}">Search</a>
+    <a href="{% url report_todo %}">TODO list</a>
+    <a href="{% url editor_index %}">Editor</a>
+    <a href="{% url statistics %}">Statistics</a>
+{% endcomment %}
+{% endblock %}
+
+{% block content %}
+<h1>Debian NM Website Template</h1>
+{% endblock %}
+
+{% block footer %}
+<p>Copyright © 2012 Enrico Zini &lt;enrico@debian.org&gt;. See <a href="{% url root_license %}">license terms</a>.
+Source code is <a href="http://anonscm.debian.org/gitweb/?p=nm/nm2.git;a=summary">available</a>.</p>
+{% endblock %}
