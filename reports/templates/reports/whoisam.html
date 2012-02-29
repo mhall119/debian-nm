@@ -1,0 +1,32 @@
+{% extends "reports/base.html" %}
+
+{% block breadcrumbs %}{{block.super}} / <a href="{% url report_whoisam %}">whoisam</a>{% endblock %}
+
+{% block content %}
+
+<h1>Debian New Member - Application Manager List</h2>
+
+<p>Below is the list of Debian developers who are currently active as Application Managers:</p>
+
+<ul>
+    {% for am in ams_active %}
+    <li>{{am.person.fullname}}</li>
+    {% endfor %}
+</ul>
+
+<p>The New Member Committee is formed of all active application managers who have approved an applicant in the last six months. Front-Desk is also member.</p>
+
+<ul>
+TODO
+</ul>
+
+<p>Below is the list of Debian developers who used to help as Application Managers in the past:</p>
+
+<ul>
+    {% for am in ams_inactive %}
+    <li>{{am.person.fullname}}</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
+

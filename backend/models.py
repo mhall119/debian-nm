@@ -73,6 +73,9 @@ class AM(models.Model):
     is_am = models.BooleanField(null=False, default=True)
     is_fd = models.BooleanField(null=False, default=False)
     is_dam = models.BooleanField(null=False, default=False)
+    # TODO: add is_ctte field and regenerate it during nightly maintenance. Then
+    #       export is_ctte=True AMs for email aliases. That makes it so that the
+    #       aliases and the DB are in sync.
 
     def __unicode__(self):
         return u"%s %c%c%c" % (

@@ -125,6 +125,7 @@ INSTALLED_APPS = (
     'deblayout',
     'nmlayout',
     'backend',
+    'reports',
 )
 
 # A sample logging configuration. The only tangible logging
