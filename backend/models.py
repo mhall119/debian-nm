@@ -74,6 +74,14 @@ class AM(models.Model):
     is_fd = models.BooleanField(null=False, default=False)
     is_dam = models.BooleanField(null=False, default=False)
 
+    def __unicode__(self):
+        return u"%s %c%c%c" % (
+            unicode(self.person),
+            "a" if self.is_am else "-",
+            "f" if self.is_fd else "-",
+            "d" if self.is_dam else "-",
+        )
+
     def __repr__(self):
         return "%s %c%c%c slots:%d" % (
             repr(self.person),
@@ -125,6 +133,9 @@ class Process(models.Model):
     # This is NULL until one gets a manager
     manager = models.ForeignKey(AM, related_name="processed", null=True, on_delete=models.PROTECT)
 
+    def __unicode__(self):
+        return u"%s to become %s (%s)" % (unicode(self.person), self.applying_for, self.progress)
+
     # FIXME: should we do this just by min(log) (and ended by max(log)) ?
     #started = models.DateTimeField(null=False, default=datetime.datetime.utcnow)
 
@@ -173,3 +184,5 @@ class Log(models.Model):
     logdate = models.DateTimeField(null=False, default=datetime.datetime.utcnow)
     logtext = models.TextField(null=False)
 
+    def __unicode__(self):
+        return u"%s: %s" % (self.logdate, self.logtext)
