@@ -37,14 +37,12 @@ class Person(models.Model):
     # This is null for people who still have not picked one
     # Multiple NULL values in unique columns are supported from sqlite,
     # postgresql and mysql, and that is good enough.
-    # See http://troels.arvin.dk/db/rdbms/#constraints-unique
+    # See http://www.sqlite.org/nulls.html
     # See http://stackoverflow.com/questions/454436/unique-fields-that-allow-nulls-in-django
     #     for possible Django gotchas
     uid = models.CharField("Debian account name", max_length=32, null=True, unique=True)
     # GPG fingerprint, null until one has been provided
-    # FIXME: it should be unique=True, but we need to check DB behaviour of
-    # unique=True for NULLs
-    gpgfpr = models.CharField("GPG key fingerprint", max_length=80, null=True)
+    gpgfpr = models.CharField("GPG key fingerprint", max_length=80, null=True, unique=True)
     status = models.CharField("current status in the project", max_length=20, null=True,
                               choices=[x[1:3] for x in const.ALL_STATUS])
     # FIXME: no password field for now; hopefully we can do away with the need
