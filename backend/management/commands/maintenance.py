@@ -43,11 +43,11 @@ def compute_am_ctte():
     cursor.execute("""
     SELECT am.id
       FROM am
-      JOIN process p ON p.manager_id=am.id AND p.progress=%s
+      JOIN process p ON p.manager_id=am.id AND p.progress IN (%s, %s)
       JOIN log ON log.process_id=p.id AND log.logdate > %s
      WHERE am.is_am AND NOT am.is_fd AND NOT am.is_dam
      GROUP BY am.id
-    """, (const.PROGRESS_DONE, cutoff))
+    """, (const.PROGRESS_DONE, const.PROGRESS_CANCELLED, cutoff))
     ids = [x[0] for x in cursor]
 
     bmodels.AM.objects.filter(id__in=ids).update(is_am_ctte=True)
