@@ -18,14 +18,54 @@
 from django.core.management.base import BaseCommand, CommandError
 import django.db
 from django.conf import settings
+from django.db import connection, transaction
 import optparse
 import sys
+import datetime
 import logging
 import json
 from backend import models as bmodels
 from backend import const
 
 log = logging.getLogger(__name__)
+
+@transaction.commit_on_success
+def compute_am_ctte():
+    from django.db.models import Max
+    # Set all to False
+    bmodels.AM.objects.update(is_am_ctte=False)
+
+    cutoff = datetime.datetime.utcnow()
+    cutoff = cutoff - datetime.timedelta(days=30*6)
+
+    # Set the active ones to True
+    cursor = connection.cursor()
+    cursor.execute("""
+    SELECT am.id
+      FROM am
+      JOIN process p ON p.manager_id=am.id AND p.progress=%s
+      JOIN log ON log.process_id=p.id AND log.logdate > %s
+     WHERE am.is_am AND NOT am.is_fd AND NOT am.is_dam
+     GROUP BY am.id
+    """, (const.PROGRESS_DONE, cutoff))
+    ids = [x[0] for x in cursor]
+
+    bmodels.AM.objects.filter(id__in=ids).update(is_am_ctte=True)
+    log.info("%d CTTE members", bmodels.AM.objects.filter(is_am_ctte=True).count())
+
+
+def compute_process_is_active():
+    """
+    Compute Process.is_active from Process.progress
+    """
+    cursor = connection.cursor()
+    cursor.execute("""
+    UPDATE process SET is_active=(progress NOT IN (%s, %s))
+    """, (const.PROGRESS_DONE, const.PROGRESS_CANCELLED))
+    log.info("%d/%d active processes",
+             bmodels.Process.objects.filter(is_active=True).count(),
+             cursor.rowcount)
+
 
 def check_one_process_per_person():
     """
@@ -44,9 +84,6 @@ def check_one_process_per_person():
             const.PROGRESS_CANCELLED))):
             log.warning(" %d: %s (%s)", idx+1, proc.applying_for, proc.progress)
 
-# TODO: compute AM.is_ctte
-# TODO: compute Process.is_active
-
 
 class Command(BaseCommand):
     help = 'Daily maintenance of the nm.debian.org database'
@@ -61,15 +98,9 @@ class Command(BaseCommand):
         else:
             logging.basicConfig(level=logging.INFO, stream=sys.stderr, format=FORMAT)
 
-        # Run database consistency checks
-        for k, v in globals().iteritems():
-            if not k.startswith("check_"): continue
-            log.info("running %s", k)
-            v()
-
-        ## Run other maintenance operations
-        #for k, v in globals().iteritems():
-        #    if not k.startswith("do_"): continue
-        #    log.info("running %s", k)
-        #    v()
-
+        # Run procedures
+        for prefix in ("backup", "compute", "check"):
+            for k, v in globals().iteritems():
+                if not k.startswith(prefix + "_"): continue
+                log.info("running %s", k)
+                v()
