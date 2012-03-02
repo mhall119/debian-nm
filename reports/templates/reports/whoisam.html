@@ -14,10 +14,14 @@
     {% endfor %}
 </ul>
 
-<p>The New Member Committee is formed of all active application managers who have approved an applicant in the last six months. Front-Desk is also member.</p>
+<p>The New Member Committee is formed of all active application managers who
+have processed an applicant in the last six months. Front-Desk is also
+member.</p>
 
 <ul>
-TODO
+    {% for am in ams_ctte %}
+    <li>{{am.person.fullname}}</li>
+    {% endfor %}
 </ul>
 
 <p>Below is the list of Debian developers who used to help as Application Managers in the past:</p>

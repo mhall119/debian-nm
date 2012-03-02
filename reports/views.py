@@ -23,8 +23,10 @@ def whoisam(request):
     # Below is the list of Debian developers who are currently active as Application Managers:
     ams_active = bmodels.AM.objects.filter(is_am=True)
 
-    # The New Member Committee is formed of all active application managers who have approved an applicant in the last six months. Front-Desk is also member.
-    # TODO: check old query
+    # The New Member Committee is formed of all active application managers who
+    # have approved an applicant in the last six months. Front-Desk is also
+    # member.
+    ams_ctte = bmodels.AM.objects.filter(is_am_ctte=True)
 
     # Below is the list of Debian developers who used to help as Application Managers in the past:
     ams_inactive = bmodels.AM.objects.filter(is_am=False)
@@ -32,6 +34,7 @@ def whoisam(request):
     return render_to_response("reports/whoisam.html",
                               dict(
                                   ams_active=ams_active,
+                                  ams_ctte=ams_ctte,
                                   ams_inactive=ams_inactive,
                               ),
                               context_instance=template.RequestContext(request))
