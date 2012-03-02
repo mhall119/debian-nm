@@ -118,8 +118,10 @@ class AM(models.Model):
 class Process(models.Model):
     """
     A process through which a person gets a new status
+
+    There can be multiple 'Process'es per Person, but only one of them can be
+    active at any one time. This is checked during maintenance.
     """
-    # TODO: fsck-style constraint of one Process in-progress per person
     class Meta:
         db_table = "process"
         # FIXME: getting rid of this requirement, so that a Process is a self
