@@ -44,6 +44,9 @@ def check_one_process_per_person():
             const.PROGRESS_CANCELLED))):
             log.warning(" %d: %s (%s)", idx+1, proc.applying_for, proc.progress)
 
+# TODO: compute AM.is_ctte
+# TODO: compute Process.is_active
+
 
 class Command(BaseCommand):
     help = 'Daily maintenance of the nm.debian.org database'
