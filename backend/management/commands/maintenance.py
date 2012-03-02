@@ -28,6 +28,9 @@ from backend import const
 log = logging.getLogger(__name__)
 
 def check_one_process_per_person():
+    """
+    Check that one does not have more than one open process at the current time
+    """
     from django.db.models import Count
     # TODO: use an 'is_open' attribute 
     for p in bmodels.Person.objects.exclude(processes__progress__in=(
