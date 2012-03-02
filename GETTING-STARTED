@@ -1,0 +1,44 @@
+
+ * Running this code on your own machine
+
+# Dependencies
+apt-get install python-django
+
+# Configuration
+ln -s settings.py.devel settings.py
+edit settings.py if needed
+
+# First setup
+./manage.py syncdb
+
+# Fill in data
+On nono.debian.org:
+ cd /srv/nm.debian.org/_new
+ sudo -u nm ./export-old-db
+
+Fetch the resulting dump.json
+
+./manage.py importjson dump.json
+
+# Run database maintenance
+./manage.py maintenance
+
+# Run the web server
+./manage.py runserver
+
+
+ * Periodic updates
+
+You need to run periodic maintenance to check/regenerate the denormalised
+fields:
+
+   ./manage.py maintenance
+
+
+ * Development
+
+Development targets Django 1.2, as it is the version available on Debian
+servers. Luckily django provides excellent backwards compatibility, so the only
+thing you have to pay attention to is the version of the Django documentation
+that you are reading. Check the version boxes in the bottom right of Diango
+documentation pages.
