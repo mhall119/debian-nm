@@ -136,6 +136,8 @@ class Process(models.Model):
     # This is NULL until one gets a manager
     manager = models.ForeignKey(AM, related_name="processed", null=True, on_delete=models.PROTECT)
 
+    # TODO: add an in-progress bit maintained by looking at 'is_open'
+
     def __unicode__(self):
         return u"%s to become %s (%s)" % (unicode(self.person), self.applying_for, self.progress)
 
