@@ -84,12 +84,18 @@ class Importer(object):
 
         import re
         re_date = re.compile("^\d+-\d+-\d+$")
+        re_datetime = re.compile("^\d+-\d+-\d+ \d+:\d+:\d+$")
         def get_date(s):
             import datetime
             import rfc822
             if re_date.match(s):
                 try:
                     return datetime.datetime.strptime(s, "%Y-%m-%d")
+                except ValueError:
+                    date = rfc822.parsedate(s)
+            elif re_datetime.match(s):
+                try:
+                    return datetime.datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
                 except ValueError:
                     date = rfc822.parsedate(s)
             else:
