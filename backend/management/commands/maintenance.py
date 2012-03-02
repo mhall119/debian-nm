@@ -72,16 +72,11 @@ def check_one_process_per_person():
     Check that one does not have more than one open process at the current time
     """
     from django.db.models import Count
-    # TODO: use an 'is_open' attribute 
-    for p in bmodels.Person.objects.exclude(processes__progress__in=(
-        const.PROGRESS_DONE,
-        const.PROGRESS_CANCELLED)) \
+    for p in bmodels.Person.objects.filter(processes__is_active=True) \
              .annotate(num_processes=Count("processes")) \
              .filter(num_processes__gt=1):
         log.warning("%s has %d open processes", p, p.num_processes)
-        for idx, proc in enumerate(p.processes.exclude(progress__in=(
-            const.PROGRESS_DONE,
-            const.PROGRESS_CANCELLED))):
+        for idx, proc in enumerate(p.processes.filter(is_active=True)):
             log.warning(" %d: %s (%s)", idx+1, proc.applying_for, proc.progress)
 
 
