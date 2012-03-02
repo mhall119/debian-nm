@@ -35,9 +35,12 @@ class Person(models.Model):
     sn = models.CharField("last name", max_length=250, null=True)
     email = models.EmailField("email address", null=False, unique=True)
     # This is null for people who still have not picked one
-    # FIXME: it should be unique=True, but we need to check DB behaviour of
-    # unique=True for NULLs
-    uid = models.CharField("Debian account name", max_length=32, null=True)
+    # Multiple NULL values in unique columns are supported from sqlite,
+    # postgresql and mysql, and that is good enough.
+    # See http://troels.arvin.dk/db/rdbms/#constraints-unique
+    # See http://stackoverflow.com/questions/454436/unique-fields-that-allow-nulls-in-django
+    #     for possible Django gotchas
+    uid = models.CharField("Debian account name", max_length=32, null=True, unique=True)
     # GPG fingerprint, null until one has been provided
     # FIXME: it should be unique=True, but we need to check DB behaviour of
     # unique=True for NULLs
