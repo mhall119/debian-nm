@@ -19,10 +19,14 @@ g = globals()
 
 # Status of a person in Debian
 ALL_STATUS = (
+    ("STATUS_MM",          "mm",         "None"),
     ("STATUS_DM",          "dm",         "Debian Maintainer"),
     ("STATUS_DD_U",        "dd_u",       "Debian Developer, uploading"),
     ("STATUS_DD_NU",       "dd_nu",      "Debian Developer, non-uploading"),
-    ("STATUS_KEY_CHECKED", "keychecked", "FIXME: what was this?"),
+    ("STATUS_EMERITUS_DD", "dd_e",       "Debian Developer, emeritus"),
+    ("STATUS_EMERITUS_DM", "dm_e",       "Debian Maintainer, emeritus"),
+    ("STATUS_REMOVED_DD",  "dd_r",       "Debian Developer, removed"),
+    ("STATUS_REMOVED_DM",  "dm_r",       "Debian Maintainer, removed"),
 )
 for key, val, desc in ALL_STATUS:
     g[key] = val
@@ -40,7 +44,7 @@ ALL_PROGRESS = (
     ("PROGRESS_ADV_RCVD",  "adv_rcvd",  "Received enough advocacies"),
     ("PROGRESS_APP_OK",    "app_ok",    "Advocacies have been approved"),
     ("PROGRESS_AM_RCVD",   "am_rcvd",   "Waiting for AM to confirm"),
-    ("PROGRESS_AM_ACKED",  "am_acked",  "Got an AM"),
+    ("PROGRESS_AM",        "am",        "Got an AM"),
     ("PROGRESS_AM_HOLD",   "am_hold",   "AM put application on hold"),
     ("PROGRESS_AM_OK",     "am_ok",     "AM recommends the applicant"),
     ("PROGRESS_FD_HOLD",   "fd_hold",   "FD puts application on hold"),

@@ -43,10 +43,11 @@ class Person(models.Model):
     uid = models.CharField("Debian account name", max_length=32, null=True, unique=True)
     # GPG fingerprint, null until one has been provided
     gpgfpr = models.CharField("GPG key fingerprint", max_length=80, null=True, unique=True)
-    status = models.CharField("current status in the project", max_length=20, null=True,
+    status = models.CharField("current status in the project", max_length=20, null=False,
                               choices=[x[1:3] for x in const.ALL_STATUS])
     # FIXME: no password field for now; hopefully we can do away with the need
     # of maintaining a password database
+    # FIXME: Add a fd_comment field
 
     @property
     def fullname(self):
@@ -182,12 +183,6 @@ class Log(models.Model):
     # Copied from Process when the log entry is created (FIXME: formerly logtype)
     progress = models.CharField(max_length=20, null=False,
                                 choices=[x[1:3] for x in const.ALL_PROGRESS])
-
-    # FIXME: this or link to Process?
-    #person = models.ForeignKey(Person, related_name="log", on_delete=models.CASCADE)
-    #applying_for = models.CharField(" in the project", max_length=20, null=True,
-    #                          choices=[x[1:3] for x in const.ALL_STATUS])
-    #applying_for = sa.Column(sa.String(10), nullable=False)
 
     logdate = models.DateTimeField(null=False, default=datetime.datetime.utcnow)
     logtext = models.TextField(null=False)
