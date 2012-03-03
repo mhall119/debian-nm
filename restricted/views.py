@@ -20,27 +20,6 @@ from django.shortcuts import render_to_response, redirect
 import backend.models as bmodels
 from backend import const
 
-def whoisam(request):
-    # Below is the list of Debian developers who are currently active as Application Managers:
-    ams_active = bmodels.AM.objects.filter(is_am=True).order_by("person__uid")
-
-    # The New Member Committee is formed of all active application managers who
-    # have approved an applicant in the last six months. Front-Desk is also
-    # member.
-    ams_ctte = bmodels.AM.objects.filter(is_am_ctte=True).order_by("person__uid")
-
-    # Below is the list of Debian developers who used to help as Application Managers in the past:
-    ams_inactive = bmodels.AM.objects.filter(is_am=False).order_by("person__uid")
-
-    return render_to_response("reports/whoisam.html",
-                              dict(
-                                  ams_active=ams_active,
-                                  ams_ctte=ams_ctte,
-                                  ams_inactive=ams_inactive,
-                              ),
-                              context_instance=template.RequestContext(request))
-
-
 def amlist(request):
     from django.db import connection
     # Here is a list of active Application Managers:
@@ -74,15 +53,9 @@ def amlist(request):
         else:
             ams_inactive.append(a)
 
-    return render_to_response("reports/amlist.html",
+    return render_to_response("restricted/amlist.html",
                               dict(
                                   ams_active=ams_active,
                                   ams_inactive=ams_inactive,
                               ),
                               context_instance=template.RequestContext(request))
-
-
-
-
-
-

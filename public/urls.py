@@ -19,8 +19,7 @@ from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
 from django.views.generic.simple import direct_to_template, redirect_to
 
-urlpatterns = patterns('reports.views',
-    url(r'^$', direct_to_template, {'template': 'reports/index.html'}, name="report_index"),
-    url(r'^whoisam$', 'whoisam', name="report_whoisam"),
-    url(r'^amlist$', 'amlist', name="report_amlist"),
+urlpatterns = patterns('public.views',
+    url(r'^$', direct_to_template, {'template': 'public/index.html'}, name="public_index"),
+    url(r'^whoisam$', 'whoisam', name="public_whoisam"),
 )
