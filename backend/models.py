@@ -17,6 +17,7 @@
 
 from __future__ import absolute_import
 from django.db import models
+from django.contrib.auth.models import User
 from . import const
 import datetime
 
@@ -41,9 +42,33 @@ class Person(models.Model):
     class Meta:
         db_table = "person"
 
+    # Link to Django web user information
+    user = models.OneToOneField(User, null=True)
+
+    #  enrico> Ok, it's time to try deployment. If it goes like debtags.d.n,
+    #          then we need mod_wsgi to be enabled on nono to run
+    #          nono:/srv/nm.debian.org/nm2/nm2.wsgi in something like /nm2 (to
+    #          be moved to / once it's ready)
+    #  enrico> should I do a RT ticket for it?
+    # @sgran> please
+    #  enrico> sgran: done
+    # @sgran> thanks
+    #  enrico> For people like Wookey, do you prefer we use only cn or only sn?
+    #          "sn" is used currently, and "cn" has a dash, but rather than
+    #          cargo-culting that in the new NM 
+    # double check it with you 
+    # @sgran> cn would be more usual
+    # @sgran> cn is the "whole name" and you can split it up into givenName + sn if you like
+    #  phil> Except that in Debian LDAP it isn't.
+    #  enrico> sgran: ok. should I use 'cn' for potential new cases then?
+    # @sgran> phil: indeed
+    # @sgran> but if we keep doing it the other way, we'll never be in a position to change
+    # @sgran> enrico: please
+    #  enrico> sgran: ack
+
+    # First/Given name, or only name in case of only one name
     cn = models.CharField("first name", max_length=250, null=False)
     mn = models.CharField("middle name", max_length=250, null=True)
-    # This can be null for people like Wookey who only have one name
     sn = models.CharField("last name", max_length=250, null=True)
     email = models.EmailField("email address", null=False, unique=True)
     # This is null for people who still have not picked one
