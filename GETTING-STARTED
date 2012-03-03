@@ -19,8 +19,12 @@ On nono.debian.org:
 Fetch the resulting dump.json
 
 ./manage.py importjson dump.json
+./manage.py importldap
+./manage.py importkeyrings
 
 # Run database maintenance
+./manage.py updateldap
+./manage.py updatekeyrings
 ./manage.py maintenance
 
 # Run the web server
