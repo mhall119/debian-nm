@@ -1,6 +1,7 @@
 import django.contrib.auth.backends
 from django.contrib.auth.models import User
 from django.conf import settings
+from django import http
 import backend.models as bmodels
 
 class FakeRemoteUser(object):
@@ -40,7 +41,7 @@ class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
         user, created = User.objects.get_or_create(username=username)
         if created:
             user.set_unusable_password()
-            if person.am:
+            if person.is_am():
                 # FIXME: ensure this is kept in sync when is_fd is changed
                 if person.am.is_fd:
                     user.is_staff = True
@@ -50,3 +51,40 @@ class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
             person.save()
 
         return user
+
+
+def is_am(view_func):
+    """
+    Decorator for views that are restricted to Application Managers
+    """
+
+    def _wrapped_view(request, *args, **kwargs):
+        person = request.user.get_profile()
+        if not person.is_am():
+            return http.HttpResponse("This page is restricted to AMs")
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+def is_fd(view_func):
+    """
+    Decorator for views that are restricted to FD members
+    """
+
+    def _wrapped_view(request, *args, **kwargs):
+        person = request.user.get_profile()
+        if not person.is_am() or not person.am.is_fd:
+            return http.HttpResponse("This page is restricted to Front Desk members")
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+def is_dam(view_func):
+    """
+    Decorator for views that are restricted to DAMs
+    """
+
+    def _wrapped_view(request, *args, **kwargs):
+        person = request.user.get_profile()
+        if not person.is_am() or not person.am.is_dam:
+            return http.HttpResponse("This page is restricted to Debian Account Managers")
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
