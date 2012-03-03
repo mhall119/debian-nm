@@ -164,7 +164,8 @@ class Process(models.Model):
     class Meta:
         db_table = "process"
 
-    person = models.ForeignKey(Person, related_name="processes", on_delete=models.CASCADE)
+    person = models.ForeignKey(Person, related_name="processes")
+    # 1.3-only: person = models.ForeignKey(Person, related_name="processes", on_delete=models.CASCADE)
 
     applying_for = models.CharField("target status", max_length=20, null=False,
                                     choices=[x[1:3] for x in const.ALL_STATUS])
@@ -172,7 +173,8 @@ class Process(models.Model):
                                 choices=[x[1:3] for x in const.ALL_PROGRESS])
 
     # This is NULL until one gets a manager
-    manager = models.ForeignKey(AM, related_name="processed", null=True, on_delete=models.PROTECT)
+    manager = models.ForeignKey(AM, related_name="processed", null=True)
+    # 1.3-only: manager = models.ForeignKey(AM, related_name="processed", null=True, on_delete=models.PROTECT)
 
     # True if progress NOT IN (PROGRESS_DONE, PROGRESS_CANCELLED)
     is_active = models.BooleanField(null=False, default=False)
@@ -209,8 +211,10 @@ class Log(models.Model):
     class Meta:
         db_table = "log"
 
-    changed_by = models.ForeignKey(Person, related_name="log_written", on_delete=models.PROTECT, null=True)
-    process = models.ForeignKey(Process, related_name="log", on_delete=models.CASCADE)
+    changed_by = models.ForeignKey(Person, related_name="log_written", null=True)
+    # 1.3-only: changed_by = models.ForeignKey(Person, related_name="log_written", on_delete=models.PROTECT, null=True)
+    process = models.ForeignKey(Process, related_name="log")
+    # 1.3-only: process = models.ForeignKey(Process, related_name="log", on_delete=models.CASCADE)
 
     # Copied from Process when the log entry is created
     progress = models.CharField(max_length=20, null=False,
