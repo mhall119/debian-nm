@@ -76,3 +76,26 @@ def ammain(request):
                                   am_available=am_available,
                               ),
                               context_instance=template.RequestContext(request))
+
+@backend.auth.is_am
+def amprofile(request, uid=None):
+    from django.db.models import Min
+
+    if uid is None:
+        person = request.user.get_profile()
+    else:
+        person = bmodels.Person.objects.get(uid=uid)
+
+    am = person.am
+
+    processes = bmodels.Process.objects.filter(manager=am).annotate(started=Min("log__logdate")).order_by("started")
+
+    am_available = bmodels.AM.list_free()
+
+    return render_to_response("restricted/amprofile.html",
+                              dict(
+                                  person=person,
+                                  am=am,
+                                  processes=processes,
+                              ),
+                              context_instance=template.RequestContext(request))
