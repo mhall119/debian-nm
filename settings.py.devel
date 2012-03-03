@@ -122,6 +122,8 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
+    'keyring',
+    'dsa',
     'deblayout',
     'nmlayout',
     'backend',
@@ -151,3 +153,5 @@ LOGGING = {
         },
     }
 }
+
+KEYRINGS = "/home/enrico/dev/deb/keyring.debian.org/keyrings"
