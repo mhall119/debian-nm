@@ -154,6 +154,42 @@ class AM(models.Model):
                 cur += 1
         return cur, self.slots, hold, done
 
+    @classmethod
+    def list_free(cls):
+        """
+        Get a list of active AMs with free slots, ordered by uid.
+
+        Each AM is annotated with stats_active, stats_held and stats_free, with
+        the number of NMs, held NMs and free slots.
+        """
+        from django.db import connection
+
+        # Compute statistics indexed by AM id
+        cursor = connection.cursor()
+        cursor.execute("""
+        SELECT am.id,
+               count(process.is_active) as active,
+               count(process.progress=%s) as held
+          FROM am
+          JOIN process ON process.manager_id=am.id
+         WHERE am.is_am
+         GROUP BY am.id
+        HAVING am.slots - active + held > 0
+        """, (const.PROGRESS_AM_HOLD,))
+        stats = dict()
+        for amid, active, held in cursor:
+            stats[amid] = (active, held)
+
+        res = []
+        for a in cls.objects.filter(id__in=stats.keys()).order_by("person__uid"):
+            active, held = stats.get(a.id, (0, 0, 0))
+            a.stats_active = active
+            a.stats_held = held
+            a.stats_free = a.slots - active + held
+            res.append(a)
+        return res
+
+
 class Process(models.Model):
     """
     A process through which a person gets a new status

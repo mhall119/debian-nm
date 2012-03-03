@@ -23,4 +23,6 @@ urlpatterns = patterns('restricted.views',
     url(r'^$', direct_to_template, {'template': 'restricted/index.html'}, name="restricted_index"),
     url(r'^amlist$', 'amlist', name="restricted_amlist"),
     url(r'^ammain$', 'ammain', name="restricted_ammain"),
+    # FIXME: placeholder
+    url(r'^amprofile/(?P<uid>\w+)$', direct_to_template, {'template': 'restricted/index.html'}, name="restricted_amprofile"),
 )

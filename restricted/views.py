@@ -67,9 +67,12 @@ def amlist(request):
 def ammain(request):
     person = request.user.get_profile()
 
+    am_available = bmodels.AM.list_free()
+
     return render_to_response("restricted/ammain.html",
                               dict(
                                   person=person,
                                   am=person.am,
+                                  am_available=am_available,
                               ),
                               context_instance=template.RequestContext(request))

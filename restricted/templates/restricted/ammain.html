@@ -16,9 +16,21 @@
     {% if am.is_dam %}<li>Debian Account Manager</li>{% endif %}
 </ul>
 
+{% if am.is_fd %}
+
+<h2>Front Desk</h2>
+
+<p>The following managers have free slots (#free/#slots):
+<ul>
+    {% for a in am_available %}
+    <li><a href="{% url restricted_amprofile uid=a.person.uid %}">{{a.person.uid}}</a>
+        ({{a.stats_free}}/{{a.slots}})</li>
+    {% endfor %}
+</ul>
+</p>
+
+{% endif %}
 {% comment %}
-    <H2>Front Desk</H2>
-    <P>The following managers have free slots (#free/#slots): <A HREF="amprofile.php?login=and">and</A>&nbsp;(1/1), <A HREF="amprofile.php?login=anibal">anibal</A>&nbsp;(1/1), <A HREF="amprofile.php?login=bzed">bzed</A>&nbsp;(1/3), <A HREF="amprofile.php?login=ctaylor">ctaylor</A>&nbsp;(1/2), <A HREF="amprofile.php?login=stefanor">stefanor</A>&nbsp;(1/1), <A HREF="amprofile.php?login=zobel">zobel</A>&nbsp;(1/1)<BR>
     <P>The following applicants are waiting for an Application Manager to be
     assigned (first one is oldest).<BR>
     <TABLE border="0" summary="" STYLE="font-size: small">
