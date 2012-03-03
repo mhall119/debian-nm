@@ -99,8 +99,20 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # Uncomment FakeRemoteUser to force a login as TEST_USERNAME for testing
+    # the site outside of Apache
+    'backend.auth.FakeRemoteUser',
+    'django.contrib.auth.middleware.RemoteUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
+
+AUTHENTICATION_BACKENDS = (
+    # Uncomment to authenticate via REMOTE_USER supplied by Apache or by
+    # FakeRemoteUser, using backend.Person as the authoritative user database
+    'backend.auth.NMUserBackend',
+)
+
+TEST_USERNAME = "enrico"
 
 ROOT_URLCONF = 'urls'
 
