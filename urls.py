@@ -27,7 +27,7 @@ urlpatterns = patterns('',
     url(r'^$', direct_to_template, {'template': 'index.html'}, name="home"),
     url(r'^license/$', direct_to_template, {'template': 'license.html'}, name="root_license"),
     url(r'^public/', include("public.urls")),
-    url(r'^restricted/', include("restricted.urls")),
+    url(r'^am/', include("restricted.urls")),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
