@@ -168,14 +168,14 @@ class AM(models.Model):
         cursor = connection.cursor()
         cursor.execute("""
         SELECT am.id,
-               count(process.is_active) as active,
-               count(process.progress=%s) as held
+               sum(case when process.progress in (%s, %s) then 1 else 0 end) as active,
+               sum(case when process.progress=%s then 1 else 0 end) as held
           FROM am
           JOIN process ON process.manager_id=am.id
-         WHERE am.is_am
+         WHERE am.is_am AND am.slots > 0
          GROUP BY am.id
-        HAVING am.slots - active + held > 0
-        """, (const.PROGRESS_AM_HOLD,))
+        HAVING am.slots - active > 0
+        """, (const.PROGRESS_AM_RCVD, const.PROGRESS_AM, const.PROGRESS_AM_HOLD,))
         stats = dict()
         for amid, active, held in cursor:
             stats[amid] = (active, held)
@@ -185,7 +185,7 @@ class AM(models.Model):
             active, held = stats.get(a.id, (0, 0, 0))
             a.stats_active = active
             a.stats_held = held
-            a.stats_free = a.slots - active + held
+            a.stats_free = a.slots - active
             res.append(a)
         return res
 
