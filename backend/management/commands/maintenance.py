@@ -54,6 +54,7 @@ def compute_am_ctte():
     log.info("%d CTTE members", bmodels.AM.objects.filter(is_am_ctte=True).count())
 
 
+@transaction.commit_on_success
 def compute_process_is_active():
     """
     Compute Process.is_active from Process.progress
@@ -66,7 +67,7 @@ def compute_process_is_active():
              bmodels.Process.objects.filter(is_active=True).count(),
              cursor.rowcount)
 
-
+@transaction.commit_on_success
 def check_one_process_per_person():
     """
     Check that one does not have more than one open process at the current time
