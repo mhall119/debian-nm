@@ -1,0 +1,29 @@
+{% extends "restricted/base.html" %}
+
+{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_amprofile uid=person.uid %}">am {{person.uid}}</a>{% endblock %}
+
+{% block content %}
+
+<h1>Debian New Member - Profile</h1>
+
+<h2>Change AM details</h2>
+
+<p>TODO: number of slots {{am.slots}}</p>
+<p>TODO: active</p>
+<p>TODO: is_fd, id_dam (for FDs and/or DAMs to set)</p>
+
+<h2>Applicants</h2>
+
+<table>
+{% for p in processes %}
+<tr>
+    <td>{{p.started}}</td>
+    <td>{{p.progress}}</td>
+    <td>{{p.person}}</td>
+    <td>TODO: logs</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}
+
