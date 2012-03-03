@@ -112,6 +112,8 @@ AUTHENTICATION_BACKENDS = (
     'backend.auth.NMUserBackend',
 )
 
+AUTH_PROFILE_MODULE = 'backend.Person'
+
 TEST_USERNAME = "enrico"
 
 ROOT_URLCONF = 'urls'

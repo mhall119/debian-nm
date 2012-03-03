@@ -6,7 +6,7 @@ import backend.models as bmodels
 class FakeRemoteUser(object):
     def process_request(self, request):
         request.META["REMOTE_USER"] = settings.TEST_USERNAME
-        print "SET REMOTE_USER TO ", request.META["REMOTE_USER"]
+        #print "SET REMOTE_USER TO ", request.META["REMOTE_USER"]
 
 class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
     """
@@ -46,5 +46,7 @@ class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
                     user.is_staff = True
                     user.is_superuser = True
             user.save()
+            person.user = user
+            person.save()
 
         return user
