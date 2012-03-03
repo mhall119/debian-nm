@@ -17,9 +17,12 @@
 
 from django import http, template, forms
 from django.shortcuts import render_to_response, redirect
+from django.contrib.auth.decorators import login_required
 import backend.models as bmodels
 from backend import const
+import backend.auth
 
+@backend.auth.is_am
 def amlist(request):
     from django.db import connection
     # Here is a list of active Application Managers:
@@ -57,5 +60,16 @@ def amlist(request):
                               dict(
                                   ams_active=ams_active,
                                   ams_inactive=ams_inactive,
+                              ),
+                              context_instance=template.RequestContext(request))
+
+@backend.auth.is_am
+def ammain(request):
+    person = request.user.get_profile()
+
+    return render_to_response("restricted/ammain.html",
+                              dict(
+                                  person=person,
+                                  am=person.am,
                               ),
                               context_instance=template.RequestContext(request))

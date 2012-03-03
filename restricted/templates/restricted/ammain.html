@@ -1,0 +1,243 @@
+{% extends "restricted/base.html" %}
+
+{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">ammain</a>{% endblock %}
+
+{% block content %}
+
+<h1>Debian New Member</h1>
+
+{{user}}
+{{person}}
+
+<p>Currently the database thinks you have the following functions:</p>
+<ul>
+    {% if am.is_am %}<li>Application Manager</li>{% endif %}
+    {% if am.is_fd %}<li>Front Desk</li>{% endif %}
+    {% if am.is_dam %}<li>Debian Account Manager</li>{% endif %}
+</ul>
+
+{% comment %}
+    <H2>Front Desk</H2>
+    <P>The following managers have free slots (#free/#slots): <A HREF="amprofile.php?login=and">and</A>&nbsp;(1/1), <A HREF="amprofile.php?login=anibal">anibal</A>&nbsp;(1/1), <A HREF="amprofile.php?login=bzed">bzed</A>&nbsp;(1/3), <A HREF="amprofile.php?login=ctaylor">ctaylor</A>&nbsp;(1/2), <A HREF="amprofile.php?login=stefanor">stefanor</A>&nbsp;(1/1), <A HREF="amprofile.php?login=zobel">zobel</A>&nbsp;(1/1)<BR>
+    <P>The following applicants are waiting for an Application Manager to be
+    assigned (first one is oldest).<BR>
+    <TABLE border="0" summary="" STYLE="font-size: small">
+        <TR><TD>2010-12-31</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=sebastian%40feltel.de">Sebastian Feltel &lt;sebastian@feltel.de&gt;</A></TD>
+            <TD>D/F: Non-uploading DD [Enrico 2011-01-08]</TD></TR>
+        <TR><TD>2011-08-29</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=michael.dorrington%40gmail.com">Michael Dorrington &lt;michael.dorrington@gmail.com&gt;</A></TD>
+            <TD>D/F: Steve will invite him to local BSPs, we will see then [jhr 2012-02-11]<br>D/F: re-mailed Steve [jhr 2011-12-11]
+                 [...]</TD></TR>
+         <TR><TD>2012-02-27</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=fabreg%40fabreg.it">Fabrizio Regalli &lt;fabreg@fabreg.it&gt;</A></TD>
+             <TD>D/F: activity poll sent [jhr 2012-03-02]<br>D/F: DM since Sep 2011 [jhr 2012-03-02]
+         </TD></TR>
+     </TABLE>
+     <p>Applicants currently not ready to be assigned to an AM (ordered by hold date):</p>
+     <TABLE border="0" summary="" STYLE="font-size: small">
+         <TR><TD>2008-12-25</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD><IMG src="images/hold.png" alt="H"></TD><TD><A href="amstatus.php?&user=goswin-v-b%40web.de">Goswin von Brederlow &lt;goswin-v-b@web.de&gt;</A></TD>
+             <TD>D/F: Recheck with DAM before assigning an AM [Myon 2009-07-06]<br>D/F: updated email address [bzed 2008-12-26]
+                  [...]</TD></TR>
+          <TR><TD>2011-05-11</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=rmolina%40udea.edu.co">Ruben Molina &lt;rmolina@udea.edu.co&gt;</A></TD>
+              <TD>D/F: unassigned from he [Enrico 2011-05-11]<br>D/F: ok [wouter 2008-10-01]
+          </TD></TR>
+      </TABLE>
+      <P>Applicants assigned to AM but AM has not confirmed:<BR>
+      <TABLE border="0" summary="" STYLE="font-size: small">
+          <TR><TD>2012-02-25</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=marv%40der-marv.de">Marvin Stark &lt;marv@der-marv.de&gt;</A></TD>
+              <TD><A HREF="amprofile.php?login=rmayorga">rmayorga</A></TD><TD>AM: Resend T&S 2<br>AM: T&S I finished
+                  <BR>D/F: unassigned from tolimar by his request [jhr 2012-02-24]<br>D/F: contacted wrt old-cases-tracking [jhr 2011-11-08]
+                   [...]</TD></TR>
+           <TR><TD>2012-03-03</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=miguel%40miguel.cc">Miguel Landaeta &lt;miguel@miguel.cc&gt;</A></TD>
+               <TD><A HREF="amprofile.php?login=lfaraone">lfaraone</A></TD><TD>AM: 2012-01-13: Sent P&P1<BR>D/F: unassigned from tolimar by his request [jhr 2012-02-24]<br>D/F: ok [jhr 2011-11-08]
+                    [...]</TD></TR>
+        </TABLE>
+        <P>Applicants assigned to AM but AM has rejected assignment:<BR>
+        none
+        <P>The reports of the following applicants approved by their AM need to be
+        checked:<BR>
+        <TABLE border="0" summary="" STYLE="font-size: small">
+            <TR><TD>2012-02-14</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD> </TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=caroll%40funlabs.org">Ana Carolina Comandulli &lt;caroll@funlabs.org&gt;</A></TD>
+                <TD><A HREF="amprofile.php?login=jhr">jhr</A></TD><TD>D/F: non-uploading for now [jhr 2011-09-25]<br>D/F: ok [enrico 2011-09-24]
+                     [...]</TD></TR>
+         </TABLE>
+         <P>The following applicants have incomplete AM reports (ordered by hold date):<BR>
+         none
+         <H2>Debian Account Manager</H2>
+         <P>The following applicants have been approved by the NM committee
+         and the FD but a DAM has not fully processed them yet (sorted by FD
+         approval):<BR>
+         <TABLE border="0" summary="" STYLE="font-size: small">
+             <TR><TD>2012-01-04</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=debian%40toell.net">Arno Töll &lt;debian@toell.net&gt;</A></TD>
+                 <TD><A HREF="amprofile.php?login=rmayorga">rmayorga</A></TD><TD>AM: T&S Done - 1/Jan/2012<br>AM: T&S Sent - 9/Nov/2011
+                      [...]<BR>D/F: ok [jhr 2011-09-29]</TD></TR>
+              <TR><TD>2012-01-08</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=mathieu.malaterre%40gmail.com">Mathieu Malaterre &lt;mathieu.malaterre@gmail.com&gt;</A></TD>
+                  <TD><A HREF="amprofile.php?login=nthykier">nthykier</A></TD><TD>AM: T&S   completed: 2011-12-08<br>AM: T&S   sent: 2011-09-19
+                       [...]<BR>D/F: Ok, DM [Enrico 2011-05-15]<br>D/F: Activity poll sent [Enrico 2011-05-11]
+               </TD></TR>
+               <TR><TD>2012-01-09</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=johfel%40gmx.de">Johann Felix Soden &lt;johfel@gmx.de&gt;</A></TD>
+                   <TD><A HREF="amprofile.php?login=lfaraone">lfaraone</A></TD><TD>D/F: unassign from fenio, assign to lfaraone [jhr 2011-10-28]<br>D/F: ok [jhr 2011-10-01]
+                        [...]</TD></TR>
+                <TR><TD>2012-01-10</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=roland%40digitalvampire.org">Roland Dreier &lt;roland@digitalvampire.org&gt;</A></TD>
+                    <TD><A HREF="amprofile.php?login=noodles">noodles</A></TD><TD>D/F: ok [jhr 2011-11-09]<br>D/F: DM since 2011-03 [jhr 2011-11-09]
+                         [...]</TD></TR>
+                 <TR><TD>2012-02-10</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=dmitrij.ledkov%40ubuntu.com">Dmitrijs Ledkovs &lt;dmitrij.ledkov@ubuntu.com&gt;</A></TD>
+                     <TD><A HREF="amprofile.php?login=gildor">gildor</A></TD><TD>D/F: I stand corrected, there are 2 sigs [jhr 2012-02-11]<br>D/F: AM report ok but just one signature on gpg key [jhr 2012-02-09]
+                          [...]</TD></TR>
+                  <TR><TD>2012-02-15</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=michael.s.gilbert%40gmail.com">Michael Gilbert &lt;michael.s.gilbert@gmail.com&gt;</A></TD>
+                      <TD><A HREF="amprofile.php?login=thijs">thijs</A></TD><TD>D/F: ok [jhr 2011-11-15]<br>D/F: DM since 11-2010 [jhr 2011-11-15]
+                           [...]</TD></TR>
+                   <TR><TD>2012-02-25</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=chaica%40ohmytux.com">Carl Chenet &lt;chaica@ohmytux.com&gt;</A></TD>
+                       <TD><A HREF="amprofile.php?login=zobel">zobel</A></TD><TD>D/F: DM since Jun 2010 [jhr 2012-02-25]<br>D/F: unassigned from holger [Enrico 2011-05-23]
+                            [...]</TD></TR>
+                    <TR><TD>2012-03-02</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=monica%40probeta.net">Mònica Ramírez Arceda &lt;monica@probeta.net&gt;</A></TD>
+                        <TD><A HREF="amprofile.php?login=lfaraone">lfaraone</A></TD><TD>D/F: ok [jhr 2011-11-07]<br>D/F: activity-poll sent [jhr 2011-11-03]
+                    </TD></TR>
+                </TABLE>
+                <P>Applicants approved by a DAM, but for which no account has been created yet:<BR>
+                <TABLE border="0" summary="" STYLE="font-size: small">
+                    <TR><TD>2012-01-01</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=debian%40alteholz.de">Thorsten Alteholz &lt;debian@alteholz.de&gt;</A></TD>
+                        <TD><A HREF="amprofile.php?login=stefanor">stefanor</A></TD><TD>AM: Applicant already has shell access, under the desired account name<br>AM: 1024D key, already in DM keyring
+                            <BR>D/F: ok [Enrico 2011-08-04]<br>D/F: activity-poll sent [Enrico 2011-08-04]
+                    </TD></TR>
+                </TABLE>
+                <P>These are applications that have been put on hold at the DAM stage
+                (sorted by hold date):<BR>
+                none
+                <H2>Application Manager</H2>
+                <P>Hello enrico, here is a list of New Member applicants
+                that you are the AM for:<BR>
+                <H5>Applicants to Accept</H5>
+                <P>These applicants have been assigned to you by the Front Desk but you have
+                not confirmed that you will or will not be their AM (ordered by assignment
+                date).<BR>
+                none
+                <H5>Applicants to process</H5>
+                <P>The following applicants you are the AM for (ordered by the date you
+                accepted them as NMs):<BR>
+                none
+                <H5>Applicants needing re-processing</H5>
+                <P>These applicants you have processed but the DAM believe the documentation is
+                incomplete. Check the DAM comments field for details:<BR>
+                none
+                <H5>Applicants on Hold</H5>
+                <P>Applicants who make it here have some issue with completing the process but
+                are expected to be able to work around that soon (ordered by hold date).<BR>
+                <TABLE border="0" summary="" STYLE="font-size: small">
+                    <TR><TD>2009-09-03</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD> </TD><TD> </TD><TD><IMG src="images/hold.png" alt="H"></TD><TD><A href="amstatus.php?&user=garridomota%40gmail.com">Alejandro Garrido Mota &lt;garridomota@gmail.com&gt;</A></TD>
+                        <TD>AM: Pinged after one year with intention to cancel [2010-11-05]<br>AM: Skillful, motivated, but not careful enough. I still need to double check everything he does. On hold until a new advocate advocates him. [2009-09-03]
+                    </TD></TR>
+                    <TR><TD>2010-11-04</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD> </TD><TD> </TD><TD> </TD><TD> </TD><TD><IMG src="images/hold.png" alt="H"></TD><TD><A href="amstatus.php?&user=eriberto%40eriberto.pro.br">Joao Filho &lt;eriberto@eriberto.pro.br&gt;</A></TD>
+                        <TD>AM: pinged after 3 months with no reply [2010-11-04]<br>AM: came back [2010-03-02]
+                             [...]<BR>D/F: still seems to be MIA, put on hold [bzed 2009-06-23]<br>D/F: probably MIA [bzed 2009-04-22]
+                     </TD></TR>
+                 </TABLE>
+                 <H5>Rejected Applicants</H5>
+                 <P>These are applicants that were assigned to you, but you have rejected
+                 being their AM.<BR>
+                 none
+                 <H5>Processed Applicants</H5>
+                 <P>These applicants you have processed through the system and are here for
+                 historical or informational purposes (ordered by account creation date).<BR>
+                 <TABLE border="0" summary="" STYLE="font-size: small">
+                     <TR><TD>2005-05-21</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=eugen%40univ.kiev.ua">Eugeniy Meshcheryakov &lt;eugen@univ.kiev.ua&gt;</A></TD>
+                     </TR>
+                     <TR><TD>2005-05-21</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=eevans%40sym-link.com">Eric Evans &lt;eevans@sym-link.com&gt;</A></TD>
+                     </TR>
+                     <TR><TD>2005-09-19</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=vega.james%40gmail.com">James Vega &lt;vega.james@gmail.com&gt;</A></TD>
+                     </TR>
+                     <TR><TD>2007-01-02</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=siretart%40tauware.de">Reinhard Tartler &lt;siretart@tauware.de&gt;</A></TD>
+                     </TR>
+                     <TR><TD>2007-03-13</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=me%40mornfall.net">Peter Rockai &lt;me@mornfall.net&gt;</A></TD>
+                         <TD>D/F: Waiting for fixed gpg key<br>D/F: Reassigned to enrico [HE 2005-08-23]
+                     </TD></TR>
+                     <TR><TD>2007-12-05</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=fboudra%40free.fr">Fathi Boudra &lt;fboudra@free.fr&gt;</A></TD>
+                     </TR>
+                     <TR><TD>2008-10-14</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=brad%40brad-smith.co.uk">Bradley Smith &lt;brad@brad-smith.co.uk&gt;</A></TD>
+                     </TR>
+                     <TR><TD>2008-10-14</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=jonnylamb%40jonnylamb.com">Jonny Lamb &lt;jonnylamb@jonnylamb.com&gt;</A></TD>
+                         <TD>D/F: ok [wouter 2008-07-09]</TD></TR>
+                     <TR><TD>2008-10-14</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=adam%40adam-barratt.org.uk">Adam Barratt &lt;adam@adam-barratt.org.uk&gt;</A></TD>
+                     </TR>
+                     <TR><TD>2009-04-05</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=garden%40acheronte.it">Ludovico Gardenghi &lt;garden@acheronte.it&gt;</A></TD>
+                     </TR>
+                     <TR><TD>2009-07-22</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=jan%40dittberner.info">Jan Dittberner &lt;jan@dittberner.info&gt;</A></TD>
+                         <TD>D/F: maintains two packages, one since two years; ok [wouter 2008-09-25]</TD></TR>
+                     <TR><TD>2009-08-11</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=bpellin%40gmail.com">Brian Pellin &lt;bpellin@gmail.com&gt;</A></TD>
+                         <TD>D/F: ok [Myon 2008-12-18]</TD></TR>
+                     <TR><TD>2009-08-25</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=steph%40glondu.net">Stephane Glondu &lt;steph@glondu.net&gt;</A></TD>
+                         <TD>D/F: new key 49881AD3 [Myon 2009-08-08]<br>D/F: ok [Myon 2008-05-01]
+                              [...]</TD></TR>
+                      <TR><TD>2009-09-06</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=jackyf.devel%40gmail.com">Eugene V. Lyubimkin &lt;jackyf.devel@gmail.com&gt;</A></TD>
+                          <TD>D/F: ok [bzed 2009-03-24]</TD></TR>
+                      <TR><TD>2009-09-23</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=drazzib%40drazzib.com">Damien Raude-Morvan &lt;drazzib@drazzib.com&gt;</A></TD>
+                          <TD>D/F: ok [bzed 2008-12-20]</TD></TR>
+                      <TR><TD>2009-09-23</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=ryanryan52%40gmail.com">Ryan Niebur &lt;ryanryan52@gmail.com&gt;</A></TD>
+                          <TD>D/F: ok [bzed 2009-06-23]</TD></TR>
+                      <TR><TD>2009-09-23</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=cworth%40cworth.org">Carl Worth &lt;cworth@cworth.org&gt;</A></TD>
+                          <TD>D/F: ok [wouter 2009-07-30]<br>D/F: missing activity [bzed 2009-06-24]
+                      </TD></TR>
+                      <TR><TD>2009-09-23</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=yabuki%40netfort.gr.jp">Yukiharu YABUKI &lt;yabuki@netfort.gr.jp&gt;</A></TD>
+                          <TD>AM: P+P:1 received the rest 20060618<br>AM: P+P:1 partly received 20060603 - waiting for the rest
+                              <BR>D/F: unassigned from neilm [bzed 2009-01-25]</TD></TR>
+                      <TR><TD>2009-09-23</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=directhex%40apebox.org">Jo Shields &lt;directhex@apebox.org&gt;</A></TD>
+                          <TD>D/F: ok [bzed 2009-04-02]</TD></TR>
+                      <TR><TD>2009-09-23</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=tiago%40debian-ba.org">Tiago Bortoletto Vaz &lt;tiago@debian-ba.org&gt;</A></TD>
+                          <TD>AM: Forward mail to tiago-debian@eumx.net which is different than the email address he normally uses.<BR>D/F: ok [bzed 2009-01-14]</TD></TR>
+                      <TR><TD>2009-09-23</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=lavaramano%40gmail.com">Mauro Lizaur &lt;lavaramano@gmail.com&gt;</A></TD>
+                          <TD>D/F: ok [wouter 2008-10-01]</TD></TR>
+                      <TR><TD>2009-12-06</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=antonio%40dyne.org">Antonio Radici &lt;antonio@dyne.org&gt;</A></TD>
+                          <TD>D/F: ok [bzed 2009-06-23]</TD></TR>
+                      <TR><TD>2009-12-06</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=franck.mail%40dthconnex.com">Franck Joncourt &lt;franck.mail@dthconnex.com&gt;</A></TD>
+                      </TR>
+                      <TR><TD>2009-12-06</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=gilles.filippini%40free.fr">Gilles Filippini &lt;gilles.filippini@free.fr&gt;</A></TD>
+                          <TD>D/F: ok [bzed 2009-06-23]</TD></TR>
+                      <TR><TD>2010-01-05</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=andrea.veri89%40gmail.com">Andrea Veri &lt;andrea.veri89@gmail.com&gt;</A></TD>
+                          <TD>D/F: ok [Enrico 2009-10-08]<br>D/F: activity-poll mail sent [Enrico 2009-10-07]
+                      </TD></TR>
+                      <TR><TD>2010-01-30</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=albert%40csail.mit.edu">Albert Huang &lt;albert@csail.mit.edu&gt;</A></TD>
+                          <TD>D/F: ok [bzed 2009-10-20]<br>D/F: missing activity [bzed 2009-06-23]
+                      </TD></TR>
+                      <TR><TD>2010-01-30</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=vagrant%40freegeek.org">Vagrant Cascadian &lt;vagrant@freegeek.org&gt;</A></TD>
+                          <TD>D/F: waiting for new DMUP signature [Myon 2010-01-11]<br>D/F: ok [Myon 2007-04-03]
+                      </TD></TR>
+                      <TR><TD>2010-01-30</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=marcot%40holoscopio.com">Marco Silva &lt;marcot@holoscopio.com&gt;</A></TD>
+                          <TD>D/F: ok [bzed 2009-06-24]</TD></TR>
+                      <TR><TD>2010-01-31</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=metal%40alucinados.com">Marcelo Vieira &lt;metal@alucinados.com&gt;</A></TD>
+                          <TD>D/F: Un-assigned due to AM's time constraints. [HE 2008-11-25]<br>D/F: ok [Myon 2007-12-18]
+                      </TD></TR>
+                      <TR><TD>2010-05-03</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=henrich%40debian.or.jp">Hideki Yamane &lt;henrich@debian.or.jp&gt;</A></TD>
+                          <TD>D/F: unassigned due to whites lack of time [Enrico 2010-03-25]<br>D/F: ok [mkoch 2009-08-29]
+                      </TD></TR>
+                      <TR><TD>2010-05-31</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=quadrispro%40ubuntu.com">Alessio Treglia &lt;quadrispro@ubuntu.com&gt;</A></TD>
+                          <TD>AM: PP1 done [2010-05-17]<BR>D/F: Ok [Enrico 2010-05-13]<br>D/F: Activity poll sent [Enrico 2010-05-12]
+                      </TD></TR>
+                      <TR><TD>2010-06-27</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=adrianperez.deb%40gmail.com">Adrian Perez &lt;adrianperez.deb@gmail.com&gt;</A></TD>
+                          <TD>D/F: ok [mkoch 2009-08-28]</TD></TR>
+                      <TR><TD>2010-12-03</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=michael.hanke%40gmail.com">Michael Hanke &lt;michael.hanke@gmail.com&gt;</A></TD>
+                          <TD>AM: Michael is currently on hold. 2007-11-17<br>AM: T&S2: [sent]
+                               [...]<BR>D/F: Unassign from adn [Myon 2010-08-23]</TD></TR>
+                       <TR><TD>2010-12-23</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD> </TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=mdz-debian%40alcor.net">Matt Zimmerman &lt;mdz-debian@alcor.net&gt;</A></TD>
+                           <TD>D/F: Emeritus, non-uploading</TD></TR>
+                       <TR><TD>2011-01-25</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=brother%40bsnet.se">Martin Bagge &lt;brother@bsnet.se&gt;</A></TD>
+                           <TD>AM: Non-uploading DD<BR>D/F: SC needs new signature [Myon 2010-12-28]<br>D/F: Ok [Enrico 2010-10-30]
+                                [...]</TD></TR>
+                        <TR><TD>2012-01-01</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD><IMG src="images/new.png" alt="N"></TD><TD> </TD><TD><A href="amstatus.php?&user=harshula%40gmail.com">Harshula Jayasuriya &lt;harshula@gmail.com&gt;</A></TD>
+                            <TD>AM: Process resumes [2011-10-16]<br>AM: Asked to cancel in jan 2011 if nothing happened [2010-11-04]
+                                 [...]<BR>D/F: DM [jhr 2011-10-22]<br>D/F: unassign from mkoch [Myon 2009-01-10]
+                                  [...]</TD></TR>
+                      </TABLE>
+                      <H2>Key</H2>
+                      <UL>
+                          <LI><IMG src="images/shake.png" alt="V" width="16" height="16"> : Advocate Check ok
+                          <LI><IMG src="images/mag.png" alt="I" width="16" height="16"> : Identification complete
+                          <LI><IMG src="images/dfsg.png" alt="P" width="16" height="16"> : Philosophy and Procedures complete
+                          <LI><IMG src="images/hammer.png" alt="T" width="16" height="16"> : Tasks and Skills complete
+                          <LI><IMG src="images/thumb.png" alt="A" width="16" height="16"> : Application Manager Recommends applicant
+                          <LI><IMG src="images/new.png" alt="N" width="16" height="16"> : New Debian developer
+                          <LI><IMG src="images/hold.png" alt="H" width="16" height="16"> : On hold
+                      </UL>
+                  </div> <!-- end maincol -->
+
+{% endcomment %}
+
+{% endblock %}
+
