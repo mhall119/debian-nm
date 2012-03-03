@@ -57,6 +57,7 @@ class Updater(object):
                     return None
                 return f[0]
 
+            # TODO: if cn is '-', then set cn=sn and sn=None
             changed = False
             for field in ("cn", "mn", "sn"):
                 val = get_field(field)
