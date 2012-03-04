@@ -95,8 +95,6 @@ def ammain(request):
     prog_dam_ok = bmodels.Process.objects.filter(progress=const.PROGRESS_DAM_OK) \
                  .annotate(started=Min("log__logdate")).order_by("started")
 
-    # TODO: Thorsten Alteholz <debian@alteholz.de> should be DAM_OK
-
     return render_to_response("restricted/ammain.html",
                               dict(
                                   person=person,
@@ -108,6 +106,7 @@ def ammain(request):
                                   prog_am_ok=prog_am_ok,
                                   prog_fd_hold=prog_fd_hold,
                                   prog_fd_ok=prog_fd_ok,
+                                  prog_dam_ok=prog_dam_ok,
                               ),
                               context_instance=template.RequestContext(request))
 
