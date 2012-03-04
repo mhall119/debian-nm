@@ -21,7 +21,9 @@
     <tr><th>FD comments</th><td>{{person.fd_comment}}</td></tr>
     {% endif %}
 </table>
-<a href="TODO">Edit personal information (TODO: do not show if not fd or current am)</a>
+{% if can_edit %}
+<a href="TODO">Edit personal information</a>
+{% endif %}
 
 <h2>Progress to become {{ process.applying_for|desc_status }}</h2>
 
