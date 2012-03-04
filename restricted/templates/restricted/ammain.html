@@ -117,12 +117,22 @@ but a DAM has not fully processed them yet (sorted by FD approval):</p>
     {% endfor %}
 </table>
 
+<p>These are applications that have been put on hold at the DAM stage
+(sorted by hold date):</p>
+
+<table>
+    {% for p in prog_dam_hold %}
+    <tr>
+        <td>{{p.started}}</td>
+        <td>{{p.person}}</td>
+        <td>TODO: log</td>
+    </tr>
+    {% endfor %}
+</table>
+
 {% endif %}
 
 {% comment %}
-                <P>These are applications that have been put on hold at the DAM stage
-                (sorted by hold date):<BR>
-                none
                 <H2>Application Manager</H2>
                 <P>Hello enrico, here is a list of New Member applicants
                 that you are the AM for:<BR>
