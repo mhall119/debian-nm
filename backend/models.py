@@ -174,7 +174,6 @@ class AM(models.Model):
           JOIN process ON process.manager_id=am.id
          WHERE am.is_am AND am.slots > 0
          GROUP BY am.id
-        HAVING am.slots - active > 0
         """, (const.PROGRESS_AM_RCVD, const.PROGRESS_AM, const.PROGRESS_AM_HOLD,))
         stats = dict()
         for amid, active, held in cursor:
@@ -186,6 +185,8 @@ class AM(models.Model):
             a.stats_active = active
             a.stats_held = held
             a.stats_free = a.slots - active
+            if a.stats_free <= 0:
+                continue
             res.append(a)
         return res
 
