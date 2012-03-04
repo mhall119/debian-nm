@@ -30,6 +30,7 @@ class Importer(object):
     def __init__(self):
         self.people_cache_by_email = dict()
         self.people_cache_by_uid = dict()
+        self.seq = 0
 
     def import_person(self, person):
         p = bmodels.Person(
@@ -39,6 +40,9 @@ class Importer(object):
             uid=person["accountname"],
             email=person["mail"],
             status=person["status"])
+        if not p.uid:
+            p.uid = "FIXME%04d" % self.seq
+            self.seq += 1
         p.save()
         self.people_cache_by_email[p.email] = p
         if p.uid: self.people_cache_by_uid[p.uid] = p
