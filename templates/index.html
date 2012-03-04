@@ -3,9 +3,34 @@
 {% block content %}
 
 <div id="intro">
-    <p>Page introduction.</p>
+    <p>This is the New Member Process website. Unfinished, but functional. Many
+    features are still being added.</p>
 </div>
 
-<p>Page contents</p>
+If you are an applicant, you can look at:
+
+<ul>
+    <li><a href="{% url public_whoisam %}">List of Application Managers</a></li>
+    <li>TODO: applicant list (former nmlist.php)</li>
+    <li>TODO: NM status (former nmstatus.php)</li>
+    <li>TODO: stats (former index.php, stats.php, leaderboard.php, nmgraph.php)</li>
+    <li>TODO: join the NM process (former newnm.php, nmadvocate.php). To join
+    <li>TODO: list of Debian Developers (former maintainers.php)</li>
+    <li>TODO: (NEW) list of Debian Maintainers</li>
+        the process, please mail nm@debian.org for now.</li>
+</ul>
+
+If you are an Application Manager, you can look at:
+
+<ul>
+    <li><a href="{% url restricted_ammain %}">AM main page</a></li>
+    <li><a href="{% url restricted_amprofile %}">AM personal settings</a></li>
+    <li><a href="{% url restricted_amlist %}">List of Application Managers</a></li>
+    <li>TODO: (NEW) NM personal information editor</li>
+    <li>TODO: create new AM (former amnew.php, amnew2.php)</li>
+    <li>TODO: applicant list (former nmelist.php)</li>
+    <li>TODO: delete NM (former deletenm.php)</li>
+    <li>TODO: delete AM (former fddelete.php)</li>
+</ul>
 
 {% endblock %}
