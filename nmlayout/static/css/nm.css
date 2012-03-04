@@ -7,3 +7,10 @@
 
 @import url("debian.css");
 
+table.personinfo th {
+    /* Copied to match td, since the th is to the left of td in this table */
+    border: none;
+    background-image: url('Pics/greydot.png');
+    background-position: bottom left;
+    background-repeat: repeat-x;
+}

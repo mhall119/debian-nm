@@ -30,6 +30,7 @@ ALL_STATUS = (
     ("STATUS_REMOVED_DD",  "dd_r",       "Debian Developer, removed"),
     ("STATUS_REMOVED_DM",  "dm_r",       "Debian Maintainer, removed"),
 )
+ALL_STATUS_DESCS = dict(x[1:3] for x in ALL_STATUS)
 for key, val, desc in ALL_STATUS:
     g[key] = val
 
@@ -56,6 +57,7 @@ ALL_PROGRESS = (
     ("PROGRESS_DONE",      "done",      "Process has completed successfully (account was created)"),
     ("PROGRESS_CANCELLED", "cancelled", "Process has been canceled"),
 )
+ALL_PROGRESS_DESCS = dict(x[1:3] for x in ALL_PROGRESS)
 for key, val, desc in ALL_PROGRESS:
     g[key] = val
 
