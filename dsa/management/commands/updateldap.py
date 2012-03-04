@@ -88,7 +88,7 @@ class Updater(object):
                     try:
                         log.info("Person %s changed %s from %s to %s", uid, field, old, val)
                     except UnicodeDecodeError:
-                        print "SHIT WITH", uid
+                        print "Problems with", uid
                         continue
                     setattr(person, field, val)
                     changed = True
