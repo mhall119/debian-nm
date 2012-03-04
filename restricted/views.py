@@ -99,6 +99,28 @@ def ammain(request):
                    .exclude(manager=None) \
                    .annotate(started=Min("log__logdate")).order_by("started")
 
+    am_prog_rcvd = bmodels.Process.objects.filter(progress=const.PROGRESS_AM_RCVD) \
+                   .filter(manager=person.am) \
+                   .annotate(started=Min("log__logdate")).order_by("started")
+
+    am_prog_am = bmodels.Process.objects.filter(progress=const.PROGRESS_AM) \
+                   .filter(manager=person.am) \
+                   .annotate(started=Min("log__logdate")).order_by("started")
+
+    am_prog_hold = bmodels.Process.objects.filter(progress=const.PROGRESS_AM_HOLD) \
+                   .filter(manager=person.am) \
+                   .annotate(started=Min("log__logdate")).order_by("started")
+
+    am_prog_done = bmodels.Process.objects.filter(manager=person.am, progress__in=(
+        const.PROGRESS_AM_OK,
+        const.PROGRESS_FD_HOLD,
+        const.PROGRESS_FD_OK,
+        const.PROGRESS_DAM_HOLD,
+        const.PROGRESS_DAM_OK,
+        const.PROGRESS_DONE,
+        const.PROGRESS_CANCELLED)) \
+                    .annotate(started=Min("log__logdate")).order_by("started")
+
     return render_to_response("restricted/ammain.html",
                               dict(
                                   person=person,
@@ -112,6 +134,10 @@ def ammain(request):
                                   prog_fd_ok=prog_fd_ok,
                                   prog_dam_ok=prog_dam_ok,
                                   prog_dam_hold=prog_dam_hold,
+                                  am_prog_rcvd=am_prog_rcvd,
+                                  am_prog_am=am_prog_am,
+                                  am_prog_hold=am_prog_hold,
+                                  am_prog_done=am_prog_done,
                               ),
                               context_instance=template.RequestContext(request))
 
