@@ -90,47 +90,36 @@ checked:</p>
 {% endif %}
 
 {% if am.is_dam %}
+<h2>Debian Account Manager</h2>
+
+<p>The following applicants have been approved by the NM committee and the FD
+but a DAM has not fully processed them yet (sorted by FD approval):</p>
+
+<table>
+    {% for p in prog_fd_ok %}
+    <tr>
+        <td>{{p.started}}</td>
+        <td>{{p.person}}</td>
+        <td>TODO: log</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p>Applicants approved by a DAM, but for which no account has been created yet:</p>
+
+<table>
+    {% for p in prog_dam_ok %}
+    <tr>
+        <td>{{p.started}}</td>
+        <td>{{p.person}}</td>
+        <td>TODO: log</td>
+    </tr>
+    {% endfor %}
+</table>
 
 {% endif %}
+
 {% comment %}
-         <H2>Debian Account Manager</H2>
-         <P>The following applicants have been approved by the NM committee
-         and the FD but a DAM has not fully processed them yet (sorted by FD
-         approval):<BR>
-         <TABLE border="0" summary="" STYLE="font-size: small">
-             <TR><TD>2012-01-04</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=debian%40toell.net">Arno Töll &lt;debian@toell.net&gt;</A></TD>
-                 <TD><A HREF="amprofile.php?login=rmayorga">rmayorga</A></TD><TD>AM: T&S Done - 1/Jan/2012<br>AM: T&S Sent - 9/Nov/2011
-                      [...]<BR>D/F: ok [jhr 2011-09-29]</TD></TR>
-              <TR><TD>2012-01-08</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=mathieu.malaterre%40gmail.com">Mathieu Malaterre &lt;mathieu.malaterre@gmail.com&gt;</A></TD>
-                  <TD><A HREF="amprofile.php?login=nthykier">nthykier</A></TD><TD>AM: T&S   completed: 2011-12-08<br>AM: T&S   sent: 2011-09-19
-                       [...]<BR>D/F: Ok, DM [Enrico 2011-05-15]<br>D/F: Activity poll sent [Enrico 2011-05-11]
-               </TD></TR>
-               <TR><TD>2012-01-09</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=johfel%40gmx.de">Johann Felix Soden &lt;johfel@gmx.de&gt;</A></TD>
-                   <TD><A HREF="amprofile.php?login=lfaraone">lfaraone</A></TD><TD>D/F: unassign from fenio, assign to lfaraone [jhr 2011-10-28]<br>D/F: ok [jhr 2011-10-01]
-                        [...]</TD></TR>
-                <TR><TD>2012-01-10</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=roland%40digitalvampire.org">Roland Dreier &lt;roland@digitalvampire.org&gt;</A></TD>
-                    <TD><A HREF="amprofile.php?login=noodles">noodles</A></TD><TD>D/F: ok [jhr 2011-11-09]<br>D/F: DM since 2011-03 [jhr 2011-11-09]
-                         [...]</TD></TR>
-                 <TR><TD>2012-02-10</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=dmitrij.ledkov%40ubuntu.com">Dmitrijs Ledkovs &lt;dmitrij.ledkov@ubuntu.com&gt;</A></TD>
-                     <TD><A HREF="amprofile.php?login=gildor">gildor</A></TD><TD>D/F: I stand corrected, there are 2 sigs [jhr 2012-02-11]<br>D/F: AM report ok but just one signature on gpg key [jhr 2012-02-09]
-                          [...]</TD></TR>
-                  <TR><TD>2012-02-15</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=michael.s.gilbert%40gmail.com">Michael Gilbert &lt;michael.s.gilbert@gmail.com&gt;</A></TD>
-                      <TD><A HREF="amprofile.php?login=thijs">thijs</A></TD><TD>D/F: ok [jhr 2011-11-15]<br>D/F: DM since 11-2010 [jhr 2011-11-15]
-                           [...]</TD></TR>
-                   <TR><TD>2012-02-25</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=chaica%40ohmytux.com">Carl Chenet &lt;chaica@ohmytux.com&gt;</A></TD>
-                       <TD><A HREF="amprofile.php?login=zobel">zobel</A></TD><TD>D/F: DM since Jun 2010 [jhr 2012-02-25]<br>D/F: unassigned from holger [Enrico 2011-05-23]
-                            [...]</TD></TR>
-                    <TR><TD>2012-03-02</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=monica%40probeta.net">Mònica Ramírez Arceda &lt;monica@probeta.net&gt;</A></TD>
-                        <TD><A HREF="amprofile.php?login=lfaraone">lfaraone</A></TD><TD>D/F: ok [jhr 2011-11-07]<br>D/F: activity-poll sent [jhr 2011-11-03]
-                    </TD></TR>
-                </TABLE>
-                <P>Applicants approved by a DAM, but for which no account has been created yet:<BR>
-                <TABLE border="0" summary="" STYLE="font-size: small">
-                    <TR><TD>2012-01-01</TD><TD><IMG src="images/shake.png" alt="V"></TD><TD><IMG src="images/mag.png" alt="I"></TD><TD><IMG src="images/dfsg.png" alt="P"></TD><TD><IMG src="images/hammer.png" alt="T"></TD><TD><IMG src="images/thumb.png" alt="A"></TD><TD> </TD><TD> </TD><TD><A href="amstatus.php?&user=debian%40alteholz.de">Thorsten Alteholz &lt;debian@alteholz.de&gt;</A></TD>
-                        <TD><A HREF="amprofile.php?login=stefanor">stefanor</A></TD><TD>AM: Applicant already has shell access, under the desired account name<br>AM: 1024D key, already in DM keyring
-                            <BR>D/F: ok [Enrico 2011-08-04]<br>D/F: activity-poll sent [Enrico 2011-08-04]
-                    </TD></TR>
-                </TABLE>
                 <P>These are applications that have been put on hold at the DAM stage
                 (sorted by hold date):<BR>
                 none
