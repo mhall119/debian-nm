@@ -61,6 +61,9 @@ class Importer(object):
             uid = attrs["uid"][0]
             try:
                 person = bmodels.Person.objects.get(uid=uid)
+                if person.status == const.STATUS_MM:
+                    person.status = const.STATUS_MM_GA
+                    person.save()
                 continue
             except bmodels.Person.DoesNotExist:
                 pass
@@ -69,6 +72,8 @@ class Importer(object):
             try:
                 person = bmodels.Person.objects.get(email=uid + "@debian.org")
                 person.uid = uid
+                if person.status == const.STATUS_MM:
+                    person.status = const.STATUS_MM_GA,
                 person.save()
                 continue
             except bmodels.Person.DoesNotExist:
@@ -86,6 +91,8 @@ class Importer(object):
             try:
                 person = bmodels.Person.objects.get(email=email)
                 person.uid = uid
+                if person.status == const.STATUS_MM:
+                    person.status = const.STATUS_MM_GA,
                 person.save()
                 continue
             except bmodels.Person.DoesNotExist:
