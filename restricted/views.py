@@ -196,3 +196,24 @@ def amprofile(request, uid=None):
                                   form=form,
                               ),
                               context_instance=template.RequestContext(request))
+
+@backend.auth.is_am
+def amstatus(request, procid):
+    process = bmodels.Process.objects.get(id=procid)
+
+    person = process.person
+
+    cur_person = request.user.get_profile()
+    am = cur_person.am
+
+    log = process.log.order_by("-logdate")
+
+    return render_to_response("restricted/amstatus.html",
+                              dict(
+                                  process=process,
+                                  person=person,
+                                  cur_person=cur_person,
+                                  am=am,
+                                  log=log,
+                              ),
+                              context_instance=template.RequestContext(request))

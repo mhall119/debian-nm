@@ -1,0 +1,59 @@
+{% extends "restricted/base.html" %}
+
+{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">{{cur_person.uid}}</a>{% endblock %}
+
+{% block content %}
+
+<h1><a href="http://qa.debian.org/developer.php?login={{person.email}}">{{person.fullname}}</a></h1>
+
+<small><b>Note:</b> Valid date formats are: 1999-05-23, 23 May 1999 23/5/1999
+    1999/5/23. Do not use mm/dd/yyyy! If you want to enter today's date, you
+    can type <i>today</i>.</small>
+
+<h2>Applicant personal information</h2>
+
+<dl>
+    <dt>First name</dt><dd>{{person.cn}}</dd>
+    <dt>Midtle name</dt><dd>{{person.mn}}</dd>
+    <dt>Last name</dt><dd>{{person.sn}}</dd>
+    <dt>Email</dt><dd>{{person.email}}</dd>
+    <dt>Account name</dt><dd>{{person.uid}}</dd>
+    <dt>OpenPGP fingerprint</dt><dd>{{person.fpr}}</dd>
+    <dt>Current status</dt><dd>{{person.status}}</dd>
+    <dt>FD comments</dt><dd>{{person.fd_comment}}</dd>
+</dl>
+<a href="TODO">Edit personal information</a>
+
+<h2>Applicant progress</h2>
+
+<form action="{% url restricted_amstatus procid=process.id %}" method="post">{% csrf_token %}
+    TODO: edit progress
+    TODO: add log entries
+    {{ form.as_p }}
+    <input type="submit" value="Submit" />
+</form>
+
+<h2>Progress log</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>By</th>
+            <th>Progress</th>
+            <th>Text</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for l in log %}
+    <tr>
+        <td>{{l.logdate}}</td>
+        <td>{{l.changed_by.uid}}</td>
+        <td>{{l.progress}}</td>
+        <td>{{l.logtext}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
