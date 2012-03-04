@@ -65,15 +65,35 @@ def amlist(request):
 
 @backend.auth.is_am
 def ammain(request):
+    from django.db.models import Min
     person = request.user.get_profile()
 
     am_available = bmodels.AM.list_free()
+
+    prog_app_ok = bmodels.Process.objects.filter(progress=const.PROGRESS_APP_OK) \
+                  .annotate(started=Min("log__logdate")).order_by("started")
+
+    prog_app_hold = bmodels.Process.objects.filter(progress__in=(
+        const.PROGRESS_APP_HOLD,
+        const.PROGRESS_FD_HOLD,
+        const.PROGRESS_DAM_HOLD)) \
+                    .annotate(started=Min("log__logdate")).order_by("started")
+
+    prog_am_rcvd = bmodels.Process.objects.filter(progress=const.PROGRESS_AM_RCVD) \
+                   .annotate(started=Min("log__logdate")).order_by("started")
+
+    prog_am_ok = bmodels.Process.objects.filter(progress=const.PROGRESS_AM_OK) \
+                 .annotate(started=Min("log__logdate")).order_by("started")
 
     return render_to_response("restricted/ammain.html",
                               dict(
                                   person=person,
                                   am=person.am,
                                   am_available=am_available,
+                                  prog_app_ok=prog_app_ok,
+                                  prog_app_hold=prog_app_hold,
+                                  prog_am_rcvd=prog_am_rcvd,
+                                  prog_am_ok=prog_am_ok,
                               ),
                               context_instance=template.RequestContext(request))
 
