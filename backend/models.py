@@ -72,7 +72,7 @@ class Person(models.Model):
     sn = models.CharField("last name", max_length=250, null=True, blank=True)
     email = models.EmailField("email address", null=False, unique=True)
     # This is null for people who still have not picked one
-    uid = models.CharField("Debian account name", max_length=32, null=True, unique=True)
+    uid = models.CharField("Debian account name", max_length=32, null=False, unique=True)
     # OpenPGP fingerprint, NULL until one has been provided
     fpr = models.CharField("OpenPGP key fingerprint", max_length=80, null=True, unique=True, blank=True)
     status = models.CharField("current status in the project", max_length=20, null=False,
