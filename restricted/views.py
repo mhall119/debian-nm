@@ -73,7 +73,7 @@ def ammain(request):
     prog_app_ok = bmodels.Process.objects.filter(progress=const.PROGRESS_APP_OK) \
                   .annotate(started=Min("log__logdate")).order_by("started")
 
-    prog_app_hold = bmodels.Process.objects.filter(progress__in=(
+    prog_app_hold = bmodels.Process.objects.filter(manager=None, progress__in=(
         const.PROGRESS_APP_HOLD,
         const.PROGRESS_FD_HOLD,
         const.PROGRESS_DAM_HOLD)) \
@@ -85,6 +85,10 @@ def ammain(request):
     prog_am_ok = bmodels.Process.objects.filter(progress=const.PROGRESS_AM_OK) \
                  .annotate(started=Min("log__logdate")).order_by("started")
 
+    prog_fd_hold = bmodels.Process.objects.filter(progress=const.PROGRESS_FD_HOLD) \
+                   .exclude(manager=None) \
+                   .annotate(started=Min("log__logdate")).order_by("started")
+
     return render_to_response("restricted/ammain.html",
                               dict(
                                   person=person,
@@ -94,6 +98,7 @@ def ammain(request):
                                   prog_app_hold=prog_app_hold,
                                   prog_am_rcvd=prog_am_rcvd,
                                   prog_am_ok=prog_am_ok,
+                                  prog_fd_hold=prog_fd_hold,
                               ),
                               context_instance=template.RequestContext(request))
 

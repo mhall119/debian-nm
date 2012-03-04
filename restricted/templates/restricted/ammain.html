@@ -76,12 +76,23 @@ checked:</p>
     {% endfor %}
 </table>
 
+<p>The following applicants have incomplete AM reports (ordered by hold date):</p>
+<table>
+    {% for p in prog_fd_hold %}
+    <tr>
+        <td>{{p.started}}</td>
+        <td>{{p.person}}</td>
+        <td>TODO: log</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endif %}
+
+{% if am.is_dam %}
+
 {% endif %}
 {% comment %}
-        <P>Applicants assigned to AM but AM has rejected assignment:<BR>
-        none
-         <P>The following applicants have incomplete AM reports (ordered by hold date):<BR>
-         none
          <H2>Debian Account Manager</H2>
          <P>The following applicants have been approved by the NM committee
          and the FD but a DAM has not fully processed them yet (sorted by FD
