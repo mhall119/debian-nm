@@ -77,6 +77,24 @@ def ammain(request):
                               ),
                               context_instance=template.RequestContext(request))
 
+def make_am_form(editor):
+    excludes = ["person", "is_am_ctte"]
+
+    if editor.is_dam:
+        pass
+    elif editor.is_fd:
+        excludes.append("is_dam")
+    else:
+        excludes.append("is_fd")
+        excludes.append("is_dam")
+
+    class AMForm(forms.ModelForm):
+        class Meta:
+            model = bmodels.AM
+            exclude = excludes
+    return AMForm
+
+
 @backend.auth.is_am
 def amprofile(request, uid=None):
     from django.db.models import Min
@@ -85,8 +103,22 @@ def amprofile(request, uid=None):
         person = request.user.get_profile()
     else:
         person = bmodels.Person.objects.get(uid=uid)
-
     am = person.am
+
+    AMForm = make_am_form(am)
+
+    form = None
+    if request.method == 'POST':
+        form = AMForm(request.POST, instance=am)
+        if form.is_valid():
+            cur_am = request.user.get_profile().am
+            if cur_am == am or cur_am.is_fd or cur_am.is_dam:
+                form.save()
+            else:
+                return http.HttpResponse("Editing is restricted to the am and front desk members")
+            # TODO: message that it has been saved
+    else:
+        form = AMForm(instance=am)
 
     processes = bmodels.Process.objects.filter(manager=am).annotate(started=Min("log__logdate")).order_by("started")
 
@@ -97,5 +129,6 @@ def amprofile(request, uid=None):
                                   person=person,
                                   am=am,
                                   processes=processes,
+                                  form=form,
                               ),
                               context_instance=template.RequestContext(request))

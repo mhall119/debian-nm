@@ -8,6 +8,11 @@
 
 <h2>Change AM details</h2>
 
+<form action="{% url restricted_amprofile uid=person.uid %}" method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Submit" />
+</form>
+
 <p>TODO: number of slots {{am.slots}}</p>
 <p>TODO: active</p>
 <p>TODO: is_fd, id_dam (for FDs and/or DAMs to set)</p>
