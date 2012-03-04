@@ -20,18 +20,22 @@
     <dt>Account name</dt><dd>{{person.uid}}</dd>
     <dt>OpenPGP fingerprint</dt><dd>{{person.fpr}}</dd>
     <dt>Current status</dt><dd>{{person.status}}</dd>
+    {% if can_edit %}
     <dt>FD comments</dt><dd>{{person.fd_comment}}</dd>
+    {% endif %}
 </dl>
-<a href="TODO">Edit personal information</a>
+<a href="TODO">Edit personal information (TODO: do not show if not fd or current am)</a>
 
 <h2>Applicant progress</h2>
 
 Current progress is: <b>{{ process.progress }}</b>.
 
+{% if can_edit %}
 <form action="{% url restricted_amstatus procid=process.id %}" method="post">{% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="Update" />
 </form>
+{% endif %}
 
 <h2>Progress log</h2>
 

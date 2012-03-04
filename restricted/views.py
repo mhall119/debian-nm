@@ -228,22 +228,27 @@ def amstatus(request, procid):
     cur_person = request.user.get_profile()
     am = cur_person.am
 
-    StatusUpdateForm = make_statusupdateform(am)
-    if request.method == 'POST':
-        form = StatusUpdateForm(request.POST)
-        if form.is_valid():
-            process.progress = form.cleaned_data["progress"]
-            process.save()
-            log = bmodels.Log(
-                changed_by=cur_person,
-                process=process,
-                progress=process.progress,
-                logtext=form.cleaned_data["logtext"]
-            )
-            log.save()
+    can_edit = am.is_fd or am.is_dam or am == process.manager
+
+    if can_edit:
+        StatusUpdateForm = make_statusupdateform(am)
+        if request.method == 'POST':
+            form = StatusUpdateForm(request.POST)
+            if form.is_valid():
+                process.progress = form.cleaned_data["progress"]
+                process.save()
+                log = bmodels.Log(
+                    changed_by=cur_person,
+                    process=process,
+                    progress=process.progress,
+                    logtext=form.cleaned_data["logtext"]
+                )
+                log.save()
+                form = StatusUpdateForm(initial=dict(progress=process.progress))
+        else:
             form = StatusUpdateForm(initial=dict(progress=process.progress))
     else:
-        form = StatusUpdateForm(initial=dict(progress=process.progress))
+        form = None
 
     log = process.log.order_by("-logdate")
 
@@ -255,5 +260,6 @@ def amstatus(request, procid):
                                   am=am,
                                   log=log,
                                   form=form,
+                                  can_edit=can_edit,
                               ),
                               context_instance=template.RequestContext(request))
