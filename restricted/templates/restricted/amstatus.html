@@ -26,11 +26,11 @@
 
 <h2>Applicant progress</h2>
 
+Current progress is: <b>{{ process.progress }}</b>.
+
 <form action="{% url restricted_amstatus procid=process.id %}" method="post">{% csrf_token %}
-    TODO: edit progress
-    TODO: add log entries
     {{ form.as_p }}
-    <input type="submit" value="Submit" />
+    <input type="submit" value="Update" />
 </form>
 
 <h2>Progress log</h2>

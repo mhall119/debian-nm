@@ -18,6 +18,7 @@
 from django import http, template, forms
 from django.shortcuts import render_to_response, redirect
 from django.contrib.auth.decorators import login_required
+from django.utils.translation import ugettext as _
 import backend.models as bmodels
 from backend import const
 import backend.auth
@@ -197,6 +198,27 @@ def amprofile(request, uid=None):
                               ),
                               context_instance=template.RequestContext(request))
 
+
+def make_statusupdateform(editor):
+    if editor.is_fd:
+        choices = [(x[1], "%s - %s" % (x[1], x[2])) for x in const.ALL_PROGRESS]
+    else:
+        choices = [x[1:3] for x in const.ALL_PROGRESS if x[0] in ("PROGRESS_AM", "PROGRESS_AM_HOLD", "PROGRESS_AM_OK")]
+
+    class StatusUpdateForm(forms.Form):
+        progress = forms.ChoiceField(
+            required=True,
+            label=_("Progress"),
+            choices=choices
+        )
+        logtext = forms.CharField(
+            required=True,
+            label=_("Log text"),
+            widget=forms.Textarea(attrs=dict(rows=5, cols=80))
+        )
+    return StatusUpdateForm
+
+
 @backend.auth.is_am
 def amstatus(request, procid):
     process = bmodels.Process.objects.get(id=procid)
@@ -205,6 +227,23 @@ def amstatus(request, procid):
 
     cur_person = request.user.get_profile()
     am = cur_person.am
+
+    StatusUpdateForm = make_statusupdateform(am)
+    if request.method == 'POST':
+        form = StatusUpdateForm(request.POST)
+        if form.is_valid():
+            process.progress = form.cleaned_data["progress"]
+            process.save()
+            log = bmodels.Log(
+                changed_by=cur_person,
+                process=process,
+                progress=process.progress,
+                logtext=form.cleaned_data["logtext"]
+            )
+            log.save()
+            form = StatusUpdateForm(initial=dict(progress=process.progress))
+    else:
+        form = StatusUpdateForm(initial=dict(progress=process.progress))
 
     log = process.log.order_by("-logdate")
 
@@ -215,5 +254,6 @@ def amstatus(request, procid):
                                   cur_person=cur_person,
                                   am=am,
                                   log=log,
+                                  form=form,
                               ),
                               context_instance=template.RequestContext(request))
