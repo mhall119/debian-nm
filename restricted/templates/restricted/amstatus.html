@@ -22,7 +22,7 @@
     {% endif %}
 </table>
 {% if can_edit %}
-<a href="TODO">Edit personal information</a>
+<a href="{% url restricted_person uid=person.uid %}">Edit personal information</a>
 {% endif %}
 
 <h2>Progress to become {{ process.applying_for|desc_status }}</h2>

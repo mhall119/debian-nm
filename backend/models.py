@@ -68,16 +68,16 @@ class Person(models.Model):
 
     # First/Given name, or only name in case of only one name
     cn = models.CharField("first name", max_length=250, null=False)
-    mn = models.CharField("middle name", max_length=250, null=True)
-    sn = models.CharField("last name", max_length=250, null=True)
+    mn = models.CharField("middle name", max_length=250, null=True, blank=True)
+    sn = models.CharField("last name", max_length=250, null=True, blank=True)
     email = models.EmailField("email address", null=False, unique=True)
     # This is null for people who still have not picked one
     uid = models.CharField("Debian account name", max_length=32, null=True, unique=True)
     # OpenPGP fingerprint, NULL until one has been provided
-    fpr = models.CharField("OpenPGP key fingerprint", max_length=80, null=True, unique=True)
+    fpr = models.CharField("OpenPGP key fingerprint", max_length=80, null=True, unique=True, blank=True)
     status = models.CharField("current status in the project", max_length=20, null=False,
                               choices=[x[1:3] for x in const.ALL_STATUS])
-    fd_comment = models.TextField("Front Desk comments", null=True)
+    fd_comment = models.TextField("Front Desk comments", null=True, blank=True)
     # FIXME: no password field for now; hopefully we can do away with the need
     # of maintaining a password database
 
@@ -86,6 +86,28 @@ class Person(models.Model):
             return self.am is not None
         except AM.DoesNotExist:
             return False
+
+    def can_be_edited(self, am=None):
+        # If the person is already in LDAP, then we cannot edit their info
+        if self.status not in (const.STATUS_MM, const.STATUS_DM):
+            return False
+
+        # If we do not check by AM, we're done
+        if am is None:
+            return True
+
+        # FD and DAMs can edit anything
+        if am.is_fd or am.is_dam:
+            return True
+
+        # Otherwise the AM can edit if manager of an active process
+        try:
+            for proc in Process.objects.get(manager=am, is_active=True):
+                pass
+        except Process.DoesNotExist:
+            return False
+
+        return True
 
     @property
     def fullname(self):

@@ -1,0 +1,15 @@
+{% extends "restricted/base.html" %}
+
+{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_amprofile uid=person.uid %}">am {{person.uid}}</a>{% endblock %}
+
+{% block content %}
+
+<h1>Edit personal information for {{person.fullname}}</h1>
+
+<form action="{% url restricted_person uid=person.uid %}" method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Submit" />
+</form>
+
+{% endblock %}
+

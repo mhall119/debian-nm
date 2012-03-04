@@ -263,3 +263,52 @@ def amstatus(request, procid):
                                   can_edit=can_edit,
                               ),
                               context_instance=template.RequestContext(request))
+
+def make_person_form(editor):
+    excludes = ["user"]
+
+    if editor.is_dam:
+        pass
+    elif editor.is_fd:
+        excludes.append("status")
+    else:
+        excludes.append("status")
+        excludes.append("fd_comment")
+
+    class PersonForm(forms.ModelForm):
+        class Meta:
+            model = bmodels.Person
+            exclude = excludes
+    return PersonForm
+
+@backend.auth.is_am
+def person(request, uid=None):
+    person = bmodels.Person.objects.get(uid=uid)
+
+    cur_person = request.user.get_profile()
+    am = cur_person.am
+
+    if not person.can_be_edited(am):
+        # TODO
+        return redirect('TODO', uid=person.uid)
+
+    PersonForm = make_person_form(am)
+
+    form = None
+    if request.method == 'POST':
+        form = PersonForm(request.POST, instance=person)
+        if form.is_valid():
+            form.save()
+            # TODO: message that it has been saved
+    else:
+        form = PersonForm(instance=person)
+
+    return render_to_response("restricted/person.html",
+                              dict(
+                                  person=person,
+                                  am=am,
+                                  cur_person=cur_person,
+                                  form=form,
+                              ),
+                              context_instance=template.RequestContext(request))
+
