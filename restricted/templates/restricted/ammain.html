@@ -1,13 +1,27 @@
 {% extends "restricted/base.html" %}
+{% load macros %}
+
+{% macro process_table progs %}
+{% if progs %}
+<table>
+    {% for p in progs %}
+    <tr>
+        <td>{{p.started.date}}</td>
+        <td>{{p.person}}</td>
+        <td>TODO: log</td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p><i>none</i></p>
+{% endif %}
+{% endmacro %}
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">ammain</a>{% endblock %}
 
 {% block content %}
 
 <h1>Debian New Member</h1>
-
-{{user}}
-{{person}}
 
 <p>Currently the database thinks you have the following functions:</p>
 <ul>
@@ -31,61 +45,20 @@
 
 <p>The following applicants are waiting for an Application Manager to be
 assigned (first one is oldest).</p>
-
-<table>
-    {% for p in prog_app_ok %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table prog_app_ok %}
 
 <p>Applicants currently not ready to be assigned to an AM (ordered by hold date):</p>
-<table>
-    {% for p in prog_app_hold %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table prog_app_hold %}
 
 <p>Applicants assigned to AM but AM has not confirmed:</p>
-<table>
-    {% for p in prog_am_rcvd %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table prog_am_rcvd %}
 
 <p>The reports of the following applicants approved by their AM need to be
 checked:</p>
-<table>
-    {% for p in prog_am_ok %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table prog_am_ok %}
 
 <p>The following applicants have incomplete AM reports (ordered by hold date):</p>
-<table>
-    {% for p in prog_fd_hold %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table prog_fd_hold %}
 
 {% endif %}
 
@@ -94,41 +67,14 @@ checked:</p>
 
 <p>The following applicants have been approved by the NM committee and the FD
 but a DAM has not fully processed them yet (sorted by FD approval):</p>
-
-<table>
-    {% for p in prog_fd_ok %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table prog_fd_ok %}
 
 <p>Applicants approved by a DAM, but for which no account has been created yet:</p>
-
-<table>
-    {% for p in prog_dam_ok %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table prog_dam_ok %}
 
 <p>These are applications that have been put on hold at the DAM stage
 (sorted by hold date):</p>
-
-<table>
-    {% for p in prog_dam_hold %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table prog_dam_hold %}
 
 {% endif %}
 
@@ -142,61 +88,25 @@ you are the AM for:</p>
 <p>These applicants have been assigned to you by the Front Desk but you have
 not confirmed that you will or will not be their AM (ordered by assignment
 date).</p>
-
-<table>
-    {% for p in am_prog_rcvd %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table am_prog_rcvd %}
 
 <h3>Applicants to process</h3>
 
 <p>The following applicants you are the AM for (ordered by the date you
 accepted them as NMs):</p>
-
-<table>
-    {% for p in am_prog_am %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table am_prog_am %}
 
 <h3>Applicants on Hold</h3>
 
 <p>Applicants who make it here have some issue with completing the process but
 are expected to be able to work around that soon (ordered by hold date).</p>
-
-<table>
-    {% for p in am_prog_hold %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table am_prog_hold %}
 
 <h3>Processed Applicants</h3>
 
 <p>These applicants you have processed through the system and are here for
 historical or informational purposes (ordered by account creation date).</p>
-
-<table>
-    {% for p in am_prog_done %}
-    <tr>
-        <td>{{p.started}}</td>
-        <td>{{p.person}}</td>
-        <td>TODO: log</td>
-    </tr>
-    {% endfor %}
-</table>
+{% usemacro process_table am_prog_done %}
 
 {% comment %}
                       <H2>Key</H2>
