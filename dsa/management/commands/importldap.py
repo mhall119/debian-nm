@@ -53,9 +53,11 @@ class Importer(object):
         #          that applies to all that ever retired
 
         search_base = "dc=debian,dc=org"
-        l = ldap.initialize("ldap://db.debian.org")
+        #l = ldap.initialize("ldap://db.debian.org")
+        l = ldap.initialize("ldap://localhost:3389")
         l.simple_bind_s("","")
         for dn, attrs in l.search_s(search_base, ldap.SCOPE_SUBTREE, "objectclass=inetOrgPerson"):
+            # Try to match the person using uid
             uid = attrs["uid"][0]
             try:
                 person = bmodels.Person.objects.get(uid=uid)
@@ -63,6 +65,7 @@ class Importer(object):
             except bmodels.Person.DoesNotExist:
                 pass
 
+            # Try to match the person using emails
             try:
                 person = bmodels.Person.objects.get(email=uid + "@debian.org")
                 person.uid = uid
@@ -78,6 +81,16 @@ class Importer(object):
                 if not f:
                     return None
                 return f[0]
+
+            email = get_field("emailForward")
+            try:
+                person = bmodels.Person.objects.get(email=email)
+                person.uid = uid
+                person.save()
+                continue
+            except bmodels.Person.DoesNotExist:
+                pass
+
             person = bmodels.Person(
                 cn=get_field("cn"),
                 mn=get_field("mn"),
@@ -91,7 +104,7 @@ class Importer(object):
             if get_field("gidNumber") == '800':
                 person.email = uid + "@debian.org"
             else:
-                person.email = get_field("emailForward")
+                person.email = email
             if person.email is None:
                 log.warning("Skipping %s because we have no email address", uid)
                 continue
