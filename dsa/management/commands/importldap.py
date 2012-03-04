@@ -83,6 +83,7 @@ class Importer(object):
                 mn=get_field("mn"),
                 sn=get_field("sn"),
                 fpr=get_field("keyFingerPrint"),
+                uid=uid,
                 # Default to MM_GA: if they are in LDAP, they have at least a
                 # guest account
                 status=const.STATUS_MM_GA,
