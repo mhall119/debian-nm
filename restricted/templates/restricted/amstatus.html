@@ -3,6 +3,11 @@
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_amstatus procid=process.id %}">{{process}}</a>{% endblock %}
 
+{% block relatedpages %}
+{{block.super}}
+<a href="{% url public_nmstatus procid=process.id  %}">public version</a>
+{% endblock %}
+
 {% block content %}
 
 <h1><a href="http://qa.debian.org/developer.php?login={{person.email}}">{{person.fullname}}</a></h1>

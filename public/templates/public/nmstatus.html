@@ -3,6 +3,13 @@
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url public_nmlist %}">nmlist</a>{% endblock %}
 
+{% block relatedpages %}
+{{block.super}}
+{% if cur_am %}
+<a href="{% url restricted_amstatus procid=process.id  %}">full version</a>
+{% endif %}
+{% endblock %}
+
 {% block content %}
 
 <h1>Status Page for applicant: {{process.person}}</h1>

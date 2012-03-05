@@ -6,6 +6,11 @@ Add here bits like breadcrumbs and related pages, that are common to all reports
 Consider different base and private-base templates, with different sets of
 breadcrumbs / related pages.
 {% endcomment %}
+{% block navbar %}
+{{block.super}}
+<li><a href="{% url restricted_nmelist %}">List of applicants</a></li>
+{% endblock %}
+
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">{{user}}</a>{% endblock %}
 

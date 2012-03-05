@@ -7,7 +7,7 @@
     {% for p in progs %}
     <tr>
         <td>{{p.last_change.date}}</td>
-        <td><a href="{% url restricted_nmstatus procid=p.id %}">{{p.person}}</a></td>
+        <td><a href="{% url public_nmstatus procid=p.id %}">{{p.person}}</a></td>
     </tr>
     {% endfor %}
 </table>
@@ -17,6 +17,13 @@
 {% endmacro %}
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url public_nmlist %}">nmlist</a>{% endblock %}
+
+{% block relatedpages %}
+{{block.super}}
+{% if cur_am %}
+<a href="{% url restricted_nmelist %}">full version</a>
+{% endif %}
+{% endblock %}
 
 {% block content %}
 

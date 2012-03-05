@@ -22,6 +22,7 @@ from django.views.generic.simple import direct_to_template, redirect_to
 urlpatterns = patterns('restricted.views',
     url(r'^$', direct_to_template, {'template': 'restricted/index.html'}, name="restricted_index"),
     url(r'^amlist$', 'amlist', name="restricted_amlist"),
+    url(r'^nmelist$', 'nmelist', name="restricted_nmelist"),
     url(r'^ammain$', 'ammain', name="restricted_ammain"),
     url(r'^amprofile(?:/(?P<uid>\w+))?$', 'amprofile', name="restricted_amprofile"),
     url(r'^amstatus/(?P<procid>\d+)$', 'amstatus', name="restricted_amstatus"),
