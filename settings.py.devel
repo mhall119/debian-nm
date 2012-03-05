@@ -1,5 +1,7 @@
 # Django settings for nm project.
 
+from django.conf import global_settings
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -143,6 +145,10 @@ INSTALLED_APPS = (
     'backend',
     'public',
     'restricted',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
+    "backend.context_processors.const",
 )
 
 # A sample logging configuration. The only tangible logging
