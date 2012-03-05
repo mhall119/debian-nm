@@ -27,6 +27,9 @@
 {% block breadcrumbs %}<a href="{% url home %}">nm</a>{% endblock %}
 
 {% block relatedpages %}
+{% if cur_person %}
+<a href="{% url restricted_ammain %}">{{user}}</a>
+{% endif %}
 {% comment %}
     <a href="{% url search_packages %}">Search</a>
     <a href="{% url report_todo %}">TODO list</a>

@@ -12,8 +12,6 @@ breadcrumbs / related pages.
 {% endblock %}
 
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">{{user}}</a>{% endblock %}
-
 {% comment %}
 TODO: use a specific bit for logged in information and logout buttons; needs
       more blocks in the base debian template, though
