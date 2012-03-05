@@ -1,11 +1,9 @@
 {% extends "restricted/base.html" %}
 {% load const %}
 
-{% block breadcrumbs %}{{block.super}} /
+{% block breadcrumbs %}{{block.super}}
 {% if active_process %}
-<a href="{% url restricted_amstatus procid=active_process.id %}">{{active_process}}</a>
-{% else %}
-<a href="{% url restricted_ammain %}">am {{cur_person.uid}}</a>
+/ <a href="{% url restricted_amstatus procid=active_process.id %}">{{active_process}}</a>
 {% endif %}
 {% endblock %}
 

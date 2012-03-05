@@ -7,13 +7,13 @@ Consider different base and private-base templates, with different sets of
 breadcrumbs / related pages.
 {% endcomment %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_index %}">reports</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">{{user}}</a>{% endblock %}
 
 {% comment %}
 TODO: use a specific bit for logged in information and logout buttons; needs
       more blocks in the base debian template, though
-{% endcomment %}
 {% block relatedpages %}{{block.super}} <a href="{% url restricted_index %}">{{user}}</a>{% endblock %}
+{% endcomment %}
 
 {% block content %}
 <h1>Debtags Report Template</h1>

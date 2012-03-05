@@ -1,7 +1,7 @@
 {% extends "restricted/base.html" %}
 {% load const %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">{{cur_person.uid}}</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_amstatus procid=process.id %}">{{process}}</a>{% endblock %}
 
 {% block content %}
 
