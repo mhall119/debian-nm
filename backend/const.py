@@ -47,7 +47,7 @@ ALL_PROGRESS = (
     ("PROGRESS_ADV_RCVD",  "adv_rcvd",  "Received enough advocacies"),
     ("PROGRESS_APP_OK",    "app_ok",    "Advocacies have been approved"),
     ("PROGRESS_AM_RCVD",   "am_rcvd",   "Waiting for AM to confirm"),
-    ("PROGRESS_AM",        "am",        "Got an AM"),
+    ("PROGRESS_AM",        "am",        "Interacting with an AM"),
     ("PROGRESS_AM_HOLD",   "am_hold",   "AM put application on hold"),
     ("PROGRESS_AM_OK",     "am_ok",     "AM recommends the applicant"),
     ("PROGRESS_FD_HOLD",   "fd_hold",   "FD puts application on hold"),
