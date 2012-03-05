@@ -51,7 +51,7 @@ ALL_PROGRESS = (
     ("PROGRESS_AM_HOLD",   "am_hold",   "AM put application on hold"),
     ("PROGRESS_AM_OK",     "am_ok",     "AM recommends the applicant"),
     ("PROGRESS_FD_HOLD",   "fd_hold",   "FD puts application on hold"),
-    ("PROGRESS_FD_OK",     "fd_ok",     "FD recommends the applicant"),
+    ("PROGRESS_FD_OK",     "fd_ok",     "FD approves the AM report"),
     ("PROGRESS_DAM_HOLD",  "dam_hold",  "DAM puts application on hold"),
     ("PROGRESS_DAM_OK",    "dam_ok",    "DAM accepts the applicant"),
     ("PROGRESS_DONE",      "done",      "Process has completed successfully (account was created)"),
