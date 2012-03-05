@@ -185,7 +185,7 @@ def amprofile(request, uid=None):
     else:
         form = AMForm(instance=am)
 
-    processes = bmodels.Process.objects.filter(manager=am).annotate(started=Min("log__logdate")).order_by("started")
+    processes = bmodels.Process.objects.filter(manager=am).annotate(started=Min("log__logdate")).order_by("-started")
 
     am_available = bmodels.AM.list_free()
 
