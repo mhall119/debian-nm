@@ -56,8 +56,14 @@ Current progress is: <b>{{ process.progress|desc_progress }}</b>.
     {% for l in log %}
     <tr>
         <td>{{l.logdate}}</td>
-        <td>{{l.changed_by.uid}}</td>
-        <td>{{l.progress}}</td>
+        <td>
+            {% if l.changed_by.is_am %}
+            <a href="{% url restricted_amprofile uid=l.changed_by.uid %}">{{l.changed_by.uid}}</a>
+            {% else %}
+            {{l.changed_by.uid}}
+            {% endif %}
+        </td>
+        <td>{{l.progress|desc_progress}}</td>
         <td>{{l.logtext}}</td>
     </tr>
     {% endfor %}
