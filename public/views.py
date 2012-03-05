@@ -86,7 +86,7 @@ def nmlist(request):
 
 def nmstatus(request, procid):
     process = bmodels.Process.objects.get(id=procid)
-    log = list(process.log.order_by("logdate"))
+    log = list(process.log.order_by("logdate", "progress"))
     started = log[0].logdate
     last_change = log[-1].logdate
 
