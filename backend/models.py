@@ -72,7 +72,7 @@ class Person(models.Model):
     sn = models.CharField("last name", max_length=250, null=True, blank=True)
     email = models.EmailField("email address", null=False, unique=True)
     # This is null for people who still have not picked one
-    uid = models.CharField("Debian account name", max_length=32, null=False, unique=True)
+    uid = models.CharField("Debian account name", max_length=32, null=True, unique=True)
     # OpenPGP fingerprint, NULL until one has been provided
     fpr = models.CharField("OpenPGP key fingerprint", max_length=80, null=True, unique=True, blank=True)
     status = models.CharField("current status in the project", max_length=20, null=False,
@@ -121,6 +121,26 @@ class Person(models.Model):
 
     def __repr__(self):
         return "%s <%s> [uid:%s, status:%s]" % (self.fullname.encode("unicode_escape"), self.email, self.uid, self.status)
+
+    @property
+    def lookup_key(self):
+        """
+        Return a key that can be used to look up this person in the database
+        using Person.lookup.
+
+        Currently, this is the uid if available, else the email.
+        """
+        if self.uid:
+            return self.uid
+        else:
+            return self.email
+
+    @classmethod
+    def lookup(cls, key):
+        if "@" in key:
+            return cls.objects.get(email=key)
+        else:
+            return cls.objects.get(uid=key)
 
 
 class AM(models.Model):
