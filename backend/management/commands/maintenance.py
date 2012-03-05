@@ -63,6 +63,7 @@ def compute_process_is_active():
     cursor.execute("""
     UPDATE process SET is_active=(progress NOT IN (%s, %s))
     """, (const.PROGRESS_DONE, const.PROGRESS_CANCELLED))
+    transaction.commit_unless_managed()
     log.info("%d/%d active processes",
              bmodels.Process.objects.filter(is_active=True).count(),
              cursor.rowcount)
