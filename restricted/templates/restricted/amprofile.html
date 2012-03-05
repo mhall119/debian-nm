@@ -1,4 +1,5 @@
 {% extends "restricted/base.html" %}
+{% load const %}
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_amprofile uid=person.uid %}">am {{person.uid}}</a>{% endblock %}
 
@@ -19,8 +20,8 @@
 {% for p in processes %}
 <tr>
     <td>{{p.started.date}}</td>
-    <td>{{p.progress}}</td>
-    <td>{{p.person}}</td>
+    <td>{{p.progress|desc_progress}}</td>
+    <td><a href="{% url restricted_amstatus procid=p.id %}">{{p.person}}</a></td>
     <td>TODO: logs</td>
 </tr>
 {% endfor %}
