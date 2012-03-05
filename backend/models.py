@@ -81,6 +81,7 @@ class Person(models.Model):
     # FIXME: no password field for now; hopefully we can do away with the need
     # of maintaining a password database
 
+    @property
     def is_am(self):
         try:
             return self.am is not None

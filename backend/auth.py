@@ -41,7 +41,7 @@ class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
         user, created = User.objects.get_or_create(username=username)
         if created:
             user.set_unusable_password()
-            if person.is_am():
+            if person.is_am:
                 # FIXME: ensure this is kept in sync when is_fd is changed
                 if person.am.is_fd:
                     user.is_staff = True
@@ -60,7 +60,7 @@ def is_am(view_func):
 
     def _wrapped_view(request, *args, **kwargs):
         person = request.user.get_profile()
-        if not person.is_am():
+        if not person.is_am:
             return http.HttpResponse("This page is restricted to AMs")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
@@ -72,7 +72,7 @@ def is_fd(view_func):
 
     def _wrapped_view(request, *args, **kwargs):
         person = request.user.get_profile()
-        if not person.is_am() or not person.am.is_fd:
+        if not person.is_am or not person.am.is_fd:
             return http.HttpResponse("This page is restricted to Front Desk members")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
@@ -84,7 +84,7 @@ def is_dam(view_func):
 
     def _wrapped_view(request, *args, **kwargs):
         person = request.user.get_profile()
-        if not person.is_am() or not person.am.is_dam:
+        if not person.is_am or not person.am.is_dam:
             return http.HttpResponse("This page is restricted to Debian Account Managers")
         return view_func(request, *args, **kwargs)
     return _wrapped_view

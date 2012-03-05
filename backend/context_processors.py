@@ -27,3 +27,19 @@ def const(request):
         ctx[key] = val
 
     return ctx
+
+def current_user(request):
+    if request.user.is_anonymous():
+        cur_person = None
+        cur_am = None
+    else:
+        cur_person = request.user.get_profile()
+        if cur_person.is_am:
+            cur_am = cur_person.am
+        else:
+            cur_am = None
+
+    return dict(
+        cur_person=cur_person,
+        cur_am=cur_am
+    )
