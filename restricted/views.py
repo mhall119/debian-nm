@@ -228,7 +228,7 @@ def amstatus(request, procid):
     cur_person = request.user.get_profile()
     am = cur_person.am
 
-    can_edit = am.is_fd or am.is_dam or am == process.manager
+    can_edit = process.is_active and (am.is_fd or am.is_dam or am == process.manager)
 
     if can_edit:
         StatusUpdateForm = make_statusupdateform(am)
