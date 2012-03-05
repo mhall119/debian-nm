@@ -282,8 +282,8 @@ def make_person_form(editor):
     return PersonForm
 
 @backend.auth.is_am
-def person(request, uid=None):
-    person = bmodels.Person.objects.get(uid=uid)
+def person(request, key):
+    person = bmodels.Person.lookup(key)
 
     cur_person = request.user.get_profile()
     am = cur_person.am
@@ -308,6 +308,7 @@ def person(request, uid=None):
                                   person=person,
                                   am=am,
                                   cur_person=cur_person,
+                                  active_process=person.active_process,
                                   form=form,
                               ),
                               context_instance=template.RequestContext(request))

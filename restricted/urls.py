@@ -25,5 +25,5 @@ urlpatterns = patterns('restricted.views',
     url(r'^ammain$', 'ammain', name="restricted_ammain"),
     url(r'^amprofile(?:/(?P<uid>\w+))?$', 'amprofile', name="restricted_amprofile"),
     url(r'^amstatus/(?P<procid>\w+)$', 'amstatus', name="restricted_amstatus"),
-    url(r'^person/(?P<uid>\w+)$', 'person', name="restricted_person"),
+    url(r'^person/(?P<key>[^/]+)$', 'person', name="restricted_person"),
 )

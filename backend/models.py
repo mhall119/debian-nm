@@ -72,7 +72,7 @@ class Person(models.Model):
     sn = models.CharField("last name", max_length=250, null=True, blank=True)
     email = models.EmailField("email address", null=False, unique=True)
     # This is null for people who still have not picked one
-    uid = models.CharField("Debian account name", max_length=32, null=True, unique=True)
+    uid = models.CharField("Debian account name", max_length=32, null=True, unique=True, blank=True)
     # OpenPGP fingerprint, NULL until one has been provided
     fpr = models.CharField("OpenPGP key fingerprint", max_length=80, null=True, unique=True, blank=True)
     status = models.CharField("current status in the project", max_length=20, null=False,
@@ -121,6 +121,16 @@ class Person(models.Model):
 
     def __repr__(self):
         return "%s <%s> [uid:%s, status:%s]" % (self.fullname.encode("unicode_escape"), self.email, self.uid, self.status)
+
+    @property
+    def active_process(self):
+        """
+        Return the active Process for this person, if any, else None
+        """
+        try:
+            return Process.objects.get(person=self, is_active=True)
+        except Process.DoesNotExist:
+            return None
 
     @property
     def lookup_key(self):
@@ -259,7 +269,11 @@ class Process(models.Model):
     is_active = models.BooleanField(null=False, default=False)
 
     def __unicode__(self):
-        return u"%s to become %s (%s)" % (unicode(self.person), self.applying_for, self.progress)
+        return u"%s to become %s (%s)" % (
+            unicode(self.person),
+            const.ALL_STATUS_DESCS.get(self.applying_for, self.applying_for),
+            const.ALL_PROGRESS_DESCS.get(self.progress, self.progress),
+        )
 
     #def get_log(self, desc=False, max=None):
     #    res = orm.object_session(self) \

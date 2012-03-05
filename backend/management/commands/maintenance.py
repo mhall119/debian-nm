@@ -67,7 +67,6 @@ def compute_process_is_active():
              bmodels.Process.objects.filter(is_active=True).count(),
              cursor.rowcount)
 
-@transaction.commit_on_success
 def check_one_process_per_person():
     """
     Check that one does not have more than one open process at the current time
@@ -79,6 +78,14 @@ def check_one_process_per_person():
         log.warning("%s has %d open processes", p, p.num_processes)
         for idx, proc in enumerate(p.processes.filter(is_active=True)):
             log.warning(" %d: %s (%s)", idx+1, proc.applying_for, proc.progress)
+
+def check_am_must_have_uid():
+    """
+    Check that one does not have more than one open process at the current time
+    """
+    from django.db.models import Count
+    for am in bmodels.AM.objects.filter(person__uid=None):
+        log.warning("AM %d (person %d %s) has no uid", am.id, am.person.id, am.person.email)
 
 
 class Command(BaseCommand):

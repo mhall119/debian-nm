@@ -1,12 +1,19 @@
 {% extends "restricted/base.html" %}
+{% load const %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_amprofile uid=person.uid %}">am {{person.uid}}</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} /
+{% if active_process %}
+<a href="{% url restricted_amstatus procid=active_process.id %}">{{active_process}}</a>
+{% else %}
+<a href="{% url restricted_ammain %}">am {{cur_person.uid}}</a>
+{% endif %}
+{% endblock %}
 
 {% block content %}
 
 <h1>Edit personal information for {{person.fullname}}</h1>
 
-<form action="{% url restricted_person uid=person.uid %}" method="post">{% csrf_token %}
+<form action="{% url restricted_person key=person.lookup_key %}" method="post">{% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="Submit" />
 </form>
