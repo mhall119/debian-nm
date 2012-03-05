@@ -75,6 +75,12 @@ class Importer(object):
                 manager=am,
             )
             pr.save()
+            for adv in proc["advocates"]:
+                a = self.people_cache_by_uid.get(adv, None)
+                if a is None:
+                    log.warning("advocate %s not found: skipping the DB association and leaving it just in the logs", adv)
+                    continue
+                pr.advocates.add(a)
             by_target[pr.applying_for] = pr
 
         def get_person(uid):
@@ -105,23 +111,23 @@ class Importer(object):
                 return None
             return datetime.datetime(*date)
 
-        for log in person["log"]:
-            if log["applying_for"] not in by_target:
-                print log["applying_for"], "not in", by_target.keys(), "for", p
-            if log["logdate"] is None:
-                print "Skipping '%s' log entry for %s because of a missing date" % (log["logtext"], repr(p))
+        for logentry in person["log"]:
+            if logentry["applying_for"] not in by_target:
+                print logentry["applying_for"], "not in", by_target.keys(), "for", p
+            if logentry["logdate"] is None:
+                print "Skipping '%s' log entry for %s because of a missing date" % (logentry["logtext"], repr(p))
                 continue
             # FIXME: move this to export
-            date = get_date(log["logdate"])
+            date = get_date(logentry["logdate"])
             if date is None:
-                print "Skipping '%s' log entry: cannot parse date: %s" % (log["logtext"], log["logdate"])
+                print "Skipping '%s' log entry: cannot parse date: %s" % (logentry["logtext"], logentry["logdate"])
                 continue
             l = bmodels.Log(
-                changed_by=get_person(log["changed_by"]),
-                process=by_target[log["applying_for"]],
-                progress=log["logtype"],
-                logdate=log["logdate"],
-                logtext=log["logtext"],
+                changed_by=get_person(logentry["changed_by"]),
+                process=by_target[logentry["applying_for"]],
+                progress=logentry["logtype"],
+                logdate=logentry["logdate"],
+                logtext=logentry["logtext"],
             )
             l.save()
 

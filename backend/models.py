@@ -266,6 +266,8 @@ class Process(models.Model):
     manager = models.ForeignKey(AM, related_name="processed", null=True)
     # 1.3-only: manager = models.ForeignKey(AM, related_name="processed", null=True, on_delete=models.PROTECT)
 
+    advocates = models.ManyToManyField(Person, related_name="advocated", blank=True)
+
     # True if progress NOT IN (PROGRESS_DONE, PROGRESS_CANCELLED)
     is_active = models.BooleanField(null=False, default=False)
 
