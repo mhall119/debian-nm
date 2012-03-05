@@ -53,8 +53,8 @@ class Importer(object):
         #          that applies to all that ever retired
 
         search_base = "dc=debian,dc=org"
-        #l = ldap.initialize("ldap://db.debian.org")
-        l = ldap.initialize("ldap://localhost:3389")
+        l = ldap.initialize("ldap://db.debian.org")
+        #l = ldap.initialize("ldap://localhost:3389")
         l.simple_bind_s("","")
         for dn, attrs in l.search_s(search_base, ldap.SCOPE_SUBTREE, "objectclass=inetOrgPerson"):
             # Try to match the person using uid
