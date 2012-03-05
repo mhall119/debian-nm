@@ -21,3 +21,5 @@ do
 	done
 done
 
+rm -r $TARGET/admin
+cp -r /usr/share/pyshared/django/contrib/admin/media $TARGET/admin
