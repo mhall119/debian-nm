@@ -126,7 +126,7 @@ class Importer(object):
                 changed_by=get_person(logentry["changed_by"]),
                 process=by_target[logentry["applying_for"]],
                 progress=logentry["logtype"],
-                logdate=logentry["logdate"],
+                logdate=date,
                 logtext=logentry["logtext"],
             )
             l.save()

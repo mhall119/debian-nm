@@ -250,7 +250,7 @@ def amstatus(request, procid):
     else:
         form = None
 
-    log = process.log.order_by("-logdate")
+    log = process.log.order_by("logdate")
 
     return render_to_response("restricted/amstatus.html",
                               dict(
