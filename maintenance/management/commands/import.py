@@ -248,6 +248,69 @@ class Importer(object):
                 continue
             person.save()
 
+    def import_ldap_pass2(self, server):
+        search_base = "dc=debian,dc=org"
+        l = ldap.initialize(server)
+        l.simple_bind_s("","")
+        for dn, attrs in l.search_s(search_base, ldap.SCOPE_SUBTREE, "objectclass=inetOrgPerson"):
+            uid = attrs["uid"][0]
+            try:
+                person = bmodels.Person.objects.get(uid=uid)
+            except bmodels.Person.DoesNotExist:
+                log.warning("Person %s exists in LDAP but not in NM database", uid)
+                continue
+
+            def get_field(f):
+                if f not in attrs:
+                    return None
+                f = attrs[f]
+                if not f:
+                    return None
+                return f[0]
+
+            # Move one-name people from sn to cn
+            if get_field("cn") == "-":
+                log.info("swapping cn (%s) and sn (%s) for %s", get_field("cn"), get_field("sn"), person.uid)
+                attrs["cn"] = attrs["sn"]
+                del attrs["sn"]
+
+            changed = False
+            for field in ("cn", "mn", "sn"):
+                val = get_field(field)
+                if val is not None:
+                    for encoding in ("utf8", "latin1"):
+                        try:
+                            val = val.decode(encoding)
+                            good = True
+                            break
+                        except (UnicodeDecodeError, UnicodeEncodeError):
+                            good = False
+                    if not good:
+                        log.warning("Field %s=%s for %s has invalid unicode information: skipping", field, repr(val), uid)
+                        continue
+
+                old = getattr(person, field)
+                if old is not None:
+                    for encoding in ("utf8", "latin1"):
+                        try:
+                            old = old.decode(encoding)
+                            good = True
+                        except (UnicodeDecodeError, UnicodeEncodeError):
+                            good = False
+                    if not good:
+                        old = "<invalid encoding>"
+
+                if val != old:
+                    try:
+                        log.info("Person %s changed %s from %s to %s", uid, field, old, val)
+                    except UnicodeDecodeError:
+                        log.warning("Problems with %s", uid)
+                        continue
+                    setattr(person, field, val)
+                    changed = True
+
+            if changed:
+                person.save()
 
     def import_advocates(self):
         # Clear the uid cache
@@ -322,6 +385,7 @@ class Command(BaseCommand):
         for k, v in people.iteritems():
             importer.import_processes(v)
         importer.import_ldap(opts["ldap"])
+        importer.import_ldap_pass2(opts["ldap"])
         importer.import_advocates()
         importer.import_keyrings()
 

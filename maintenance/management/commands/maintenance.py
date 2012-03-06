@@ -29,67 +29,6 @@ from backend import const
 
 log = logging.getLogger(__name__)
 
-
-@transaction.commit_on_success
-def compute_update_from_ldap(**kw):
-    search_base = "dc=debian,dc=org"
-    l = ldap.initialize(kw["ldap"])
-    l.simple_bind_s("","")
-    for dn, attrs in l.search_s(search_base, ldap.SCOPE_SUBTREE, "objectclass=inetOrgPerson"):
-        uid = attrs["uid"][0]
-        try:
-            person = bmodels.Person.objects.get(uid=uid)
-        except bmodels.Person.DoesNotExist:
-            log.warning("Person %s exists in LDAP but not in NM database", uid)
-            continue
-
-        def get_field(f):
-            if f not in attrs:
-                return None
-            f = attrs[f]
-            if not f:
-                return None
-            return f[0]
-
-        # TODO: if cn is '-', then set cn=sn and sn=None
-        changed = False
-        for field in ("cn", "mn", "sn"):
-            val = get_field(field)
-            if val is not None:
-                for encoding in ("utf8", "latin1"):
-                    try:
-                        val = val.decode(encoding)
-                        good = True
-                        break
-                    except (UnicodeDecodeError, UnicodeEncodeError):
-                        good = False
-                if not good:
-                    log.warning("Field %s=%s for %s has invalid unicode information: skipping", field, repr(val), uid)
-                    continue
-
-            old = getattr(person, field)
-            if old is not None:
-                for encoding in ("utf8", "latin1"):
-                    try:
-                        old = old.decode(encoding)
-                        good = True
-                    except (UnicodeDecodeError, UnicodeEncodeError):
-                        good = False
-                if not good:
-                    old = "<invalid encoding>"
-
-            if val != old:
-                try:
-                    log.info("Person %s changed %s from %s to %s", uid, field, old, val)
-                except UnicodeDecodeError:
-                    log.warning("Problems with %s", uid)
-                    continue
-                setattr(person, field, val)
-                changed = True
-
-        if changed:
-            person.save()
-
 @transaction.commit_on_success
 def compute_am_ctte(**kw):
     from django.db.models import Max
