@@ -101,10 +101,9 @@ class Person(models.Model):
         if am.is_fd or am.is_dam:
             return True
 
-        # Otherwise the AM can edit if manager of an active process
+        # Otherwise the AM can edit if manager of an active process for this person
         try:
-            for proc in Process.objects.get(manager=am, person=self, is_active=True):
-                pass
+            Process.objects.get(manager=am, person=self, is_active=True)
         except Process.DoesNotExist:
             return False
 
