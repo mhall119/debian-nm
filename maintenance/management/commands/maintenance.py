@@ -82,7 +82,7 @@ def compute_update_from_ldap(**kw):
                 try:
                     log.info("Person %s changed %s from %s to %s", uid, field, old, val)
                 except UnicodeDecodeError:
-                    print "Problems with", uid
+                    log.warning("Problems with %s", uid)
                     continue
                 setattr(person, field, val)
                 changed = True
