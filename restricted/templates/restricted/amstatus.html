@@ -8,6 +8,42 @@
 <a href="{% url public_nmstatus key=process.lookup_key  %}">public version</a>
 {% endblock %}
 
+{% block head %}
+{{block.super}}
+<script src="{{ MEDIA_URL }}js/jquery-1.7.1.min.js"></script>
+<script type="text/javascript">
+$(function() {
+    var prog = $("#id_progress");
+    var text = $("#id_logtext");
+    $("#macro_idok").click(function() {
+        prog.val("{{PROGRESS_AM}}");
+        text.val("ID check passed");
+    });
+    $("#macro_ppok").click(function() {
+        prog.val("{{PROGRESS_AM}}");
+        text.val("P&P check passed");
+    });
+    $("#macro_tsok").click(function() {
+        prog.val("{{PROGRESS_AM}}");
+        text.val("T&S check passed");
+    });
+    $("#macro_approve").click(function() {
+        prog.val("{{PROGRESS_AM_OK}}");
+        text.val("Application approved");
+    });
+    $("#macro_hold").click(function() {
+        prog.val("{{PROGRESS_AM_HOLD}}");
+        text.val("Set on hold because of FILLME");
+    });
+    $("#macro_unhold").click(function() {
+        prog.val("{{PROGRESS_AM}}");
+        text.val("Back from hold");
+    });
+});
+
+</script>
+{% endblock %}
+
 {% block content %}
 
 <h1><a href="http://qa.debian.org/developer.php?login={{person.email}}">{{person.fullname}}</a></h1>
@@ -44,11 +80,25 @@
 
 <h2>Progress to become {{ process.applying_for|desc_status }}</h2>
 
-Current progress is: <b>{{ process.progress|desc_progress }}</b>.
+<p>Current progress is: <b>{{ process.progress|desc_progress }}</b>.</p>
 
 {% if can_edit %}
 <form action="{% url restricted_amstatus key=process.lookup_key %}" method="post">{% csrf_token %}
     {{ form.as_p }}
+<p>
+Shortcuts:
+{% if process.progress == PROGRESS_AM %}
+<button type="button" id="macro_idok">ID check ok</button>
+<button type="button" id="macro_ppok">P&amp;P ok</button>
+<button type="button" id="macro_tsok">R&amp;S ok</button>
+<button type="button" id="macro_approve">Approve applicant</button>
+<button type="button" id="macro_hold">On hold</button>
+{% endif %}
+{% if process.progress == PROGRESS_AM_HOLD %}
+<button type="button" id="macro_unhold">Back from hold</button>
+{% endif %}
+</p>
+
     <input type="submit" value="Update" />
 </form>
 {% endif %}
