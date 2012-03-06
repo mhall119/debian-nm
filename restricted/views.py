@@ -167,7 +167,10 @@ def amprofile(request, uid=None):
     if uid is None:
         person = request.user.get_profile()
     else:
-        person = bmodels.Person.objects.get(uid=uid)
+        try:
+            person = bmodels.Person.objects.get(uid=uid)
+        except bmodels.Person.DoesNotExist:
+            return http.HttpResponseNotFound("Person with uid %s not found" % uid)
     am = person.am
 
     AMForm = make_am_form(am)
@@ -222,6 +225,8 @@ def make_statusupdateform(editor):
 @backend.auth.is_am
 def nmstatus(request, key):
     process = bmodels.Process.lookup(key)
+    if process is None:
+        return redirect(reverse('root_faq') + "#process-lookup")
 
     person = process.person
 
@@ -284,6 +289,8 @@ def make_person_form(editor):
 @backend.auth.is_am
 def person(request, key):
     person = bmodels.Person.lookup(key)
+    if person is None:
+        return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
 
     cur_person = request.user.get_profile()
     am = cur_person.am

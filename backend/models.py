@@ -153,10 +153,13 @@ class Person(models.Model):
 
     @classmethod
     def lookup(cls, key):
-        if "@" in key:
-            return cls.objects.get(email=key)
-        else:
-            return cls.objects.get(uid=key)
+        try:
+            if "@" in key:
+                return cls.objects.get(email=key)
+            else:
+                return cls.objects.get(uid=key)
+        except cls.DoesNotExist:
+            return None
 
 
 class AM(models.Model):
