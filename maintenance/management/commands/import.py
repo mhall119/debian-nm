@@ -164,8 +164,8 @@ class Importer(object):
         search_base = "dc=debian,dc=org"
         l = ldap.initialize(server)
         l.simple_bind_s("","")
+        fpr_seq = 0
         for dn, attrs in l.search_s(search_base, ldap.SCOPE_SUBTREE, "objectclass=inetOrgPerson"):
-            fpr_seq = 0
             def get_field(f):
                 if f not in attrs:
                     return None
