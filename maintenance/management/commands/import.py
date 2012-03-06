@@ -176,7 +176,7 @@ class Importer(object):
 
             # Try to match the person using uid
             uid = get_field("uid")
-            fpr = get_field("keyFingerPrint"),
+            fpr = get_field("keyFingerPrint")
             if not fpr:
                 fpr = "FIXME-%04d" % fpr_seq
                 fpr_seq += 1
