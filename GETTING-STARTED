@@ -2,7 +2,7 @@
  * Running this code on your own machine
 
 # Dependencies
-apt-get install python-django
+apt-get install python-django python-ldap
 
 # Configuration
 ln -s settings.py.devel settings.py
@@ -18,13 +18,9 @@ On nono.debian.org:
 
 Fetch the resulting dump.json
 
-./manage.py importjson dump.json
-./manage.py importldap
-./manage.py importkeyrings
+./manage.py import dump.json
 
 # Run database maintenance
-./manage.py updateldap
-./manage.py updatekeyrings
 ./manage.py maintenance
 
 # Run the web server

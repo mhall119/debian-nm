@@ -1,4 +1,4 @@
-# nm.debian.org website backend
+# nm.debian.org website maintenance
 #
 # Copyright (C) 2012  Enrico Zini <enrico@debian.org>
 #
@@ -23,14 +23,75 @@ import optparse
 import sys
 import datetime
 import logging
-import json
+import ldap
 from backend import models as bmodels
 from backend import const
 
 log = logging.getLogger(__name__)
 
+
 @transaction.commit_on_success
-def compute_am_ctte():
+def compute_update_from_ldap(**kw):
+    search_base = "dc=debian,dc=org"
+    l = ldap.initialize(kw["ldap"])
+    l.simple_bind_s("","")
+    for dn, attrs in l.search_s(search_base, ldap.SCOPE_SUBTREE, "objectclass=inetOrgPerson"):
+        uid = attrs["uid"][0]
+        try:
+            person = bmodels.Person.objects.get(uid=uid)
+        except bmodels.Person.DoesNotExist:
+            log.warning("Person %s exists in LDAP but not in NM database", uid)
+            continue
+
+        def get_field(f):
+            if f not in attrs:
+                return None
+            f = attrs[f]
+            if not f:
+                return None
+            return f[0]
+
+        # TODO: if cn is '-', then set cn=sn and sn=None
+        changed = False
+        for field in ("cn", "mn", "sn"):
+            val = get_field(field)
+            if val is not None:
+                for encoding in ("utf8", "latin1"):
+                    try:
+                        val = val.decode(encoding)
+                        good = True
+                        break
+                    except (UnicodeDecodeError, UnicodeEncodeError):
+                        good = False
+                if not good:
+                    log.warning("Field %s=%s for %s has invalid unicode information: skipping", field, repr(val), uid)
+                    continue
+
+            old = getattr(person, field)
+            if old is not None:
+                for encoding in ("utf8", "latin1"):
+                    try:
+                        old = old.decode(encoding)
+                        good = True
+                    except (UnicodeDecodeError, UnicodeEncodeError):
+                        good = False
+                if not good:
+                    old = "<invalid encoding>"
+
+            if val != old:
+                try:
+                    log.info("Person %s changed %s from %s to %s", uid, field, old, val)
+                except UnicodeDecodeError:
+                    print "Problems with", uid
+                    continue
+                setattr(person, field, val)
+                changed = True
+
+        if changed:
+            person.save()
+
+@transaction.commit_on_success
+def compute_am_ctte(**kw):
     from django.db.models import Max
     # Set all to False
     bmodels.AM.objects.update(is_am_ctte=False)
@@ -55,7 +116,7 @@ def compute_am_ctte():
 
 
 @transaction.commit_on_success
-def compute_process_is_active():
+def compute_process_is_active(**kw):
     """
     Compute Process.is_active from Process.progress
     """
@@ -68,7 +129,7 @@ def compute_process_is_active():
              bmodels.Process.objects.filter(is_active=True).count(),
              cursor.rowcount)
 
-def check_one_process_per_person():
+def check_one_process_per_person(**kw):
     """
     Check that one does not have more than one open process at the current time
     """
@@ -80,7 +141,7 @@ def check_one_process_per_person():
         for idx, proc in enumerate(p.processes.filter(is_active=True)):
             log.warning(" %d: %s (%s)", idx+1, proc.applying_for, proc.progress)
 
-def check_am_must_have_uid():
+def check_am_must_have_uid(**kw):
     """
     Check that one does not have more than one open process at the current time
     """
@@ -93,6 +154,7 @@ class Command(BaseCommand):
     help = 'Daily maintenance of the nm.debian.org database'
     option_list = BaseCommand.option_list + (
         optparse.make_option("--quiet", action="store_true", dest="quiet", default=None, help="Disable progress reporting"),
+        optparse.make_option("--ldap", action="store", default="ldap://db.debian.org", help="LDAP server to use. Default: %default"),
     )
 
     def handle(self, *fnames, **opts):
@@ -104,7 +166,7 @@ class Command(BaseCommand):
 
         # Run procedures
         for prefix in ("backup", "compute", "check"):
-            for k, v in globals().iteritems():
+            for k, v in sorted(globals().iteritems()):
                 if not k.startswith(prefix + "_"): continue
                 log.info("running %s", k)
-                v()
+                v(**opts)
