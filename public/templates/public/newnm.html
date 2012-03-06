@@ -1,0 +1,24 @@
+{% extends "public/base.html" %}
+
+{% block breadcrumbs %}{{block.super}} / <a href="{% url public_newnm %}">newnm</a>{% endblock %}
+
+{% block content %}
+
+<h1>Debian New Member - Join the NM process</h2>
+
+<p>We apologise this is not yet ready on the new web interface.<p>
+
+<p>For now, to join the process please mail nm@debian.org taking care to:</p>
+
+<ul>
+    <li>Say that you want to become a Debian Developer</li>
+    <li>Say if you also need to upload packages</li>
+    <li>Cc your advocate(s)</li>
+    <li>Say what username you would like (minimum 3 characters, check
+        <a href="http://db.debian.org">db.debian.org</a> to see if it is free)</li>
+    <li>Add anything else you may think is useful</li>
+    <li>Sign the email with the key you use to sign packages</li>
+</ul>
+
+{% endblock %}
+
