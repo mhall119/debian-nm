@@ -113,9 +113,15 @@ class Person(models.Model):
     @property
     def fullname(self):
         if self.mn is None:
-            return "%s %s" % (self.cn, self.sn)
+            if self.sn is None:
+                return self.cn
+            else:
+                return "%s %s" % (self.cn, self.sn)
         else:
-            return "%s %s %s" % (self.cn, self.mn, self.sn)
+            if self.sn is None:
+                return "%s %s" % (self.cn, self.mn)
+            else:
+                return "%s %s %s" % (self.cn, self.mn, self.sn)
 
     def __unicode__(self):
         return u"%s <%s>" % (self.fullname, self.email)
