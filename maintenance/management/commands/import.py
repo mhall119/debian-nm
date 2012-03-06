@@ -165,6 +165,7 @@ class Importer(object):
         l = ldap.initialize(server)
         l.simple_bind_s("","")
         for dn, attrs in l.search_s(search_base, ldap.SCOPE_SUBTREE, "objectclass=inetOrgPerson"):
+            fpr_seq = 0
             def get_field(f):
                 if f not in attrs:
                     return None
@@ -176,6 +177,11 @@ class Importer(object):
             # Try to match the person using uid
             uid = get_field("uid")
             fpr = get_field("keyFingerPrint"),
+            if not fpr:
+                fpr = "FIXME-%04d" % fpr_seq
+                fpr_seq += 1
+                log.warning("%s has empty keyFingerPrint in LDAP. Setting it to %s", uid, fpr)
+
             try:
                 person = bmodels.Person.objects.get(uid=uid)
                 person.fpr = fpr
@@ -216,7 +222,7 @@ class Importer(object):
                 # fingerprints in the create person case below, so it's useful
                 # to have this here to keep an eye on what happens
                 person = bmodels.Person.objects.get(fpr=fpr)
-                log.warning("Person %s has uid %s in ldap and oddly matches by fingerprint", person.uid, uid)
+                log.warning("Person %s has uid %s in ldap and oddly matches by fingerprint '%s'", person.uid, uid, fpr)
                 person.uid = uid
                 person.save()
                 continue
