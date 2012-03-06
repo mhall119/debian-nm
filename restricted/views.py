@@ -220,8 +220,8 @@ def make_statusupdateform(editor):
 
 
 @backend.auth.is_am
-def amstatus(request, procid):
-    process = bmodels.Process.objects.get(id=procid)
+def amstatus(request, key):
+    process = bmodels.Process.lookup(key)
 
     person = process.person
 

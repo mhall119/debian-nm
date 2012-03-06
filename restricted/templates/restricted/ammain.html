@@ -7,7 +7,7 @@
     {% for p in progs %}
     <tr>
         <td>{{p.started.date}}</td>
-        <td><a href="{% url restricted_amstatus procid=p.id %}">{{p.person}}</a></td>
+        <td><a href="{% url restricted_amstatus key=p.lookup_key %}">{{p.person}}</a></td>
         <td>TODO: log</td>
     </tr>
     {% endfor %}

@@ -1,11 +1,11 @@
 {% extends "restricted/base.html" %}
 {% load const %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_amstatus procid=process.id %}">{{process}}</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_amstatus key=process.lookup_key %}">{{process}}</a>{% endblock %}
 
 {% block relatedpages %}
 {{block.super}}
-<a href="{% url public_nmstatus procid=process.id  %}">public version</a>
+<a href="{% url public_nmstatus key=process.lookup_key  %}">public version</a>
 {% endblock %}
 
 {% block content %}
@@ -47,7 +47,7 @@
 Current progress is: <b>{{ process.progress|desc_progress }}</b>.
 
 {% if can_edit %}
-<form action="{% url restricted_amstatus procid=process.id %}" method="post">{% csrf_token %}
+<form action="{% url restricted_amstatus key=process.lookup_key %}" method="post">{% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="Update" />
 </form>

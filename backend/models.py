@@ -278,6 +278,31 @@ class Process(models.Model):
             const.ALL_PROGRESS_DESCS.get(self.progress, self.progress),
         )
 
+    @property
+    def lookup_key(self):
+        """
+        Return a key that can be used to look up this process in the database
+        using Process.lookup.
+
+        Currently, this is the email if the process is active, else the id.
+        """
+        if self.is_active:
+            return self.person.email
+        else:
+            return self.id
+
+    @classmethod
+    def lookup(cls, key):
+        if key.isdigit():
+            return cls.objects.get(id=int(key))
+        else:
+            p = Person.objects.get(email=key)
+            try:
+                return p.active_process
+            except Process.DoesNotExist:
+                from django.db.models import Max
+                return p.processes.annotate(last_change=Max("log__logdate")).order_by("-last_change")[0]
+
     #def get_log(self, desc=False, max=None):
     #    res = orm.object_session(self) \
     #            .query(Log) \

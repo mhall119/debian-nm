@@ -84,8 +84,8 @@ def nmlist(request):
                               context,
                               context_instance=template.RequestContext(request))
 
-def nmstatus(request, procid):
-    process = bmodels.Process.objects.get(id=procid)
+def nmstatus(request, key):
+    process = bmodels.Process.lookup(key)
     log = list(process.log.order_by("logdate", "progress"))
     started = log[0].logdate
     last_change = log[-1].logdate
