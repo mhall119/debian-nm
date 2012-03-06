@@ -6,7 +6,7 @@
 {% block relatedpages %}
 {{block.super}}
 {% if cur_am %}
-<a href="{% url restricted_amstatus key=process.lookup_key  %}">full version</a>
+<a href="{% url restricted_nmstatus key=process.lookup_key  %}">full version</a>
 {% endif %}
 {% endblock %}
 

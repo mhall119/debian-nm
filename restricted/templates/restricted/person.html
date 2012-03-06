@@ -3,7 +3,7 @@
 
 {% block breadcrumbs %}{{block.super}}
 {% if active_process %}
-/ <a href="{% url restricted_amstatus key=active_process.lookup_key %}">{{active_process}}</a>
+/ <a href="{% url restricted_nmstatus key=active_process.lookup_key %}">{{active_process}}</a>
 {% endif %}
 {% endblock %}
 

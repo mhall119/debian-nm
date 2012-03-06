@@ -25,6 +25,6 @@ urlpatterns = patterns('restricted.views',
     url(r'^nmelist$', 'nmelist', name="restricted_nmelist"),
     url(r'^ammain$', 'ammain', name="restricted_ammain"),
     url(r'^amprofile(?:/(?P<uid>\w+))?$', 'amprofile', name="restricted_amprofile"),
-    url(r'^amstatus/(?P<key>[^/]+)$', 'amstatus', name="restricted_amstatus"),
+    url(r'^nmstatus/(?P<key>[^/]+)$', 'nmstatus', name="restricted_nmstatus"),
     url(r'^person/(?P<key>[^/]+)$', 'person', name="restricted_person"),
 )

@@ -220,7 +220,7 @@ def make_statusupdateform(editor):
 
 
 @backend.auth.is_am
-def amstatus(request, key):
+def nmstatus(request, key):
     process = bmodels.Process.lookup(key)
 
     person = process.person
@@ -252,7 +252,7 @@ def amstatus(request, key):
 
     log = process.log.order_by("logdate")
 
-    return render_to_response("restricted/amstatus.html",
+    return render_to_response("restricted/nmstatus.html",
                               dict(
                                   process=process,
                                   person=person,
