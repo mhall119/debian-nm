@@ -301,12 +301,16 @@ class Process(models.Model):
         if key.isdigit():
             return cls.objects.get(id=int(key))
         else:
-            p = Person.objects.get(email=key)
-            try:
-                return p.active_process
-            except Process.DoesNotExist:
-                from django.db.models import Max
-                return p.processes.annotate(last_change=Max("log__logdate")).order_by("-last_change")[0]
+            if "@" not in key:
+                p = Person.objects.get(uid=key)
+            else:
+                p = Person.objects.get(email=key)
+
+            res = p.active_process
+            if res: return res
+
+            from django.db.models import Max
+            return p.processes.annotate(last_change=Max("log__logdate")).order_by("-last_change")[0]
 
     #def get_log(self, desc=False, max=None):
     #    res = orm.object_session(self) \
