@@ -9,6 +9,7 @@
 
 <h1>nm.debian.org Frequently Asked Questions</h1>
 
+
 <h2 id="process-lookup">My email address does not work with "/public/nmstatus"</h2>
 
 <p>The nmstatus page shows a process, that is, the path a person follows to
@@ -23,5 +24,13 @@ by using your account name, as in
 
 <p>If you do not yet have a Debian account, then you can use the E-Mail address
 that you used to enter NM.</p>
+
+
+<h2 id="missing-referer">The site gives me 403 Forbidden errors if I disable referers</h2>
+
+<p>Believe it or not, that is a security feature. Please see
+<a href="http://groups.google.com/group/django-developers/browse_thread/thread/22058adaf11e3ed6">this thread</a>
+for more information (look for the string "detonate-bomb" for an attack
+scenario).</p>
 
 {% endblock %}
