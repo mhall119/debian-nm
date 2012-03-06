@@ -68,7 +68,7 @@ class Importer(object):
                 is_fd=src["is_fd"],
                 is_dam=src["is_dam"])
             am.save()
-            print " AM:", repr(am)
+            log.info("AM: %s", repr(am))
 
     def import_processes(self, person):
         p = self.people_cache_by_email[person["mail"]]
@@ -78,10 +78,10 @@ class Importer(object):
                 am = None
             else:
                 if proc["manager"] not in self.people_cache_by_uid:
-                    print proc["manager"], "is not an am"
+                    log.warning("%s manager of %s is not in the person table", proc["manager"], p)
                 m = self.people_cache_by_uid[proc["manager"]]
                 if not m.am:
-                    print m, "is not an am, but is listed as the am for", p
+                    log.warning("%s manager of %s is not in the AM table", proc["manager"], p)
                 am = m.am
             pr = bmodels.Process(
                 person=p,
@@ -123,14 +123,14 @@ class Importer(object):
 
         for logentry in person["log"]:
             if logentry["applying_for"] not in by_target:
-                print logentry["applying_for"], "not in", by_target.keys(), "for", p
+                log.warning("%s not in %s for %s", logentry["applying_for"], by_target.keys(), p)
             if logentry["logdate"] is None:
-                print "Skipping '%s' log entry for %s because of a missing date" % (logentry["logtext"], repr(p))
+                log.warning("Skipping '%s' log entry for %s because of a missing date", logentry["logtext"], repr(p))
                 continue
             # FIXME: move this to export
             date = get_date(logentry["logdate"])
             if date is None:
-                print "Skipping '%s' log entry: cannot parse date: %s" % (logentry["logtext"], logentry["logdate"])
+                log.warning("Skipping '%s' log entry: cannot parse date: %s", logentry["logtext"], logentry["logdate"])
                 continue
             l = bmodels.Log(
                 changed_by=get_person(logentry["changed_by"]),
