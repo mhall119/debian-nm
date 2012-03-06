@@ -299,12 +299,18 @@ class Process(models.Model):
     @classmethod
     def lookup(cls, key):
         if key.isdigit():
-            return cls.objects.get(id=int(key))
+            try:
+                return cls.objects.get(id=int(key))
+            except cls.DoesNotExist:
+                return None
         else:
-            if "@" not in key:
-                p = Person.objects.get(uid=key)
-            else:
-                p = Person.objects.get(email=key)
+            try:
+                if "@" not in key:
+                    p = Person.objects.get(uid=key)
+                else:
+                    p = Person.objects.get(email=key)
+            except Person.DoesNotExist:
+                return None
 
             res = p.active_process
             if res: return res

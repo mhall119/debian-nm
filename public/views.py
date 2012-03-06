@@ -17,6 +17,7 @@
 
 from django import http, template, forms
 from django.shortcuts import render_to_response, redirect
+from django.core.urlresolvers import reverse
 import backend.models as bmodels
 from backend import const
 import datetime
@@ -86,6 +87,9 @@ def nmlist(request):
 
 def nmstatus(request, key):
     process = bmodels.Process.lookup(key)
+    if process is None:
+        return redirect(reverse('root_faq') + "#process-lookup")
+
     log = list(process.log.order_by("logdate", "progress"))
     started = log[0].logdate
     last_change = log[-1].logdate

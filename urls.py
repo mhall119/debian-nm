@@ -26,6 +26,7 @@ urlpatterns = patterns('',
     url(r'^robots.txt$', direct_to_template, {'template': 'robots.txt', "mimetype": "text/plain"}, name="root_robots_txt"),
     url(r'^$', direct_to_template, {'template': 'index.html'}, name="home"),
     url(r'^license/$', direct_to_template, {'template': 'license.html'}, name="root_license"),
+    url(r'^faq/$', direct_to_template, {'template': 'faq.html'}, name="root_faq"),
     url(r'^public/', include("public.urls")),
     url(r'^am/', include("restricted.urls")),
 
