@@ -227,13 +227,19 @@ class Importer(object):
 
 
     def import_advocates(self):
+        # Clear the uid cache
+        self.people_cache_by_uid = dict()
         for id, advocates in self.todo_advocates.iteritems():
             proc = bmodels.Process.objects.get(id=id)
             for adv in advocates:
                 a = self.people_cache_by_uid.get(adv, None)
                 if a is None:
-                    log.warning("advocate %s not found: skipping the DB association and leaving it just in the logs", adv)
-                    continue
+                    try:
+                        a = bmodels.Person.objects.get(uid=adv)
+                        self.people_cache_by_uid[adv] = a
+                    except bmodels.Person.DoesNotExist:
+                        log.warning("advocate %s not found: skipping the DB association and leaving it just in the logs", adv)
+                        continue
                 proc.advocates.add(a)
 
     def import_keyrings(self):
