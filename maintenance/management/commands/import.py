@@ -165,28 +165,6 @@ class Importer(object):
         l = ldap.initialize(server)
         l.simple_bind_s("","")
         for dn, attrs in l.search_s(search_base, ldap.SCOPE_SUBTREE, "objectclass=inetOrgPerson"):
-            # Try to match the person using uid
-            uid = attrs["uid"][0]
-            try:
-                person = bmodels.Person.objects.get(uid=uid)
-                if person.status == const.STATUS_MM:
-                    person.status = const.STATUS_MM_GA
-                    person.save()
-                continue
-            except bmodels.Person.DoesNotExist:
-                pass
-
-            # Try to match the person using emails
-            try:
-                person = bmodels.Person.objects.get(email=uid + "@debian.org")
-                person.uid = uid
-                if person.status == const.STATUS_MM:
-                    person.status = const.STATUS_MM_GA,
-                person.save()
-                continue
-            except bmodels.Person.DoesNotExist:
-                pass
-
             def get_field(f):
                 if f not in attrs:
                     return None
@@ -195,10 +173,36 @@ class Importer(object):
                     return None
                 return f[0]
 
+            # Try to match the person using uid
+            uid = get_field("uid")
+            fpr = get_field("keyFingerPrint"),
+            try:
+                person = bmodels.Person.objects.get(uid=uid)
+                person.fpr = fpr
+                if person.status == const.STATUS_MM:
+                    person.status = const.STATUS_MM_GA
+                person.save()
+                continue
+            except bmodels.Person.DoesNotExist:
+                pass
+
+            # Try to match the person using emails
+            try:
+                person = bmodels.Person.objects.get(email=uid + "@debian.org")
+                person.uid = uid
+                person.fpr = fpr
+                if person.status == const.STATUS_MM:
+                    person.status = const.STATUS_MM_GA,
+                person.save()
+                continue
+            except bmodels.Person.DoesNotExist:
+                pass
+
             email = get_field("emailForward")
             try:
                 person = bmodels.Person.objects.get(email=email)
                 person.uid = uid
+                person.fpr = fpr
                 if person.status == const.STATUS_MM:
                     person.status = const.STATUS_MM_GA,
                 person.save()
@@ -210,7 +214,7 @@ class Importer(object):
                 cn=get_field("cn"),
                 mn=get_field("mn"),
                 sn=get_field("sn"),
-                fpr=get_field("keyFingerPrint"),
+                fpr=fpr,
                 uid=uid,
                 # Default to MM_GA: if they are in LDAP, they have at least a
                 # guest account
@@ -221,7 +225,7 @@ class Importer(object):
             else:
                 person.email = email
             if person.email is None:
-                log.warning("Skipping %s because we have no email address", uid)
+                log.warning("UID %s from LDAP does not look like a DD and has no email address: skipping import as Person", uid)
                 continue
             person.save()
 
