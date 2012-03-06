@@ -178,7 +178,7 @@ class Importer(object):
             uid = get_field("uid")
             fpr = get_field("keyFingerPrint")
             if not fpr:
-                fpr = "FIXME-%04d" % fpr_seq
+                fpr = "FIXME-removed-key-%04d" % fpr_seq
                 fpr_seq += 1
                 log.warning("%s has empty keyFingerPrint in LDAP. Setting it to %s", uid, fpr)
 
