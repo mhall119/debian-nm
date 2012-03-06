@@ -210,6 +210,19 @@ class Importer(object):
             except bmodels.Person.DoesNotExist:
                 pass
 
+            # Try to match the person using fingerprints
+            try:
+                # This should never be needed, but I have seen duplicate
+                # fingerprints in the create person case below, so it's useful
+                # to have this here to keep an eye on what happens
+                person = bmodels.Person.objects.get(fpr=fpr)
+                log.warning("Person %s has uid %s in ldap and oddly matches by fingerprint", person.uid, uid)
+                person.uid = uid
+                person.save()
+                continue
+            except bmodels.Person.DoesNotExist:
+                pass
+
             person = bmodels.Person(
                 cn=get_field("cn"),
                 mn=get_field("mn"),
