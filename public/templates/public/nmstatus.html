@@ -19,7 +19,7 @@
 <table class="personinfo">
     <tr><th>Received application</th><td>{{started.date}}</td></tr>
     <tr>
-        <th>Applicant{{process.advocates.count|pluralize}}</th>
+        <th>Advocate{{process.advocates.count|pluralize}}</th>
         <td>
             {% for a in process.advocates.all %}
             {{a.uid}}{% if not forloop.last %},{% endif %}
