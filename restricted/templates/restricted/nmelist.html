@@ -25,6 +25,10 @@ application date. Applicants who are now members are not shown in this list.
         {% for p in procs %}
         <tr>
             <td>{{p.started.date}}</td>
+            {% comment %}
+            TODO: use the icons when we have them all
+            <td><img width="16" height="16" src="{{ MEDIA_URL }}css/images/{{p.progress}}.png" title="{{p.progress|desc_progress}}"></td>
+            {% endcomment %}
             <td>{{p.progress|desc_progress}}</td>
             <td><a href="{% url restricted_amstatus key=p.lookup_key %}">{{p.person}}</a></td>
             <td>
