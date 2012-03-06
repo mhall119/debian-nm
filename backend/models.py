@@ -103,7 +103,7 @@ class Person(models.Model):
 
         # Otherwise the AM can edit if manager of an active process
         try:
-            for proc in Process.objects.get(manager=am, is_active=True):
+            for proc in Process.objects.get(manager=am, person=self, is_active=True):
                 pass
         except Process.DoesNotExist:
             return False
