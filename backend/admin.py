@@ -19,4 +19,6 @@ class ProcessAdmin(admin.ModelAdmin):
     ]
 admin.site.register(bmodels.Process, ProcessAdmin)
 
-#admin.site.register(bmodels.Log, LogAdmin)
+class LogAdmin(admin.ModelAdmin):
+    exclude = ("changed_by", "process")
+admin.site.register(bmodels.Log, LogAdmin)

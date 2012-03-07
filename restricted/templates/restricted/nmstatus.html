@@ -108,6 +108,9 @@ Shortcuts:
 <table>
     <thead>
         <tr>
+            {% if am.is_fd %}
+            <th>Actions</th>
+            {% endif %}
             <th>Date</th>
             <th>By</th>
             <th>Progress</th>
@@ -117,6 +120,9 @@ Shortcuts:
     <tbody>
     {% for l in log %}
     <tr>
+        {% if am.is_fd %}
+        <td><a href="{% url admin:backend_log_change l.id %}">edit</a></td>
+        {% endif %}
         <td>{{l.logdate}}</td>
         <td>
             {% if l.changed_by.is_am %}
