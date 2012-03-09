@@ -58,7 +58,7 @@
 <h1>{{person.fullname}}</h1>
 
 <table class="personinfo">
-    <tr><th>User ID</th><td>{{person.uid|default:"None chosen yet"}}</td></tr>
+    <tr><th>Account name</th><td>{{person.uid|default:"None chosen yet"}}</td></tr>
     <tr><th>OpenPGP fingerprint</th><td>{{person.fpr}}</td></tr>
     <tr><th>Status</td><td>{{person.status|desc_status}}</td></tr>
     {% if am %}
