@@ -29,9 +29,10 @@
 
 {% block relatedpages %}
 {% if user.is_anonymous %}
-<a href="{% url restricted_ammain %}">login</a>
+<a href="https://sso.debian.org/sso/login">login</a>
 {% else %}
 <a href="{% url restricted_ammain %}">{{user.username}}</a>
+<a href="https://sso.debian.org/sso/login">logout</a>
 {% endif %}
 {% comment %}
     <a href="{% url search_packages %}">Search</a>
