@@ -23,6 +23,8 @@ urlpatterns = patterns('public.views',
     url(r'^$', redirect_to, {'url': "/"}, name="public_index"),
     url(r'^newnm$', direct_to_template, {'template': 'public/newnm.html'}, name="public_newnm"),
     url(r'^whoisam$', 'whoisam', name="public_whoisam"),
+    url(r'^people$', 'people', name="public_people"),
+    url(r'^person/(?P<key>[^/]+)$', 'person', name="public_person"),
     url(r'^nmlist$', 'nmlist', name="public_nmlist"),
     url(r'^nmstatus/(?P<key>[^/]+)$', 'nmstatus', name="public_nmstatus"),
 )

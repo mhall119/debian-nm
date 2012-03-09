@@ -1,0 +1,91 @@
+{% extends "public/base.html" %}
+{% load macros %}
+
+{% macro people_table plist %}
+{% if plist %}
+<table>
+<thead>
+    <tr><th>Account name</th><th>Name</th></tr>
+</thead>
+<tbody>
+    {% for p in plist %}
+    <tr>
+        <td>{{p.uid|default:"None chosen yet"}}</td>
+        <td><a href="{% url public_person key=p.lookup_key %}">{{p.fullname}}</a></td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% else %}
+<p><i>none</i></p>
+{% endif %}
+{% endmacro %}
+
+{% block breadcrumbs %}{{block.super}} / <a href="{% url public_people %}">people</a>{% endblock %}
+
+{% comment %}
+{% block relatedpages %}
+{{block.super}}
+{% if cur_am %}
+<a href="{% url restricted_nmelist %}">full version</a>
+{% endif %}
+{% endblock %}
+{% endcomment %}
+
+{% block content %}
+
+<h1>Debian New Member - People list</h2>
+
+<div id="intro">
+This is a list of all the people known in the database, grouped by status in
+the project.
+
+Note that the data import for things that were historically not handled by the
+NM website is still incomplete.
+</div>
+
+<ul>
+    <li><a href="#mm">People with no official status (yet)</a></li>
+    <li><a href="#mm-ga">People with no official status (yet), but a guest account</a></li>
+    <li><a href="#dm">Debian Maintainers</a></li>
+    <li><a href="#dm-ga">Debian Maintainers, with a guest account</a></li>
+    <li><a href="#dd-u">Debian Developers, uploading packages</a></li>
+    <li><a href="#dd-nu">Debian Developers</a></li>
+    <li><a href="#dd-e">Emeritus Debian Developers</a></li>
+    <li><a href="#dm-e">Emeritus Debian Maintainers</a></li>
+    <li><a href="#dd-r">Removed DD accounts</a></li>
+    <li><a href="#dm-r">Removed DM accounts</a></li>
+</ul>
+
+<h2 id="mm">People with no official status (yet)</h2>
+{% usemacro people_table people.MM %}
+
+<h2 id="mm-ga">People with no official status (yet), but a guest account</h2>
+{% usemacro people_table people.MM_GA %}
+
+<h2 id="dm">Debian Maintainers</h2>
+{% usemacro people_table people.DM %}
+
+<h2 id="dm-ga">Debian Maintainers, with a guest account</h2>
+{% usemacro people_table people.DM_GA %}
+
+<h2 id="dd-u">Debian Developers, uploading packages</h2>
+{% usemacro people_table people.DD_U %}
+
+<h2 id="dd-nu">Debian Developers</h2>
+{% usemacro people_table people.DD_NU %}
+
+<h2 id="dd-e">Emeritus Debian Developers</h2>
+{% usemacro people_table people.DD_E %}
+
+<h2 id="dm-e">Emeritus Debian Maintainers</h2>
+{% usemacro people_table people.DM_E %}
+
+<h2 id="dd-r">Removed DD accounts</h2>
+{% usemacro people_table people.DD_R %}
+
+<h2 id="dm-r">Removed DM accounts</h2>
+{% usemacro people_table people.DM_R %}
+
+{% endblock %}
+

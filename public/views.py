@@ -140,3 +140,55 @@ def nmstatus(request, key):
                                   curstep_idx=curstep_idx,
                               ),
                               context_instance=template.RequestContext(request))
+
+def people(request):
+    by_tag = dict()
+    for p in bmodels.Person.objects.all().order_by("uid", "sn", "cn"):
+        by_tag.setdefault(p.status, []).append(p)
+
+    by_status = dict()
+    for key, tag, desc in const.ALL_STATUS:
+        by_status[key[7:]] = by_tag.get(tag, [])
+
+    return render_to_response("public/people.html",
+                              dict(
+                                  people=by_status,
+                              ),
+                              context_instance=template.RequestContext(request))
+
+def person(request, key):
+    from django.db.models import Min, Max
+    person = bmodels.Person.lookup(key)
+    if person is None:
+        return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
+
+    processes = bmodels.Process.objects.filter(person=person) \
+            .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
+            .order_by("is_active", "ended")
+
+    if person.is_am:
+        am = person.am
+        am_processes = bmodels.Process.objects.filter(manager=am) \
+                .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
+                .order_by("is_active", "ended")
+    else:
+        am = None
+        am_processes = []
+
+    cur_am = None
+    cur_person = None
+    if not request.user.is_anonymous():
+        cur_person = request.user.get_profile()
+        if cur_person.is_am:
+            cur_am = cur_person.am
+
+    return render_to_response("public/person.html",
+                              dict(
+                                  person=person,
+                                  cur_person=cur_person,
+                                  cur_am=cur_am,
+                                  am=am,
+                                  processes=processes,
+                                  am_processes=am_processes,
+                              ),
+                              context_instance=template.RequestContext(request))
