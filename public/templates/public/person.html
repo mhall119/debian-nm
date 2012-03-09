@@ -31,7 +31,13 @@
                 {{p.progress|desc_progress}}
                 {% endif %}
             </td>
-            <td><a href="{% url public_person key=p.manager.person.lookup_key %}" title="{{p.manager.person.fullname}}">{{p.manager.person.uid|default:"None"}}</a></td>
+            <td>
+                {% if p.manager %}
+                <a href="{% url public_person key=p.manager.person.lookup_key %}" title="{{p.manager.person.fullname}}">{{p.manager.person.uid|default:"None"}}</a>
+                {% else %}
+                None
+                {% endif %}
+            </td>
             <td>
                 {% for a in p.advocates.all %}
                 <a href="{% url public_person key=a.lookup_key %}" title="{{a.fullname}}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
