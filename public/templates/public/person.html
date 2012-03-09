@@ -24,7 +24,13 @@
             <td>{{p.started.date}}</td>
             <td>{{p.ended.date}}</td>
             <td>{{p.applying_for|desc_status}} ({{p.is_active|yesno:"in progress,done"}})</td>
-            <td>{{p.progress|desc_progress}}</td>
+            <td>
+                {% if p.is_active %}
+                <a href="{% url public_progress progress=p.progress %}">{{p.progress|desc_progress}}</a>
+                {% else %}
+                {{p.progress|desc_progress}}
+                {% endif %}
+            </td>
             <td><a href="{% url public_person key=p.manager.person.lookup_key %}" title="{{p.manager.person.fullname}}">{{p.manager.person.uid|default:"None"}}</a></td>
             <td>
                 {% for a in p.advocates.all %}

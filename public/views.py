@@ -197,3 +197,26 @@ def person(request, key):
                                   adv_processes=adv_processes,
                               ),
                               context_instance=template.RequestContext(request))
+
+def progress(request, progress):
+    from django.db.models import Min, Max
+
+    processes = bmodels.Process.objects.filter(progress=progress, is_active=True) \
+            .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
+            .order_by("started")
+
+    cur_am = None
+    cur_person = None
+    if not request.user.is_anonymous():
+        cur_person = request.user.get_profile()
+        if cur_person.is_am:
+            cur_am = cur_person.am
+
+    return render_to_response("public/progress.html",
+                              dict(
+                                  progress=progress,
+                                  cur_person=cur_person,
+                                  cur_am=cur_am,
+                                  processes=processes,
+                              ),
+                              context_instance=template.RequestContext(request))
