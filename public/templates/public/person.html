@@ -1,5 +1,48 @@
 {% extends "public/base.html" %}
 {% load const %}
+{% load macros %}
+
+{% macro process_table processes %}
+<table>
+    <thead>
+        <tr>
+            <th>Applicant</td>
+            <th>From</th>
+            <th>To</th>
+            <th>Applying for</th>
+            <th>Progress</td>
+            <th>AM</td>
+            <th>Advocate(s)</td>
+            {% if cur_am %}
+            <th>Extras</th>
+            {% endif %}
+    </thead>
+    <tbody>
+        {% for p in processes %}
+        <tr>
+            <td><a href="{% url public_person key=p.person.lookup_key %}">{{p.person.uid|default:p.person.fullname}}</a></td>
+            <td>{{p.started.date}}</td>
+            <td>{{p.ended.date}}</td>
+            <td>{{p.applying_for|desc_status}} ({{p.is_active|yesno:"in progress,done"}})</td>
+            <td>{{p.progress|desc_progress}}</td>
+            <td><a href="{% url public_person key=p.manager.person.lookup_key %}">{{p.manager.person.uid|default:"None"}}</a></td>
+            <td>
+                {% for a in p.advocates.all %}
+                <a href="{% url public_person key=a.lookup_key %}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            </td>
+            {% if cur_am %}
+            <td>
+                {% if cur_am.is_fd or cur_am.is_dam or cur_am == p.manager and p.is_active %}
+                <a href="{% url restricted_nmstatus key=p.lookup_key %}">edit</a>
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url public_people %}">people</a> / {{person.uid|default:person.fullname}}{% endblock %}
 
@@ -34,83 +77,21 @@
 
 <h2>Personal history</h2>
 
-<table>
-    <thead>
-        <tr>
-            <th>From</th>
-            <th>To</th>
-            <th>Applying for</th>
-            <th>Progress</td>
-            <th>AM</td>
-            <th>Advocates</td>
-            {% if cur_am %}
-            <th>Extras</th>
-            {% endif %}
-    </thead>
-    <tbody>
-        {% for p in processes %}
-        <tr>
-            <td>{{p.started.date}}</td>
-            <td>{{p.ended.date}}</td>
-            <td>{{p.applying_for|desc_status}} ({{p.is_active|yesno:"in progress,done"}})</td>
-            <td>{{p.progress|desc_progress}}</td>
-            <td><a href="{% url public_person key=p.manager.person.lookup_key %}">{{p.manager.person.uid|default:"None"}}</a></td>
-            <td>
-                {% for a in p.advocates.all %}
-                <a href="{% url public_person key=a.lookup_key %}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
-                {% endfor %}
-            </td>
-            {% if cur_am %}
-            <td>
-                {% if cur_am.is_fd or cur_am.is_dam or cur_am == p.manager and p.is_active %}
-                <a href="{% url restricted_nmstatus key=p.lookup_key %}">edit</a>
-                {% endif %}
-            </td>
-            {% endif %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% usemacro process_table processes %}
+
+{% if adv_processes %}
+
+<h2>Advocate history</h2>
+
+{% usemacro process_table adv_processes %}
+
+{% endif %}
 
 {% if am %}
 
 <h2>AM history</h2>
 
-<table>
-    <thead>
-        <tr>
-            <th>Applicant</td>
-            <th>From</th>
-            <th>To</th>
-            <th>Applying for</th>
-            <th>Progress</td>
-            <th>Advocates</td>
-            <th>Extras</th>
-    </thead>
-    <tbody>
-        {% for p in am_processes %}
-        <tr>
-            <td><a href="{% url public_person key=p.person.lookup_key %}">{{p.person.uid|default:p.person.fullname}}</a></td>
-            <td>{{p.started.date}}</td>
-            <td>{{p.ended.date}}</td>
-            <td>{{p.applying_for|desc_status}} ({{p.is_active|yesno:"in progress,done"}})</td>
-            <td>{{p.progress|desc_progress}}</td>
-            <td>
-                {% for a in p.advocates.all %}
-                <a href="{% url public_person key=a.lookup_key %}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
-                {% endfor %}
-            </td>
-            {% if cur_am %}
-            <td>
-                {% if cur_am.is_fd or cur_am.is_dam or cur_am == p.manager and p.is_active %}
-                <a href="{% url restricted_nmstatus key=p.lookup_key %}">edit</a>
-                {% endif %}
-            </td>
-            {% endif %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+{% usemacro process_table am_processes %}
 
 {% endif %}
 

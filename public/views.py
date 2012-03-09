@@ -162,13 +162,13 @@ def person(request, key):
     if person is None:
         return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
 
-    processes = bmodels.Process.objects.filter(person=person) \
+    processes = person.processes \
             .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
             .order_by("is_active", "ended")
 
     if person.is_am:
         am = person.am
-        am_processes = bmodels.Process.objects.filter(manager=am) \
+        am_processes = am.processed \
                 .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
                 .order_by("is_active", "ended")
     else:
@@ -182,6 +182,10 @@ def person(request, key):
         if cur_person.is_am:
             cur_am = cur_person.am
 
+    adv_processes = person.advocated \
+                .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
+                .order_by("is_active", "ended")
+
     return render_to_response("public/person.html",
                               dict(
                                   person=person,
@@ -190,5 +194,6 @@ def person(request, key):
                                   am=am,
                                   processes=processes,
                                   am_processes=am_processes,
+                                  adv_processes=adv_processes,
                               ),
                               context_instance=template.RequestContext(request))
