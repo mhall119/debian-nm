@@ -9,6 +9,9 @@ class FakeRemoteUser(object):
         request.META["REMOTE_USER"] = settings.TEST_USERNAME
         #print "SET REMOTE_USER TO ", request.META["REMOTE_USER"]
 
+class DACSRemoteUserMiddleware(django.contrib.auth.backends.RemoteUserMiddleware):
+    header = 'DACS_USERNAME'
+
 class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
     """
     RemoteUserBackend customised to create User objects from Person
