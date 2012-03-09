@@ -33,7 +33,7 @@ class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddlewa
             # AuthenticationMiddleware).
 
             # Actually, make really sure we are logged out!
-            auth.logout()
+            request.user.logout()
             return
         # If the user is already authenticated and that user is the user we are
         # getting passed in the headers, then the correct user is already
