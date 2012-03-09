@@ -88,6 +88,20 @@ def check_am_must_have_uid(**kw):
     for am in bmodels.AM.objects.filter(person__uid=None):
         log.warning("AM %d (person %d %s) has no uid", am.id, am.person.id, am.person.email)
 
+def check_status_progress_match(**kw):
+    """
+    Check that the last process with progress 'done' has the same
+    'applying_for' as the person status
+    """
+    from django.db.models import Max
+    for p in bmodels.Person.objects.all():
+        try:
+            last_proc = bmodels.Process.objects.filter(person=p, progress=const.PROGRESS_DONE).annotate(ended=Max("log__logdate")).order_by("-ended")[0]
+        except IndexError:
+            continue
+        if p.status != last_proc.applying_for:
+            log_warning("%d has status %s but the last completed process was applying for %s",
+                        p.uid, p.status, last_proc.applying_for)
 
 class Command(BaseCommand):
     help = 'Daily maintenance of the nm.debian.org database'
