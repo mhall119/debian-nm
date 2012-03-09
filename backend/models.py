@@ -171,9 +171,9 @@ class AM(models.Model):
 
     person = models.OneToOneField(Person, related_name="am")
     slots = models.IntegerField(null=False, default=1)
-    is_am = models.BooleanField(null=False, default=True)
-    is_fd = models.BooleanField(null=False, default=False)
-    is_dam = models.BooleanField(null=False, default=False)
+    is_am = models.BooleanField("Active AM", null=False, default=True)
+    is_fd = models.BooleanField("FD member", null=False, default=False)
+    is_dam = models.BooleanField("DAM", null=False, default=False)
     # Automatically computed as true if any applicant was approved in the last
     # 6 months
     is_am_ctte = models.BooleanField(null=False, default=False)
