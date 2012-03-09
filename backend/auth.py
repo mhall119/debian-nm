@@ -1,4 +1,5 @@
 import django.contrib.auth.backends
+import django.contrib.auth.middleware
 from django.contrib.auth.models import User
 from django.conf import settings
 from django import http
@@ -9,7 +10,7 @@ class FakeRemoteUser(object):
         request.META["REMOTE_USER"] = settings.TEST_USERNAME
         #print "SET REMOTE_USER TO ", request.META["REMOTE_USER"]
 
-class DACSRemoteUserMiddleware(django.contrib.auth.backends.RemoteUserMiddleware):
+class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddleware):
     header = 'DACS_USERNAME'
 
 class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
