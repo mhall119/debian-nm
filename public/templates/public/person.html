@@ -20,15 +20,15 @@
     <tbody>
         {% for p in processes %}
         <tr>
-            <td><a href="{% url public_person key=p.person.lookup_key %}">{{p.person.uid|default:p.person.fullname}}</a></td>
+            <td><a href="{% url public_person key=p.person.lookup_key %}" title="{{p.person.fullname}}">{{p.person.uid|default:p.person.fullname}}</a></td>
             <td>{{p.started.date}}</td>
             <td>{{p.ended.date}}</td>
             <td>{{p.applying_for|desc_status}} ({{p.is_active|yesno:"in progress,done"}})</td>
             <td>{{p.progress|desc_progress}}</td>
-            <td><a href="{% url public_person key=p.manager.person.lookup_key %}">{{p.manager.person.uid|default:"None"}}</a></td>
+            <td><a href="{% url public_person key=p.manager.person.lookup_key %}" title="{{p.manager.person.fullname}}">{{p.manager.person.uid|default:"None"}}</a></td>
             <td>
                 {% for a in p.advocates.all %}
-                <a href="{% url public_person key=a.lookup_key %}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
+                <a href="{% url public_person key=a.lookup_key %}" title="{{a.fullname}}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
                 {% endfor %}
             </td>
             {% if cur_am %}

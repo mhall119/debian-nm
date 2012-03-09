@@ -296,8 +296,7 @@ def person(request, key):
     am = cur_person.am
 
     if not person.can_be_edited(am):
-        # TODO
-        return redirect('TODO', uid=person.uid)
+        return redirect('public_person', key=key)
 
     PersonForm = make_person_form(am)
 

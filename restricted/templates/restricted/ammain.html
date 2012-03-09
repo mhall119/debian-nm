@@ -19,6 +19,11 @@
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">ammain</a>{% endblock %}
 
+{% block relatedpages %}
+<a href="{% url public_person key=person.lookup_key  %}">personal page</a>
+{{block.super}}
+{% endblock %}
+
 {% block content %}
 
 <h1>Debian New Member</h1>
