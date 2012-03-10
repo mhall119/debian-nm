@@ -100,7 +100,7 @@ def check_status_progress_match(**kw):
         except IndexError:
             continue
         if p.status != last_proc.applying_for:
-            log.warning("%d has status %s but the last completed process was applying for %s",
+            log.warning("%s has status %s but the last completed process was applying for %s",
                         p.uid, p.status, last_proc.applying_for)
 
 class Command(BaseCommand):
