@@ -183,7 +183,7 @@ def amprofile(request, uid=None):
             if cur_am == am or cur_am.is_fd or cur_am.is_dam:
                 form.save()
             else:
-                return http.HttpResponse("Editing is restricted to the am and front desk members")
+                return http.HttpResponseForbidden("Editing is restricted to the am and front desk members")
             # TODO: message that it has been saved
     else:
         form = AMForm(instance=am)

@@ -102,7 +102,7 @@ def is_am(view_func):
     def _wrapped_view(request, *args, **kwargs):
         person = request.user.get_profile()
         if not person.is_am:
-            return http.HttpResponse("This page is restricted to AMs")
+            return http.HttpResponseForbidden("This page is restricted to AMs")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
@@ -114,7 +114,7 @@ def is_fd(view_func):
     def _wrapped_view(request, *args, **kwargs):
         person = request.user.get_profile()
         if not person.is_am or not person.am.is_fd:
-            return http.HttpResponse("This page is restricted to Front Desk members")
+            return http.HttpResponseForbidden("This page is restricted to Front Desk members")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
@@ -126,6 +126,6 @@ def is_dam(view_func):
     def _wrapped_view(request, *args, **kwargs):
         person = request.user.get_profile()
         if not person.is_am or not person.am.is_dam:
-            return http.HttpResponse("This page is restricted to Debian Account Managers")
+            return http.HttpResponseForbidden("This page is restricted to Debian Account Managers")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
