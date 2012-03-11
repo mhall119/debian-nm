@@ -3,6 +3,7 @@ import django.contrib.auth.middleware
 from django.contrib.auth.models import User
 from django.conf import settings
 from django import http
+from django.shortcuts import render_to_response, redirect
 import backend.models as bmodels
 
 class FakeRemoteUser(object):
@@ -100,6 +101,8 @@ def is_am(view_func):
     """
 
     def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_anonymous():
+            return redirect("https://sso.debian.org/sso/login")
         person = request.user.get_profile()
         if not person.is_am:
             return http.HttpResponseForbidden("This page is restricted to AMs")
@@ -112,6 +115,8 @@ def is_fd(view_func):
     """
 
     def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_anonymous():
+            return redirect("https://sso.debian.org/sso/login")
         person = request.user.get_profile()
         if not person.is_am or not person.am.is_fd:
             return http.HttpResponseForbidden("This page is restricted to Front Desk members")
@@ -124,6 +129,8 @@ def is_dam(view_func):
     """
 
     def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_anonymous():
+            return redirect("https://sso.debian.org/sso/login")
         person = request.user.get_profile()
         if not person.is_am or not person.am.is_dam:
             return http.HttpResponseForbidden("This page is restricted to Debian Account Managers")
