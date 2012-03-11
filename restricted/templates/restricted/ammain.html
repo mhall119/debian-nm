@@ -35,7 +35,7 @@
     {% if am.is_dam %}<li>Debian Account Manager</li>{% endif %}
 </ul>
 
-{% if am.is_fd %}
+{% if am.is_fd or am.is_dam %}
 
 <h2>Front Desk</h2>
 
@@ -65,9 +65,7 @@ checked:</p>
 <p>The following applicants have incomplete AM reports (ordered by hold date):</p>
 {% usemacro process_table prog_fd_hold %}
 
-{% endif %}
 
-{% if am.is_dam %}
 <h2>Debian Account Manager</h2>
 
 <p>The following applicants have been approved by the NM committee and the FD
