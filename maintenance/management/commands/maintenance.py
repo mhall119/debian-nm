@@ -211,6 +211,30 @@ class Checker(object):
                 if person.status not in (const.STATUS_DD_U, const.STATUS_DD_NU):
                     log.warning("%s has gidNumber 800 but the db has state %s", repr(person), person.status)
 
+    def check_django_permissions(self, **kw):
+        from django.contrib.auth.models import User
+        from django.db.models import Q
+
+        # Get the list of users that django thinks are powerful
+        django_power_users = set()
+        for u in User.objects.all():
+            if u.is_staff or u.is_superuser:
+                django_power_users.add(u.id)
+
+        # Get the list of users that we think are powerful
+        nm_power_users = set()
+        for a in bmodels.AM.objects.filter(Q(is_fd=True) | Q(is_dam=True)):
+            if a.person.user is None:
+                log.warning("Person %s has no corresponding django user", a.person)
+            else:
+                nm_power_users.add(a.person.user.id)
+
+        for id in (django_power_users - nm_power_users):
+            log.warning("auth.models.User.id %d has powers that the NM site does not know about", id)
+        for id in (nm_power_users - django_power_users):
+            log.warning("auth.models.User.id %d has powers in NM that django does not know about", id)
+
+
     def run(self, **opts):
         """
         Run all checker functions
