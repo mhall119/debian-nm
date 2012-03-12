@@ -31,6 +31,18 @@ import keyring.models as kmodels
 log = logging.getLogger(__name__)
 
 class Checker(object):
+    def __init__(self):
+        log.info("Importing dm keyring...")
+        self.dm = frozenset(kmodels.list_dm())
+        log.info("Importing dd_u keyring...")
+        self.dd_u = frozenset(kmodels.list_dd_u())
+        log.info("Importing dd_nu keyring...")
+        self.dd_nu = frozenset(kmodels.list_dd_nu())
+        log.info("Importing emeritus_dd keyring...")
+        self.emeritus_dd = frozenset(kmodels.list_emeritus_dd())
+        log.info("Importing removed_dd keyring...")
+        self.removed_dd = frozenset(kmodels.list_removed_dd())
+
     @transaction.commit_on_success
     def compute_am_ctte(self, **kw):
         from django.db.models import Max
@@ -136,6 +148,40 @@ class Checker(object):
         c = bmodels.Person.objects.filter(status_changed__isnull=True).count()
         if c > 0:
             log.warning("%d entries still have a NULL status_changed date", c)
+
+    def check_keyring_consistency(self, **kw):
+        # Prefetch people and index them by fingerprint
+        people_by_fpr = dict()
+        for p in bmodels.Person.objects.all():
+            if p.fpr is None: continue
+            people_by_fpr[p.fpr] = p
+
+        # TODO: not quite sure how to handle the removed_dd keyring, until I
+        #       know what exactly is in there
+        # self.removed_dd = frozenset(kmodels.list_removed_dd())
+        for status, keys in (
+            ((const.STATUS_DM, const.STATUS_DM_GA), "dm"),
+            ((const.STATUS_DD_U,), "dd_u"),
+            ((const.STATUS_DD_NU,), "dd_nu"),
+            ((const.STATUS_EMERITUS_DD,), "emeritus_dd")):
+
+            keyring = getattr(self, keys)
+
+            # Show people that have a status in our DB which does not match
+            # keyring
+            for fpr, p in people_by_fpr.iteritems():
+                if p.status not in status: continue
+                if fpr not in keyring:
+                    log.warning("%s has status %s but is not in %s keyring", repr(p), p.status, keys)
+
+            # Show keys that are in the keyring but do not match our db
+            for fpr in keyring:
+                p = people_by_fpr.get(fpr, None)
+                if p is None:
+                    log.warning("Fingerprint %s is in %s keyring but not in our db", fpr, keys)
+                elif p.status not in status:
+                    log.warning("Fingerprint %s is in %s keyring its corresponding person %s has status %s", fpr, keys, repr(p), p.status)
+
 
     def run(self, **opts):
         """
