@@ -77,9 +77,8 @@ class Person(models.Model):
     fpr = models.CharField("OpenPGP key fingerprint", max_length=80, null=True, unique=True, blank=True)
     status = models.CharField("current status in the project", max_length=20, null=False,
                               choices=[x[1:3] for x in const.ALL_STATUS])
+    status_changed = models.DateTimeField("when the status last changed", null=False, default=datetime.datetime.utcnow)
     fd_comment = models.TextField("Front Desk comments", null=True, blank=True)
-    # FIXME: no password field for now; hopefully we can do away with the need
-    # of maintaining a password database
 
     @property
     def is_am(self):
