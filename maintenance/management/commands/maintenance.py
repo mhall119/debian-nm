@@ -31,17 +31,18 @@ import dsa.models as dmodels
 log = logging.getLogger(__name__)
 
 class Checker(object):
-    def __init__(self):
-        log.info("Importing dm keyring...")
-        self.dm = frozenset(kmodels.list_dm())
-        log.info("Importing dd_u keyring...")
-        self.dd_u = frozenset(kmodels.list_dd_u())
-        log.info("Importing dd_nu keyring...")
-        self.dd_nu = frozenset(kmodels.list_dd_nu())
-        log.info("Importing emeritus_dd keyring...")
-        self.emeritus_dd = frozenset(kmodels.list_emeritus_dd())
-        log.info("Importing removed_dd keyring...")
-        self.removed_dd = frozenset(kmodels.list_removed_dd())
+    def __init__(self, quick=False, **kw):
+        if not quick:
+            log.info("Importing dm keyring...")
+            self.dm = frozenset(kmodels.list_dm())
+            log.info("Importing dd_u keyring...")
+            self.dd_u = frozenset(kmodels.list_dd_u())
+            log.info("Importing dd_nu keyring...")
+            self.dd_nu = frozenset(kmodels.list_dd_nu())
+            log.info("Importing emeritus_dd keyring...")
+            self.emeritus_dd = frozenset(kmodels.list_emeritus_dd())
+            log.info("Importing removed_dd keyring...")
+            self.removed_dd = frozenset(kmodels.list_removed_dd())
 
     @transaction.commit_on_success
     def compute_am_ctte(self, **kw):
@@ -149,10 +150,14 @@ class Checker(object):
         if c > 0:
             log.warning("%d entries still have a NULL status_changed date", c)
 
-    def check_keyring_consistency(self, **kw):
+    def check_keyring_consistency(self, quick=False, **kw):
         """
         Show entries that do not match between keyrings and our DB
         """
+        if quick:
+            log.info("Skipping check_keyring_consistency because --quick was used")
+            return
+
         # Prefetch people and index them by fingerprint
         people_by_fpr = dict()
         for p in bmodels.Person.objects.all():
@@ -185,7 +190,7 @@ class Checker(object):
                 elif p.status not in status:
                     log.warning("Fingerprint %s is in %s keyring its corresponding person %s has status %s", fpr, keys, repr(p), p.status)
 
-    def check_ldap_consistency(self, **kw):
+    def check_ldap_consistency(self, quick=False, **kw):
         """
         Show entries that do not match between LDAP and our DB
         """
@@ -222,7 +227,7 @@ class Command(BaseCommand):
     help = 'Daily maintenance of the nm.debian.org database'
     option_list = BaseCommand.option_list + (
         optparse.make_option("--quiet", action="store_true", dest="quiet", default=None, help="Disable progress reporting"),
-        optparse.make_option("--ldap", action="store", default="ldap://db.debian.org", help="LDAP server to use. Default: %default"),
+        optparse.make_option("--quick", action="store_true", help="Skip slow checks. Default: %default"),
     )
 
     def handle(self, *fnames, **opts):
@@ -232,5 +237,5 @@ class Command(BaseCommand):
         else:
             logging.basicConfig(level=logging.INFO, stream=sys.stderr, format=FORMAT)
 
-        checker = Checker()
+        checker = Checker(**opts)
         checker.run(**opts)
