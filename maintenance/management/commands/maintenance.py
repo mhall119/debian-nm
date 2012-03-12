@@ -103,6 +103,26 @@ def check_status_progress_match(**kw):
             log.warning("%s has status %s but the last completed process was applying for %s",
                         p.uid, p.status, last_proc.applying_for)
 
+def check_enums(**ks):
+    """
+    Consistency check of enum values
+    """
+    statuses = [x[1] for x in const.ALL_STATUS]
+    progresses = [x[1] for x in const.ALL_PROGRESS]
+
+    for p in bmodels.Person.objects.exclude(status__in=statuses):
+        log.warning("person %s has invalid status %s", p.lookup_key, p.status)
+
+    for p in bmodels.Process.objects.exclude(applying_for__in=statuses):
+        log.warning("process %s has invalid applying_for %s", p.lookup_key, p.applying_for)
+
+    for p in bmodels.Process.objects.exclude(progress__in=progresses):
+        log.warning("process %s has invalid progress %s", p.lookup_key, p.progress)
+
+    for l in bmodels.Log.objects.exclude(progress__in=progresses):
+        log.warning("log entry %s has invalid progress %s", l.id, l.progress)
+
+
 class Command(BaseCommand):
     help = 'Daily maintenance of the nm.debian.org database'
     option_list = BaseCommand.option_list + (
