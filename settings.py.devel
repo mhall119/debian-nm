@@ -177,3 +177,4 @@ LOGGING = {
 }
 
 KEYRINGS = "/home/enrico/dev/deb/keyring.debian.org/keyrings"
+LDAP_SERVER = "ldap://db.debian.org"

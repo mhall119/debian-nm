@@ -23,10 +23,10 @@ import optparse
 import sys
 import datetime
 import logging
-import ldap
 from backend import models as bmodels
 from backend import const
 import keyring.models as kmodels
+import dsa.models as dmodels
 
 log = logging.getLogger(__name__)
 
@@ -150,6 +150,9 @@ class Checker(object):
             log.warning("%d entries still have a NULL status_changed date", c)
 
     def check_keyring_consistency(self, **kw):
+        """
+        Show entries that do not match between keyrings and our DB
+        """
         # Prefetch people and index them by fingerprint
         people_by_fpr = dict()
         for p in bmodels.Person.objects.all():
@@ -182,6 +185,26 @@ class Checker(object):
                 elif p.status not in status:
                     log.warning("Fingerprint %s is in %s keyring its corresponding person %s has status %s", fpr, keys, repr(p), p.status)
 
+    def check_ldap_consistency(self, **kw):
+        """
+        Show entries that do not match between LDAP and our DB
+        """
+        # Prefetch people and index them by fingerprint
+        people_by_uid = dict()
+        for p in bmodels.Person.objects.all():
+            if p.uid is None: continue
+            people_by_uid[p.uid] = p
+
+        for entry in dmodels.list_people():
+            try:
+                person = bmodels.Person.objects.get(uid=entry.uid)
+            except bmodels.Person.DoesNotExist:
+                log.warning("Person %s exists in LDAP but not in our db", entry.uid)
+                continue
+
+            if entry.single("gidNumber") == "800":
+                if person.status not in (const.STATUS_DD_U, const.STATUS_DD_NU):
+                    log.warning("%s has gidNumber 800 but the db has state %s", repr(person), person.status)
 
     def run(self, **opts):
         """
