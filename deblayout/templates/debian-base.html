@@ -99,7 +99,7 @@ Always leave one space between the slash and the link.
 
 {% if messages %}
 {% for message in messages %}
-<div class="{% if message.tags %}{{ message.tags }}{% else %}important{% endif %}"><p>{{ message }}</p></li>
+<div class="{% if message.tags %}{{ message.tags }}{% else %}important{% endif %}"><p>{{ message }}</p></div>
 {% endfor %}
 {% endif %}
 
@@ -110,6 +110,7 @@ Always leave one space between the slash and the link.
 	-->
 	Debian Website Template</h1>
 {% endblock %}
+</div>
 
 <div id="footer">
 {% block footer %}
