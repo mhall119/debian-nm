@@ -28,7 +28,7 @@
     </tr>
     <tr><th>Account name</th><td>{{process.person.uid|default:"None yet"}}</td></tr>
     <tr><th>Time of Last Action</th><td>{{last_change}}</th></tr>
-    <tr><th>Account created</td><td>{% if process.progress == PROGRESS_DONE %}yes{% else %}no{% endif %}</td></tr>
+    <tr><th>Account created</th><td>{% if process.progress == PROGRESS_DONE %}yes{% else %}no{% endif %}</td></tr>
 </table>
 
 <h2>Process log</h2>

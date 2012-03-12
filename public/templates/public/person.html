@@ -6,13 +6,13 @@
 <table>
     <thead>
         <tr>
-            <th>Applicant</td>
+            <th>Applicant</th>
             <th>From</th>
             <th>To</th>
             <th>Applying for</th>
-            <th>Progress</td>
-            <th>AM</td>
-            <th>Advocate(s)</td>
+            <th>Progress</th>
+            <th>AM</th>
+            <th>Advocate(s)</th>
             {% if cur_am %}
             <th>Extras</th>
             {% endif %}
@@ -72,7 +72,7 @@
 <table class="personinfo">
     <tr><th>Account name</th><td>{{person.uid|default:"None chosen yet"}}</td></tr>
     <tr><th>OpenPGP fingerprint</th><td>{{person.fpr}}</td></tr>
-    <tr><th>Status</td><td>{{person.status|desc_status}}</td></tr>
+    <tr><th>Status</th><td>{{person.status|desc_status}}</td></tr>
     {% if am %}
     <tr>
         <th>Application manager</th>
