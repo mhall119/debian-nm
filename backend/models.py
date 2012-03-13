@@ -282,7 +282,7 @@ class AM(models.Model):
                sum(case when process.progress in (%s, %s) then 1 else 0 end) as active,
                sum(case when process.progress=%s then 1 else 0 end) as held
           FROM am
-          JOIN process ON process.manager_id=am.id
+          LEFT OUTER JOIN process ON process.manager_id=am.id
          WHERE am.is_am AND am.slots > 0
          GROUP BY am.id
         """, (const.PROGRESS_AM_RCVD, const.PROGRESS_AM, const.PROGRESS_AM_HOLD,))
