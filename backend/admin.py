@@ -15,9 +15,10 @@ class LogInline(admin.TabularInline):
     model = bmodels.Log
 
 class ProcessAdmin(admin.ModelAdmin):
-    inlines = [
-        LogInline
-    ]
+    pass
+    #inlines = [
+    #    LogInline
+    #]
 admin.site.register(bmodels.Process, ProcessAdmin)
 
 class LogAdmin(admin.ModelAdmin):
