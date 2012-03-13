@@ -241,20 +241,32 @@ class Checker(object):
         Show entries that do not match between projectb DM list and out DB
         """
         maints = pmodels.Maintainers()
+        def update_status(p):
+            if p.status == const.STATUS_MM:
+                log.info("%s status %s->%s", self._link(p), p.status, const.STATUS_DM)
+                p.status = const.STATUS_DM
+                p.save()
+            elif p.status == const.STATUS_MM_GA:
+                log.info("%s status %s->%s", self._link(p), p.status, const.STATUS_DM_GA)
+                p.status = const.STATUS_DM_GA
+                p.save()
         for maint in maints.db.itervalues():
             # Lookup is a custom function I wrote that matches fingerprints, emails or uids
             person = bmodels.Person.lookup(maint["fpr"])
             if person is not None:
                 log.info("DM %s matches by fingerprint with person %s", maint["email"], repr(person))
+                update_status(person)
                 continue
             person = bmodels.Person.lookup(maint["email"])
             if person is not None:
                 log.info("DM %s matches by email with person %s", maint["email"], repr(person))
+                update_status(person)
                 if person.fpr is None:
+                    log.info("%s fingerprint None->%s", self._link(person), maint["fpr"])
                     person.fpr = maint["fpr"]
-                    p.save()
+                    person.save()
                 continue
-            name = maint["pdb_u_name"].decode("utf-8")
+            name = maint["pdb_u_name"] #.decode("utf-8")
             cn, sn = name.split(None, 1)
             p = bmodels.Person(
                 cn=cn,
@@ -263,7 +275,7 @@ class Checker(object):
                 fpr=maint["fpr"],
                 status=const.STATUS_DM, # hopefully
             )
-            #p.save()
+            p.save()
             log.info("Created new DM %s", repr(p))
 
 
