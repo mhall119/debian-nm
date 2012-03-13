@@ -175,13 +175,6 @@ def person(request, key):
         am = None
         am_processes = []
 
-    cur_am = None
-    cur_person = None
-    if not request.user.is_anonymous():
-        cur_person = request.user.get_profile()
-        if cur_person.is_am:
-            cur_am = cur_person.am
-
     adv_processes = person.advocated \
                 .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
                 .order_by("is_active", "ended")
@@ -189,8 +182,6 @@ def person(request, key):
     return render_to_response("public/person.html",
                               dict(
                                   person=person,
-                                  cur_person=cur_person,
-                                  cur_am=cur_am,
                                   am=am,
                                   processes=processes,
                                   am_processes=am_processes,

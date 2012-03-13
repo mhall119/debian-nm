@@ -347,6 +347,22 @@ class Process(models.Model):
             from django.db.models import Max
             return p.processes.annotate(last_change=Max("log__logdate")).order_by("-last_change")[0]
 
+    def can_be_edited(self, am=None):
+        # FD and DAM can edit anything
+        if am is not None and (am.is_fd or am.is_dam):
+            return True
+
+        # If the process is closed, then AMs cannot edit it
+        if not self.is_active:
+            return False
+
+        # If we do not check by AM, we're done
+        if am is None:
+            return True
+
+        # Otherwise the AM can edit if manager of this process
+        return self.manager == am
+
     #def get_log(self, desc=False, max=None):
     #    res = orm.object_session(self) \
     #            .query(Log) \
