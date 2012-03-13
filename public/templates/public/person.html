@@ -63,6 +63,9 @@
 {% if request.am.is_admin %}
 <a href="{% url admin:backend_person_change person.id  %}">admin</a>
 {% endif %}
+{% if not am %}
+<a href="{% url admin:backend_am_add %}?person={{person.id}}">make am</a>
+{% endif %}
 {{block.super}}
 {% endblock %}
 
