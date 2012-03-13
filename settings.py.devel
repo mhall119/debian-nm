@@ -106,6 +106,7 @@ MIDDLEWARE_CLASSES = (
     'backend.auth.FakeRemoteUser',
     'django.contrib.auth.middleware.RemoteUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'backend.auth.NMInfoMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (

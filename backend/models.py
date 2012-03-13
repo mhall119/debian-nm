@@ -87,6 +87,13 @@ class Person(models.Model):
         except AM.DoesNotExist:
             return False
 
+    @property
+    def am_or_none(self):
+        try:
+            return self.am
+        except AM.DoesNotExist:
+            return None
+
     def can_be_edited(self, am=None):
         # If the person is already in LDAP, then we cannot edit their info
         if self.status not in (const.STATUS_MM, const.STATUS_DM):

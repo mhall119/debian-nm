@@ -95,6 +95,14 @@ class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
 
         return user
 
+class NMInfoMiddleware(object):
+    def process_request(self, request):
+        if request.user.is_authenticated():
+            request.person = request.user.get_profile()
+            request.am = request.person.am_or_none
+        else:
+            request.person = None
+            request.am = None
 
 def is_am(view_func):
     """
