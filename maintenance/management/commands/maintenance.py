@@ -118,6 +118,22 @@ class Checker(object):
                 log.warning("%s has status %s but the last completed process was applying for %s",
                             p.uid, p.status, last_proc.applying_for)
 
+    def check_log_progress_match(self, **kw):
+        """
+        Check that the last process with progress 'done' has the same
+        'applying_for' as the person status
+        """
+        from django.db.models import Max
+        for p in bmodels.Process.objects.filter(is_active=True):
+            try:
+                last_log = p.log.order_by("-logdate")[0]
+            except IndexError:
+                log.warning("process %s has no log entries", repr(p))
+                continue
+            if p.progress != last_log.progress:
+                log.warning("process %s has progress %s but the last log entry has progress %s",
+                            repr(p), p.progress, last_log.progress)
+
     def check_enums(self, **kw):
         """
         Consistency check of enum values

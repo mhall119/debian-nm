@@ -287,6 +287,13 @@ class Process(models.Model):
             const.ALL_PROGRESS_DESCS.get(self.progress, self.progress),
         )
 
+    def __repr__(self):
+        return "%s [%s %s->%s]" % (
+            self.lookup_key,
+            self.person.lookup_key,
+            self.person.status,
+            self.applying_for)
+
     @property
     def lookup_key(self):
         """
