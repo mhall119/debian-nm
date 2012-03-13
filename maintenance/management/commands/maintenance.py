@@ -240,16 +240,19 @@ class Checker(object):
         """
         Show entries that do not match between projectb DM list and out DB
         """
-        maints = pmodels.Maintainers()
+        # Code used to import DMs is at 64a3e35a5c55aa3ee122e6234ad24c74a57dd843
+        # Now this is just a consistency check
+        try:
+            maints = pmodels.Maintainers()
+        except Exception, e:
+            log.info("Skipping check_dmlist: %s", e)
+            return
+
         def update_status(p):
             if p.status == const.STATUS_MM:
                 log.info("%s status %s->%s", self._link(p), p.status, const.STATUS_DM)
-                p.status = const.STATUS_DM
-                p.save()
             elif p.status == const.STATUS_MM_GA:
                 log.info("%s status %s->%s", self._link(p), p.status, const.STATUS_DM_GA)
-                p.status = const.STATUS_DM_GA
-                p.save()
         for maint in maints.db.itervalues():
             # Lookup is a custom function I wrote that matches fingerprints, emails or uids
             person = bmodels.Person.lookup(maint["fpr"])
@@ -264,7 +267,6 @@ class Checker(object):
                 if person.fpr is None:
                     log.info("%s fingerprint None->%s", self._link(person), maint["fpr"])
                     person.fpr = maint["fpr"]
-                    person.save()
                 continue
             name = maint["pdb_u_name"] #.decode("utf-8")
             cn, sn = name.split(None, 1)
@@ -275,7 +277,6 @@ class Checker(object):
                 fpr=maint["fpr"],
                 status=const.STATUS_DM, # hopefully
             )
-            p.save()
             log.info("Created new DM %s", repr(p))
 
 
