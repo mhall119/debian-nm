@@ -233,7 +233,7 @@ def make_statusupdateform(editor):
 def nmstatus(request, key):
     process = bmodels.Process.lookup(key)
     if process is None:
-        return redirect(reverse('root_faq') + "#process-lookup")
+        return http.HttpResponseNotFound("Process %s not found." % key)
 
     person = process.person
 
