@@ -249,7 +249,7 @@ class Checker(object):
             return
 
         def check_status(p):
-            if p.status not in (const.STATUS_MM, const.STATUS_MM_GA):
+            if p.status not in (const.STATUS_DM, const.STATUS_DM_GA):
                 log.info("%s DB status is %s but it appears to projectb to be a DM instead", self._link(p), p.status)
 
         for maint in maints.db.itervalues():
