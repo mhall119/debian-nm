@@ -112,8 +112,7 @@ def is_am(view_func):
     def _wrapped_view(request, *args, **kwargs):
         if request.user.is_anonymous():
             return redirect("https://sso.debian.org/sso/login")
-        person = request.user.get_profile()
-        if not person.is_am:
+        if not request.am:
             return http.HttpResponseForbidden("This page is restricted to AMs")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
@@ -126,8 +125,7 @@ def is_fd(view_func):
     def _wrapped_view(request, *args, **kwargs):
         if request.user.is_anonymous():
             return redirect("https://sso.debian.org/sso/login")
-        person = request.user.get_profile()
-        if not person.is_am or not person.am.is_fd:
+        if not request.am or not request.am.is_fd:
             return http.HttpResponseForbidden("This page is restricted to Front Desk members")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
@@ -140,8 +138,20 @@ def is_dam(view_func):
     def _wrapped_view(request, *args, **kwargs):
         if request.user.is_anonymous():
             return redirect("https://sso.debian.org/sso/login")
-        person = request.user.get_profile()
-        if not person.is_am or not person.am.is_dam:
+        if not request.am or not request.am.is_dam:
             return http.HttpResponseForbidden("This page is restricted to Debian Account Managers")
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+def is_admin(view_func):
+    """
+    Decorator for views that are restricted to FD and DAMs
+    """
+
+    def _wrapped_view(request, *args, **kwargs):
+        if request.user.is_anonymous():
+            return redirect("https://sso.debian.org/sso/login")
+        if not request.am or not request.am.is_admin:
+            return http.HttpResponseForbidden("This page is restricted to Front Desk members and Debian Account Managers")
         return view_func(request, *args, **kwargs)
     return _wrapped_view

@@ -332,3 +332,60 @@ def nmelist(request):
                               ),
                               context_instance=template.RequestContext(request))
 
+
+
+def make_newprocessform(person):
+    choices = [x[1:3] for x in const.ALL_STATUS if x[1] != person.status]
+
+    class NewProcessForm(forms.Form):
+        applying_for = forms.ChoiceField(
+            required=True,
+            label=_("Applying for"),
+            choices=choices
+        )
+        logtext = forms.CharField(
+            required=True,
+            label=_("Log text"),
+            widget=forms.Textarea(attrs=dict(rows=5, cols=80))
+        )
+    return NewProcessForm
+
+@backend.auth.is_admin
+def newprocess(request, key):
+    person = bmodels.Person.lookup(key)
+    if person is None:
+        return http.HttpResponseNotFound("Person %s not found" % key)
+
+    if person.active_process:
+        return http.HttpResponseForbidden("Person %s already has an active process" % key)
+
+    NewProcessForm = make_newprocessform(person)
+    if request.method == 'POST':
+        form = NewProcessForm(request.POST)
+        if form.is_valid():
+            process = bmodels.Process(
+                person=person,
+                progress=const.PROGRESS_APP_NEW,
+                is_active=True,
+                applying_for=form.cleaned_data["applying_for"]
+            )
+            process.save()
+
+            log = bmodels.Log(
+                changed_by=request.person,
+                process=process,
+                progress=process.progress,
+                logtext=form.cleaned_data["logtext"]
+            )
+            log.save()
+            # TODO: message
+            return redirect('public_person', key=key)
+    else:
+        form = NewProcessForm(initial=dict(logtext="New process created"))
+
+    return render_to_response("restricted/newprocess.html",
+                              dict(
+                                  person=person,
+                                  form=form,
+                              ),
+                              context_instance=template.RequestContext(request))

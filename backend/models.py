@@ -88,6 +88,12 @@ class Person(models.Model):
             return False
 
     @property
+    def is_admin(self):
+        am = self.am_or_none
+        if am is None: return False
+        return am.is_admin
+
+    @property
     def am_or_none(self):
         try:
             return self.am
@@ -209,6 +215,10 @@ class AM(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ("public_person", (), dict(key=self.person.lookup_key))
+
+    @property
+    def is_admin(self):
+        return self.is_fd or self.is_dam
 
     def applicant_stats(self):
         """

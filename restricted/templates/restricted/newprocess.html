@@ -1,0 +1,30 @@
+{% extends "restricted/base.html" %}
+{% load const %}
+
+{% block breadcrumbs %}{{block.super}} / <a href="{{ person.get_absolute_url }}">{{person.lookup_key}}</a>{% endblock %}
+
+{% block content %}
+
+<h1><a href="http://qa.debian.org/developer.php?login={{person.email}}">{{person.fullname}}</a></h1>
+
+<h2>Personal information</h2>
+
+<table class="personinfo">
+    <tr><th>First name</th><td>{{person.cn}}</td></tr>
+    <tr><th>Middle name</th><td>{{person.mn|default:""}}</td></tr>
+    <tr><th>Last name</th><td>{{person.sn|default:""}}</td></tr>
+    <tr><th>Email</th><td>{{person.email}}</td></tr>
+    <tr><th>Account name</th><td>{{person.uid|default:"none chosen yet"}}</td></tr>
+    <tr><th>OpenPGP fingerprint</th><td>{{person.fpr}}</td></tr>
+    <tr><th>Current status</th><td>{{person.status}}</td></tr>
+    {% if can_edit %}
+    <tr><th>FD comments</th><td>{{person.fd_comment}}</td></tr>
+    {% endif %}
+</table>
+
+<form action="{% url restricted_newprocess key=person.lookup_key %}" method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Create new process" />
+</form>
+
+{% endblock %}

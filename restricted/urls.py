@@ -27,4 +27,5 @@ urlpatterns = patterns('restricted.views',
     url(r'^amprofile(?:/(?P<uid>\w+))?$', 'amprofile', name="restricted_amprofile"),
     url(r'^nmstatus/(?P<key>[^/]+)$', 'nmstatus', name="restricted_nmstatus"),
     url(r'^person/(?P<key>[^/]+)$', 'person', name="restricted_person"),
+    url(r'^newprocess/(?P<key>[^/]+)$', 'newprocess', name="restricted_newprocess"),
 )

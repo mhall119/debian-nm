@@ -60,7 +60,7 @@
 {% block breadcrumbs %}{{block.super}} / <a href="{% url public_people %}">people</a> / {{person.uid|default:person.fullname}}{% endblock %}
 
 {% block relatedpages %}
-{% if request.am|is_admin %}
+{% if request.am.is_admin %}
 <a href="{% url admin:backend_person_change person.id  %}">admin</a>
 {% endif %}
 {{block.super}}
@@ -95,6 +95,10 @@
 <h2>Personal history</h2>
 
 {% usemacro process_table processes %}
+
+{% if request.am.is_admin and not active_process %}
+<a href="{% url restricted_newprocess key=person.lookup_key %}">new process</a>
+{% endif %}
 
 {% if adv_processes %}
 
