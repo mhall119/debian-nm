@@ -71,6 +71,12 @@ def ammain(request):
 
     am_available = bmodels.AM.list_free()
 
+    prog_app_new = bmodels.Process.objects.filter(progress__in=(
+        const.PROGRESS_APP_NEW,
+        const.PROGRESS_APP_RCVD,
+        const.PROGRESS_ADV_RCVD)) \
+                    .annotate(started=Min("log__logdate")).order_by("started")
+
     prog_app_ok = bmodels.Process.objects.filter(progress=const.PROGRESS_APP_OK) \
                   .annotate(started=Min("log__logdate")).order_by("started")
 
@@ -127,6 +133,7 @@ def ammain(request):
                                   person=person,
                                   am=person.am,
                                   am_available=am_available,
+                                  prog_app_new=prog_app_new,
                                   prog_app_ok=prog_app_ok,
                                   prog_app_hold=prog_app_hold,
                                   prog_am_rcvd=prog_am_rcvd,
