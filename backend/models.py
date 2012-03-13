@@ -158,14 +158,6 @@ class Person(models.Model):
             else:
                 return "%s %s %s" % (self.cn, self.mn, self.sn)
 
-    def save(self, *args, **kwargs):
-        """
-        Convert empty strings to NULLs
-        """
-        if not self.uid: self.uid = None
-        if not self.fpr: self.fpr = None
-        super(Person, self).save(*args, **kwargs)
-
     def __unicode__(self):
         return u"%s <%s>" % (self.fullname, self.email)
 
@@ -332,7 +324,8 @@ class Process(models.Model):
     manager = models.ForeignKey(AM, related_name="processed", null=True, blank=True)
     # 1.3-only: manager = models.ForeignKey(AM, related_name="processed", null=True, on_delete=models.PROTECT)
 
-    advocates = models.ManyToManyField(Person, related_name="advocated", blank=True)
+    advocates = models.ManyToManyField(Person, related_name="advocated", blank=True,
+                                limit_choices_to={ "status__in": (const.STATUS_DD_U, const.STATUS_DD_NU) })
 
     # True if progress NOT IN (PROGRESS_DONE, PROGRESS_CANCELLED)
     is_active = models.BooleanField(null=False, default=False)
