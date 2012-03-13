@@ -32,7 +32,8 @@
 <a href="https://sso.debian.org/sso/login">login</a>
 {% else %}
 <a href="{% url restricted_ammain %}">{{user.username}}</a>
-<a href="https://sso.debian.org/sso/logout">logout</a>
+<a href="https://sso.debian.org/cgi-bin/dacs/dacs_signout">logout</a>
+
 {% endif %}
 {% comment %}
     <a href="{% url search_packages %}">Search</a>
