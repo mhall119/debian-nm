@@ -6,6 +6,9 @@
 {% block relatedpages %}
 {{block.super}}
 <a href="{% url public_process key=process.lookup_key  %}">public version</a>
+{% if request.person.is_admin %}
+<a href="{% url admin:backend_process_change process.id %}">admin</a>
+{% endif %}
 {% endblock %}
 
 {% block head %}
