@@ -3,7 +3,8 @@ import backend.models as bmodels
 
 
 class PersonAdmin(admin.ModelAdmin):
-    pass
+    exclude = ("user",)
+
 admin.site.register(bmodels.Person, PersonAdmin)
 
 class AMAdmin(admin.ModelAdmin):

@@ -21,6 +21,7 @@
 
 {% block relatedpages %}
 <a href="{% url public_person key=person.lookup_key  %}">personal page</a>
+<a href="{% url admin:backend_person_add %}">new person</a>
 {{block.super}}
 {% endblock %}
 
