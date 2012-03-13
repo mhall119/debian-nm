@@ -63,7 +63,7 @@
 {% if request.am.is_admin %}
 <a href="{% url admin:backend_person_change person.id  %}">admin</a>
 {% endif %}
-{% if not am %}
+{% if can_be_am %}
 <a href="{% url admin:backend_am_add %}?person={{person.id}}">make am</a>
 {% endif %}
 {{block.super}}
@@ -76,7 +76,7 @@
 <table class="personinfo">
     <tr><th>Account name</th><td>{{person.uid|default:"None chosen yet"}}</td></tr>
     <tr><th>OpenPGP fingerprint</th><td>{{person.fpr}}</td></tr>
-    <tr><th>Status</th><td>{{person.status|desc_status}}</td></tr>
+    <tr><th>Status</th><td>{{person.status|desc_status}} since {{person.status_changed}}</td></tr>
     {% if am %}
     <tr>
         <th>Application manager</th>

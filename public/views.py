@@ -172,6 +172,7 @@ def person(request, key):
             active_process = p
             break
 
+    can_be_am = False
     if person.is_am:
         am = person.am
         am_processes = am.processed \
@@ -180,6 +181,8 @@ def person(request, key):
     else:
         am = None
         am_processes = []
+        if person.status in (const.STATUS_DD_U, const.STATUS_DD_NU) and person.status_changed and (datetime.datetime.utcnow() - person.status_changed > datetime.timedelta(days=6*30)):
+            can_be_am = True
 
     adv_processes = person.advocated \
                 .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
@@ -193,6 +196,7 @@ def person(request, key):
                                   processes=processes,
                                   am_processes=am_processes,
                                   adv_processes=adv_processes,
+                                  can_be_am=can_be_am,
                               ),
                               context_instance=template.RequestContext(request))
 
