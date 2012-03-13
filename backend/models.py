@@ -305,7 +305,7 @@ class Process(models.Model):
                                 choices=[x[1:3] for x in const.ALL_PROGRESS])
 
     # This is NULL until one gets a manager
-    manager = models.ForeignKey(AM, related_name="processed", null=True)
+    manager = models.ForeignKey(AM, related_name="processed", null=True, blank=True)
     # 1.3-only: manager = models.ForeignKey(AM, related_name="processed", null=True, on_delete=models.PROTECT)
 
     advocates = models.ManyToManyField(Person, related_name="advocated", blank=True)
