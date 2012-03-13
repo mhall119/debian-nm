@@ -155,6 +155,8 @@ class Person(models.Model):
         try:
             if "@" in key:
                 return cls.objects.get(email=key)
+            elif len(key) > 32:
+                return cls.objects.get(fpr=key)
             else:
                 return cls.objects.get(uid=key)
         except cls.DoesNotExist:
