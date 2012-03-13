@@ -134,6 +134,14 @@ class Person(models.Model):
             else:
                 return "%s %s %s" % (self.cn, self.mn, self.sn)
 
+    def save(self, *args, **kwargs):
+        """
+        Convert empty strings to NULLs
+        """
+        if not self.uid: self.uid = None
+        if not self.fpr: self.fpr = None
+        super(Person, self).save(*args, **kwargs)
+
     def __unicode__(self):
         return u"%s <%s>" % (self.fullname, self.email)
 
