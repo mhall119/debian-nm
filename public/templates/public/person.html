@@ -60,10 +60,10 @@
 {% block breadcrumbs %}{{block.super}} / <a href="{% url public_people %}">people</a> / {{person.uid|default:person.fullname}}{% endblock %}
 
 {% block relatedpages %}
-{{block.super}}
-{% if request.am %}
-<a href="{% url restricted_person key=person.lookup_key  %}">full version</a>
+{% if request.am|is_admin %}
+<a href="{% url admin:backend_person_change person.id  %}">admin</a>
 {% endif %}
+{{block.super}}
 {% endblock %}
 
 {% block content %}
@@ -87,6 +87,10 @@
     </tr>
     {% endif %}
 </table>
+
+{% if person|editable_by:request.am %}
+<a href="{% url restricted_person key=person.lookup_key %}">edit</a>
+{% endif %}
 
 <h2>Personal history</h2>
 
