@@ -379,8 +379,11 @@ class Process(models.Model):
             res = p.active_process
             if res: return res
 
-            from django.db.models import Max
-            return p.processes.annotate(last_change=Max("log__logdate")).order_by("-last_change")[0]
+            try:
+                from django.db.models import Max
+                return p.processes.annotate(last_change=Max("log__logdate")).order_by("-last_change")[0]
+            except IndexError:
+                return None
 
     def can_be_edited(self, am=None):
         # FD and DAM can edit anything
