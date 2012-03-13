@@ -28,6 +28,7 @@ from backend import models as bmodels
 from backend import const
 import keyring.models as kmodels
 import dsa.models as dmodels
+import projectb.models as pmodels
 
 log = logging.getLogger(__name__)
 
@@ -234,6 +235,37 @@ class Checker(object):
             if entry.single("gidNumber") == "800":
                 if person.status not in (const.STATUS_DD_U, const.STATUS_DD_NU):
                     log.warning("%s has gidNumber 800 but the db has state %s", self._link(person), person.status)
+
+    def check_dmlist(self, quick=False, **kw):
+        """
+        Show entries that do not match between projectb DM list and out DB
+        """
+        maints = pmodels.Maintainers()
+        for maint in maints.db.itervalues():
+            # Lookup is a custom function I wrote that matches fingerprints, emails or uids
+            person = bmodels.Person.lookup(maint["fpr"])
+            if person is not None:
+                log.info("DM %s matches by fingerprint with person %s", maint["email"], repr(person))
+                continue
+            person = bmodels.Person.lookup(maint["email"])
+            if person is not None:
+                log.info("DM %s matches by email with person %s", maint["email"], repr(person))
+                if person.fpr is None:
+                    person.fpr = maint["fpr"]
+                    p.save()
+                continue
+            name = maint["pdb_u_name"].decode("utf-8")
+            cn, sn = name.split(None, 1)
+            p = bmodels.Person(
+                cn=cn,
+                sn=sn,
+                email=maint["email"],
+                fpr=maint["fpr"],
+                status=const.STATUS_DM, # hopefully
+            )
+            #p.save()
+            log.info("Created new DM %s", repr(p))
+
 
     def check_django_permissions(self, **kw):
         from django.contrib.auth.models import User

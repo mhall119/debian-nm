@@ -147,6 +147,7 @@ INSTALLED_APPS = (
     'public',
     'restricted',
     'maintenance',
+    'projectb',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
