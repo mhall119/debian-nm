@@ -296,8 +296,7 @@ class Process(models.Model):
         )
 
     def __repr__(self):
-        return "%s [%s %s->%s]" % (
-            self.lookup_key,
+        return "%s %s->%s" % (
             self.person.lookup_key,
             self.person.status,
             self.applying_for)

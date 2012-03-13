@@ -19,6 +19,7 @@ from django.core.management.base import BaseCommand, CommandError
 import django.db
 from django.conf import settings
 from django.db import connection, transaction
+from django.contrib.sites.models import Site
 import optparse
 import sys
 import datetime
@@ -32,6 +33,7 @@ log = logging.getLogger(__name__)
 
 class Checker(object):
     def __init__(self, quick=False, **kw):
+        self.site = Site.objects.get_current()
         if not quick:
             log.info("Importing dm keyring...")
             self.dm = frozenset(kmodels.list_dm())
@@ -43,6 +45,12 @@ class Checker(object):
             self.emeritus_dd = frozenset(kmodels.list_emeritus_dd())
             log.info("Importing removed_dd keyring...")
             self.removed_dd = frozenset(kmodels.list_removed_dd())
+
+    def _link(self, obj):
+        if self.site.domain == "localhost":
+            return "http://localhost:8000" + obj.get_absolute_url()
+        else:
+            return "https://%s%s" % (self.site.domain, obj.get_absolute_url())
 
     @transaction.commit_on_success
     def compute_am_ctte(self, **kw):
@@ -91,9 +99,9 @@ class Checker(object):
         for p in bmodels.Person.objects.filter(processes__is_active=True) \
                  .annotate(num_processes=Count("processes")) \
                  .filter(num_processes__gt=1):
-            log.warning("%s has %d open processes", p, p.num_processes)
+            log.warning("%s has %d open processes", self._link(p), p.num_processes)
             for idx, proc in enumerate(p.processes.filter(is_active=True)):
-                log.warning(" %d: %s (%s)", idx+1, proc.applying_for, proc.progress)
+                log.warning(" %d: %s (%s)", idx+1, self._link(proc), repr(proc))
 
     def check_am_must_have_uid(self, **kw):
         """
@@ -128,11 +136,11 @@ class Checker(object):
             try:
                 last_log = p.log.order_by("-logdate")[0]
             except IndexError:
-                log.warning("process %s has no log entries", repr(p))
+                log.warning("%s (%s) has no log entries", self._link(p), repr(p))
                 continue
             if p.progress != last_log.progress:
-                log.warning("process %s has progress %s but the last log entry has progress %s",
-                            repr(p), p.progress, last_log.progress)
+                log.warning("%s (%s) has progress %s but the last log entry has progress %s",
+                            self._link(p), repr(p), p.progress, last_log.progress)
 
     def check_enums(self, **kw):
         """
@@ -142,16 +150,16 @@ class Checker(object):
         progresses = [x[1] for x in const.ALL_PROGRESS]
 
         for p in bmodels.Person.objects.exclude(status__in=statuses):
-            log.warning("person %s has invalid status %s", p.lookup_key, p.status)
+            log.warning("%s: invalid status %s", self._link(p), p.status)
 
         for p in bmodels.Process.objects.exclude(applying_for__in=statuses):
-            log.warning("process %s has invalid applying_for %s", p.lookup_key, p.applying_for)
+            log.warning("%s: invalid applying_for %s", self._link(p), p.applying_for)
 
         for p in bmodels.Process.objects.exclude(progress__in=progresses):
-            log.warning("process %s has invalid progress %s", p.lookup_key, p.progress)
+            log.warning("%s: invalid progress %s", self._link(p), p.progress)
 
         for l in bmodels.Log.objects.exclude(progress__in=progresses):
-            log.warning("log entry %s has invalid progress %s", l.id, l.progress)
+            log.warning("%s: log entry %d has invalid progress %s", self._link(l.process), l.id, l.progress)
 
     def check_corner_cases(self, **kw):
         """
@@ -196,7 +204,7 @@ class Checker(object):
             for fpr, p in people_by_fpr.iteritems():
                 if p.status not in status: continue
                 if fpr not in keyring:
-                    log.warning("%s has status %s but is not in %s keyring", repr(p), p.status, keys)
+                    log.warning("%s has status %s but is not in %s keyring", self._link(p), p.status, keys)
 
             # Show keys that are in the keyring but do not match our db
             for fpr in keyring:
@@ -204,7 +212,7 @@ class Checker(object):
                 if p is None:
                     log.warning("Fingerprint %s is in %s keyring but not in our db", fpr, keys)
                 elif p.status not in status:
-                    log.warning("Fingerprint %s is in %s keyring its corresponding person %s has status %s", fpr, keys, repr(p), p.status)
+                    log.warning("Fingerprint %s is in %s keyring its corresponding person %s has status %s", fpr, keys, self._link(p), p.status)
 
     def check_ldap_consistency(self, quick=False, **kw):
         """
@@ -225,7 +233,7 @@ class Checker(object):
 
             if entry.single("gidNumber") == "800":
                 if person.status not in (const.STATUS_DD_U, const.STATUS_DD_NU):
-                    log.warning("%s has gidNumber 800 but the db has state %s", repr(person), person.status)
+                    log.warning("%s has gidNumber 800 but the db has state %s", self._link(person), person.status)
 
     def check_django_permissions(self, **kw):
         from django.contrib.auth.models import User
@@ -241,7 +249,7 @@ class Checker(object):
         nm_power_users = set()
         for a in bmodels.AM.objects.filter(Q(is_fd=True) | Q(is_dam=True)):
             if a.person.user is None:
-                log.warning("Person %s has no corresponding django user", a.person)
+                log.warning("%s: no corresponding django user", self._link(a.person))
             else:
                 nm_power_users.add(a.person.user.id)
 
