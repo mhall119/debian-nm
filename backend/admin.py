@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db import models
+import django.contrib.admin.widgets as adminwidgets
 import backend.models as bmodels
 
 
@@ -15,10 +17,9 @@ class LogInline(admin.TabularInline):
     model = bmodels.Log
 
 class ProcessAdmin(admin.ModelAdmin):
-    pass
-    #inlines = [
-    #    LogInline
-    #]
+    formfield_overrides = {
+        models.ManyToManyField: { 'widget': adminwidgets.FilteredSelectMultiple("Advocates", False, attrs=dict(rows=10)) }
+    }
 admin.site.register(bmodels.Process, ProcessAdmin)
 
 class LogAdmin(admin.ModelAdmin):
