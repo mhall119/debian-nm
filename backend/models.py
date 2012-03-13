@@ -34,6 +34,30 @@ import datetime
 #    checked/enforced/recomputed during daily maintenance procedures
 #
 
+# See http://stackoverflow.com/questions/454436/unique-fields-that-allow-nulls-in-django
+class CharNullField(models.CharField):
+    description = "CharField that stores NULL but returns ''"
+
+    # this is the value right out of the db, or an instance
+    def to_python(self, value):
+       if isinstance(value, models.CharField): # if an instance, just return the instance
+           return value
+       if value is None:
+           # if the db has a NULL, convert it into the Django-friendly '' string
+           return ""
+       else:
+           # otherwise, return just the value
+           return value
+
+    # catches value right before sending to db
+    def get_db_prep_value(self, value):
+       if value=="":
+           # if Django tries to save '' string, send the db None (NULL)
+           return None
+       else:
+           # otherwise, just pass the value
+           return value
+
 
 class Person(models.Model):
     """
@@ -74,7 +98,7 @@ class Person(models.Model):
     # This is null for people who still have not picked one
     uid = models.CharField("Debian account name", max_length=32, null=True, unique=True, blank=True)
     # OpenPGP fingerprint, NULL until one has been provided
-    fpr = models.CharField("OpenPGP key fingerprint", max_length=80, null=True, unique=True, blank=True)
+    fpr = CharNullField("OpenPGP key fingerprint", max_length=80, null=True, unique=True, blank=True)
     status = models.CharField("current status in the project", max_length=20, null=False,
                               choices=[x[1:3] for x in const.ALL_STATUS])
     status_changed = models.DateTimeField("when the status last changed", null=False, default=datetime.datetime.utcnow)
