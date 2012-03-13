@@ -5,7 +5,7 @@
 
 {% block relatedpages %}
 {{block.super}}
-<a href="{% url public_nmstatus key=process.lookup_key  %}">public version</a>
+<a href="{% url public_process key=process.lookup_key  %}">public version</a>
 {% endblock %}
 
 {% block head %}

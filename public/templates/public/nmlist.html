@@ -7,7 +7,7 @@
     {% for p in progs %}
     <tr>
         <td>{{p.last_change.date}}</td>
-        <td><a href="{% url public_nmstatus key=p.lookup_key %}">{{p.person}}</a></td>
+	<td><a href="{{ p.get_absolute_url }}">{{p.person}}</a></td>
     </tr>
     {% endfor %}
 </table>

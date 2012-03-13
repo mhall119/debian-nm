@@ -127,6 +127,10 @@ class Person(models.Model):
     def __repr__(self):
         return "%s <%s> [uid:%s, status:%s]" % (self.fullname.encode("unicode_escape"), self.email, self.uid, self.status)
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ("public_person", (), dict(key=self.lookup_key))
+
     @property
     def active_process(self):
         """
@@ -194,6 +198,10 @@ class AM(models.Model):
             "f" if self.is_fd else "-",
             "d" if self.is_dam else "-",
             self.slots)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ("public_person", (), dict(key=self.person.lookup_key))
 
     def applicant_stats(self):
         """
@@ -293,6 +301,10 @@ class Process(models.Model):
             self.person.lookup_key,
             self.person.status,
             self.applying_for)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ("public_process", (), dict(key=self.lookup_key))
 
     @property
     def lookup_key(self):

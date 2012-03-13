@@ -26,6 +26,7 @@ urlpatterns = patterns('public.views',
     url(r'^people$', 'people', name="public_people"),
     url(r'^person/(?P<key>[^/]+)$', 'person', name="public_person"),
     url(r'^nmlist$', 'nmlist', name="public_nmlist"),
-    url(r'^nmstatus/(?P<key>[^/]+)$', 'nmstatus', name="public_nmstatus"),
+    url(r'^nmstatus/(?P<key>[^/]+)$', 'process', name="public_nmstatus"),
+    url(r'^process/(?P<key>[^/]+)$', 'process', name="public_process"),
     url(r'^progress/(?P<progress>\w+)$', 'progress', name="public_progress"),
 )

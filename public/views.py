@@ -85,7 +85,7 @@ def nmlist(request):
                               context,
                               context_instance=template.RequestContext(request))
 
-def nmstatus(request, key):
+def process(request, key):
     process = bmodels.Process.lookup(key)
     if process is None:
         return redirect(reverse('root_faq') + "#process-lookup")
