@@ -12,10 +12,6 @@ import psycopg2
 
 CACHE_FILE="make-dm-list.cache"
 
-conn = psycopg2.connect("service=projectb")
-conn.set_client_encoding('UTF-8')
-
-
 KEYRINGS = getattr(settings, "KEYRINGS", "/srv/keyring.debian.org/keyrings")
 
 # Reused from dak, to exactly follow what they do
@@ -107,6 +103,8 @@ def warning(*args):
 
 class Maintainers(object):
     def __init__(self):
+        self.conn = psycopg2.connect("service=projectb")
+        self.conn.set_client_encoding('UTF-8')
         self.db = dict()
         self.dak_names = None
         if os.path.exists(CACHE_FILE) and os.path.getmtime(CACHE_FILE) > time.time() - 3600*12:
@@ -129,7 +127,7 @@ class Maintainers(object):
             self.db[rec["fpr"]] = rec
 
         verbose("Add fingerprint, uid and maintainer IDs...")
-        cur = conn.cursor()
+        cur = self.conn.cursor()
         cur.execute("""
         SELECT f.fingerprint, f.id, f.uid, m.id
           FROM fingerprint as f, maintainer as m, uid as u
@@ -167,7 +165,7 @@ class Maintainers(object):
         rec["pdb_u_uid"] = None
         rec["pdb_u_name"] = None
 
-        cur = conn.cursor()
+        cur = self.conn.cursor()
 
         # Add fingerprint and uid IDs, which can be matched exactly by fingerprint
         cur.execute("""
@@ -206,7 +204,7 @@ class Maintainers(object):
             self.approx_match(rec)
 
     def is_dmua(self, source):
-        cur = conn.cursor()
+        cur = self.conn.cursor()
         cur.execute("""
         SELECT dm_upload_allowed
           FROM source
@@ -223,7 +221,7 @@ class Maintainers(object):
         if rec.get("pdb_mid", None) is None:
             #warning("%s: missing maintainer ID" % rec["uid"])
             return
-        cur = conn.cursor()
+        cur = self.conn.cursor()
         cur.execute("""
         SELECT s.source
           FROM src_uploaders u, source s
