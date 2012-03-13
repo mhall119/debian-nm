@@ -13,6 +13,8 @@ import psycopg2
 CACHE_FILE="make-dm-list.cache"
 
 conn = psycopg2.connect("service=projectb")
+conn.set_client_encoding('UTF-8')
+
 
 KEYRINGS = getattr(settings, "KEYRINGS", "/srv/keyring.debian.org/keyrings")
 
