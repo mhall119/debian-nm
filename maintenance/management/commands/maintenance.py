@@ -248,36 +248,23 @@ class Checker(object):
             log.info("Skipping check_dmlist: %s", e)
             return
 
-        def update_status(p):
-            if p.status == const.STATUS_MM:
-                log.info("%s status %s->%s", self._link(p), p.status, const.STATUS_DM)
-            elif p.status == const.STATUS_MM_GA:
-                log.info("%s status %s->%s", self._link(p), p.status, const.STATUS_DM_GA)
+        def check_status(p):
+            if p.status not in (const.STATUS_MM, const.STATUS_MM_GA):
+                log.info("%s DB status is %s but it appears to projectb to be a DM instead")
+
         for maint in maints.db.itervalues():
-            # Lookup is a custom function I wrote that matches fingerprints, emails or uids
             person = bmodels.Person.lookup(maint["fpr"])
             if person is not None:
-                log.info("DM %s matches by fingerprint with person %s", maint["email"], repr(person))
-                update_status(person)
+                check_status(person)
                 continue
+
             person = bmodels.Person.lookup(maint["email"])
             if person is not None:
-                log.info("DM %s matches by email with person %s", maint["email"], repr(person))
-                update_status(person)
-                if person.fpr is None:
-                    log.info("%s fingerprint None->%s", self._link(person), maint["fpr"])
-                    person.fpr = maint["fpr"]
+                log.info("%s matches by email %s with projectb but not by key fingerprint", self._link(person), maint["email"])
+                check_status(person)
                 continue
-            name = maint["pdb_u_name"] #.decode("utf-8")
-            cn, sn = name.split(None, 1)
-            p = bmodels.Person(
-                cn=cn,
-                sn=sn,
-                email=maint["email"],
-                fpr=maint["fpr"],
-                status=const.STATUS_DM, # hopefully
-            )
-            log.info("Created new DM %s", repr(p))
+
+            log.info("%s/%s exists in projectb but not in our DB", maint["email"], maint["fpr"])
 
 
     def check_django_permissions(self, **kw):
