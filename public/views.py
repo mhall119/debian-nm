@@ -203,16 +203,20 @@ SIMPLIFY_STATUS = {
     const.STATUS_REMOVED_DM: "removed",
 }
 
-def people(request):
-    people = []
+def people(request, status=None):
+    objects = bmodels.Person.objects.all().order_by("uid", "sn", "cn")
+    if status:
+        objects = objects.filter(status=status)
 
-    for p in bmodels.Person.objects.all().order_by("uid", "sn", "cn"):
+    people = []
+    for p in objects:
         p.simple_status = SIMPLIFY_STATUS.get(p.status, None)
         people.append(p)
 
     return render_to_response("public/people.html",
                               dict(
                                   people=people,
+                                  status=status,
                               ),
                               context_instance=template.RequestContext(request))
 
