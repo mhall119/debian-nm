@@ -105,13 +105,14 @@ $(function() {
 <h1>Debian New Member - Process List</h2>
 
 <div id="intro">
-This is a list of all processes that exist in the database. If you have
-applied then you should find yourself here somewhere. If you have passed all
-checks and been approved as a Debian developer more than 6 months ago, you will
-be listed on the <a href="{% url people %}">people</a> page instead.
+This is a list of all <a href="#open">open</a> and <a href="#done">recently closed</a> processes.
+If you have applied then you should find yourself here somewhere. If you have
+passed all checks and been approved as a Debian developer more than 6 months
+ago, you will be listed on the <a href="{% url people %}">people</a> page
+instead.
 </div>
 
-<h2>Still in progress</h2>
+<h2 id="open">Still in progress</h2>
 
 <ul class="menubar">
     <li><a class="filter" href="#all">All</a></li>
@@ -125,7 +126,7 @@ be listed on the <a href="{% url people %}">people</a> page instead.
 
 {% usemacro process_table open "open" %}
 
-<h2>Recently done</h2>
+<h2 id="done">Recently closed</h2>
 
 {% usemacro process_table done "done" %}
 
