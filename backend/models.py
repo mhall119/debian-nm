@@ -20,6 +20,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from . import const
 import datetime
+import urllib
 
 # Implementation notes
 #
@@ -168,6 +169,26 @@ class Person(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ("person", (), dict(key=self.lookup_key))
+
+    def get_ddpo_url(self):
+        return u"http://qa.debian.org/developer.php?%s" % urllib.urlencode(dict(login=self.email))
+
+    def get_ddportfolio_url(self):
+        parms = dict(
+            email=self.email,
+            name=self.fullname.encode("utf-8"),
+            gpgfp="",
+            username="",
+            nonddemail=self.email,
+            aliothusername="",
+            wikihomepage="",
+            forumsid=""
+        )
+        if self.fpr:
+            parms["gpgfp"] = self.fpr
+        if self.uid:
+            parms["username"] = self.uid
+        return u"http://portfolio.debian.net/result?%s" % urllib.urlencode(parms)
 
     @property
     def active_process(self):

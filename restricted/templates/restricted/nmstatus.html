@@ -2,11 +2,12 @@
 {% load const %}
 {% load js %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_nmstatus key=process.lookup_key %}">{{process}}</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{{person.get_absolute_url}}">{{person.lookup_key}}</a> / <a href="{% url restricted_nmstatus key=process.lookup_key %}">progress</a>{% endblock %}
 
 {% block relatedpages %}
 {{block.super}}
-<a href="{% url public_process key=process.lookup_key  %}">public version</a>
+<a href="{{person.get_ddpo_url}}">DDPO</a>
+<a href="{{person.get_ddportfolio_url}}">DDPortfolio</a>
 {% if request.person.is_admin %}
 <a href="{% url admin:backend_process_change process.id %}">admin</a>
 {% endif %}
@@ -55,30 +56,26 @@ $(function() {
 
 {% block content %}
 
-<h1><a href="http://qa.debian.org/developer.php?login={{person.email}}">{{person.fullname}}</a></h1>
+<h1>{{person.fullname}}</h1>
 
 <h2>Personal information</h2>
 
 <table class="personinfo">
-    <tr><th>First name</th><td>{{person.cn}}</td></tr>
-    <tr><th>Middle name</th><td>{{person.mn|default:""}}</td></tr>
-    <tr><th>Last name</th><td>{{person.sn|default:""}}</td></tr>
-    <tr><th>Email</th><td>{{person.email}}</td></tr>
+    <tr><th>Applicant</th><td><a href="{{person.get_absolute_url}}">{{person.fullname}} &lt;{{person.email}}&gt;</a></td></tr>
     <tr><th>Account name</th><td>{{person.uid|default:"none chosen yet"}}</td></tr>
     <tr><th>OpenPGP fingerprint</th><td>{{person.fpr}}</td></tr>
+    {% if process.manager %}
+    <tr><th>Manager</th><td><a href="{{process.manager.get_absolute_url}}">{{process.manager.person.uid}}</a></td></tr>
+    {% endif %}
     <tr>
         <th>Advocate{{process.advocates.count|pluralize}}</th>
         <td>
             {% for a in process.advocates.all %}
-            {% if a.is_am %}
-            <a href="{% url restricted_amprofile uid=a.uid %}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
-            {% else %}
-            {{a.uid}}{% if not forloop.last %},{% endif %}
-            {% endif %}
+            <a href="{{ a.get_absolute_url }}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
             {% endfor %}
         </td>
     </tr>
-    <tr><th>Current status</th><td>{{person.status}}</td></tr>
+    <tr><th>Process</th><td>{{person.status|desc_status}} → {{process.applying_for|desc_status}}</td></tr>
     {% if can_edit %}
     <tr><th>FD comments</th><td>{{person.fd_comment}}</td></tr>
     {% endif %}
@@ -132,13 +129,9 @@ Shortcuts:
         {% if am.is_fd %}
         <td><a href="{% url admin:backend_log_change l.id %}">edit</a></td>
         {% endif %}
-        <td>{{l.logdate}}</td>
+        <td>{{l.logdate|date:"Y-m-d"}}</td>
         <td>
-            {% if l.changed_by.is_am %}
-            <a href="{% url restricted_amprofile uid=l.changed_by.uid %}">{{l.changed_by.uid}}</a>
-            {% else %}
-            {{l.changed_by.uid}}
-            {% endif %}
+            <a href="{{l.changed_by.get_absolute_url}}">{{l.changed_by.uid}}</a>
         </td>
         <td>{{l.progress|desc_progress}}</td>
         <td>{{l.logtext}}</td>

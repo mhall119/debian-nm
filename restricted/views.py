@@ -109,7 +109,7 @@ def ammain(request):
                               context_instance=template.RequestContext(request))
 
 def make_am_form(editor):
-    excludes = ["person", "is_am_ctte"]
+    excludes = ["person", "is_am_ctte", "created"]
 
     if editor.is_dam:
         pass
@@ -257,14 +257,18 @@ def person(request, key):
     person = bmodels.Person.lookup(key)
     if person is None:
         return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
+    process = person.active_process
 
-    cur_person = request.user.get_profile()
-    am = cur_person.am
+    def next_step():
+        if process:
+            return redirect("restricted_nmstatus", key=process.lookup_key)
+        else:
+            return redirect(person.person.get_absolute_url())
 
-    if not person.can_be_edited(am):
-        return redirect('public_person', key=key)
+    if not person.can_be_edited(request.am):
+        return next_step()
 
-    PersonForm = make_person_form(am)
+    PersonForm = make_person_form(request.am)
 
     form = None
     if request.method == 'POST':
@@ -272,15 +276,14 @@ def person(request, key):
         if form.is_valid():
             form.save()
             # TODO: message that it has been saved
+            return next_step()
     else:
         form = PersonForm(instance=person)
 
     return render_to_response("restricted/person.html",
                               dict(
                                   person=person,
-                                  am=am,
-                                  cur_person=cur_person,
-                                  active_process=person.active_process,
+                                  process=process,
                                   form=form,
                               ),
                               context_instance=template.RequestContext(request))
@@ -330,7 +333,7 @@ def newprocess(request, key):
             )
             log.save()
             # TODO: message
-            return redirect('public_person', key=key)
+            return redirect('person', key=key)
     else:
         form = NewProcessForm(initial=dict(logtext="New process created"))
 

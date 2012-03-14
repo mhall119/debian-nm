@@ -60,6 +60,8 @@
 {% block breadcrumbs %}{{block.super}} / <a href="{% url people %}">people</a> / {{person.uid|default:person.fullname}}{% endblock %}
 
 {% block relatedpages %}
+<a href="{{person.get_ddpo_url}}">DDPO</a>
+<a href="{{person.get_ddportfolio_url}}">DDPortfolio</a>
 {% if request.am.is_admin %}
 <a href="{% url admin:backend_person_change person.id  %}">admin</a>
 {% endif %}
@@ -86,6 +88,9 @@
             {% if am.is_dam %}dam,{% endif %}
             {% if am.is_am_ctte %}am ctte,{% endif %}
             {{person.am.processed.count}} applicants processed
+            {% if request.am == am or request.am.is_admin %}
+            <a href="{% url restricted_amprofile uid=am.person.uid %}">[preferences]</a>
+            {% endif %}
             {% if request.am.is_admin %}
             <a href="{% url admin:backend_am_change am.id %}">[admin]</a>
             {% endif %}

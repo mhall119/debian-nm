@@ -21,10 +21,14 @@ from django.views.generic.simple import direct_to_template, redirect_to
 
 urlpatterns = patterns('restricted.views',
     url(r'^$', direct_to_template, {'template': 'restricted/index.html'}, name="restricted_index"),
+    # AM Personal page
     url(r'^ammain$', 'ammain', name="restricted_ammain"),
+    # AM preferences editor
     url(r'^amprofile(?:/(?P<uid>\w+))?$', 'amprofile', name="restricted_amprofile"),
+    # Update process status
     url(r'^nmstatus/(?P<key>[^/]+)$', 'nmstatus', name="restricted_nmstatus"),
     # Edit personal info
     url(r'^person/(?P<key>[^/]+)$', 'person', name="restricted_person"),
+    # Create new process for a person
     url(r'^newprocess/(?P<key>[^/]+)$', 'newprocess', name="restricted_newprocess"),
 )
