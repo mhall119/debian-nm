@@ -168,73 +168,6 @@ def amprofile(request, uid=None):
                               context_instance=template.RequestContext(request))
 
 
-def make_statusupdateform(editor):
-    if editor.is_fd:
-        choices = [(x[1], "%s - %s" % (x[1], x[2])) for x in const.ALL_PROGRESS]
-    else:
-        choices = [x[1:3] for x in const.ALL_PROGRESS if x[0] in ("PROGRESS_AM", "PROGRESS_AM_HOLD", "PROGRESS_AM_OK")]
-
-    class StatusUpdateForm(forms.Form):
-        progress = forms.ChoiceField(
-            required=True,
-            label=_("Progress"),
-            choices=choices
-        )
-        logtext = forms.CharField(
-            required=True,
-            label=_("Log text"),
-            widget=forms.Textarea(attrs=dict(rows=5, cols=80))
-        )
-    return StatusUpdateForm
-
-
-@backend.auth.is_am
-def nmstatus(request, key):
-    process = bmodels.Process.lookup(key)
-    if process is None:
-        return http.HttpResponseNotFound("Process %s not found." % key)
-
-    person = process.person
-
-    cur_person = request.user.get_profile()
-    am = cur_person.am
-
-    can_edit = process.is_active and (am.is_fd or am.is_dam or am == process.manager)
-
-    if can_edit:
-        StatusUpdateForm = make_statusupdateform(am)
-        if request.method == 'POST':
-            form = StatusUpdateForm(request.POST)
-            if form.is_valid():
-                process.progress = form.cleaned_data["progress"]
-                process.save()
-                log = bmodels.Log(
-                    changed_by=cur_person,
-                    process=process,
-                    progress=process.progress,
-                    logtext=form.cleaned_data["logtext"]
-                )
-                log.save()
-                form = StatusUpdateForm(initial=dict(progress=process.progress))
-        else:
-            form = StatusUpdateForm(initial=dict(progress=process.progress))
-    else:
-        form = None
-
-    log = process.log.order_by("logdate")
-
-    return render_to_response("restricted/nmstatus.html",
-                              dict(
-                                  process=process,
-                                  person=person,
-                                  cur_person=cur_person,
-                                  am=am,
-                                  log=log,
-                                  form=form,
-                                  can_edit=can_edit,
-                              ),
-                              context_instance=template.RequestContext(request))
-
 def make_person_form(editor):
     excludes = ["user", "created"]
 
@@ -261,9 +194,9 @@ def person(request, key):
 
     def next_step():
         if process:
-            return redirect("restricted_nmstatus", key=process.lookup_key)
+            return redirect(process.get_absolute_url())
         else:
-            return redirect(person.person.get_absolute_url())
+            return redirect(person.get_absolute_url())
 
     if not person.can_be_edited(request.am):
         return next_step()

@@ -50,3 +50,8 @@ ul.menubar li a {
     text-decoration: none;
     font-weight: bold;
 }
+
+span.fpr {
+    white-space: pre;
+    font-family: monospace;
+}

@@ -16,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import template
+from django.utils.html import conditional_escape
+from django.utils.safestring import mark_safe
 from backend import const
 
 register = template.Library()
@@ -35,3 +37,27 @@ def seq_progress(value):
 @register.filter
 def seq_status(value):
     return const.SEQ_STATUS.get(value, -1)
+
+@register.filter
+def editable_by(value, arg):
+    return value.can_be_edited(arg)
+
+def _splitfp(val):
+    for i in range(10):
+        yield val[i*4:(i+1)*4]
+
+@register.filter
+def fingerprint(value, autoescape=None):
+    if value is None:
+        return "None"
+
+    if autoescape:
+        esc = conditional_escape
+    else:
+        esc = lambda x: x
+
+    if len(value) == 40:
+        formatted = "%s %s %s %s %s  %s %s %s %s %s" % tuple(_splitfp(value))
+    return mark_safe("<span class='fpr'>%s</span>" % esc(formatted))
+fingerprint.needs_autoescape = True
+

@@ -1,5 +1,5 @@
 {% extends "restricted/base.html" %}
-{% load const %}
+{% load nm %}
 
 {% block breadcrumbs %}{{block.super}} / <a href="{{person.get_absolute_url}}">{{person.uid}}</a> / <a href="{% url restricted_amprofile uid=person.uid %}">am settings</a>{% endblock %}
 
@@ -41,7 +41,7 @@
 <tr>
     <td>{{p.started.date}}</td>
     <td>{{p.progress|desc_progress}}</td>
-    <td><a href="{% url restricted_nmstatus key=p.lookup_key %}">{{p.person}}</a></td>
+    <td><a href="{{ p.get_absolute_url }}">{{p.person}}</a></td>
     <td>TODO: logs</td>
 </tr>
 {% endfor %}

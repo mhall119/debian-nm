@@ -18,6 +18,7 @@
 from django import http, template, forms
 from django.shortcuts import render_to_response, redirect
 from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
 import backend.models as bmodels
 from backend import const
 import datetime
@@ -81,21 +82,38 @@ def processes(request):
                               context,
                               context_instance=template.RequestContext(request))
 
+def make_statusupdateform(editor):
+    if editor.is_fd:
+        choices = [(x[1], "%s - %s" % (x[1], x[2])) for x in const.ALL_PROGRESS]
+    else:
+        choices = [x[1:3] for x in const.ALL_PROGRESS if x[0] in ("PROGRESS_AM", "PROGRESS_AM_HOLD", "PROGRESS_AM_OK")]
+
+    class StatusUpdateForm(forms.Form):
+        progress = forms.ChoiceField(
+            required=True,
+            label=_("Progress"),
+            choices=choices
+        )
+        logtext = forms.CharField(
+            required=True,
+            label=_("Log text"),
+            widget=forms.Textarea(attrs=dict(rows=5, cols=80))
+        )
+    return StatusUpdateForm
+
 def process(request, key):
     process = bmodels.Process.lookup(key)
     if process is None:
-        return redirect(reverse('root_faq') + "#process-lookup")
+        return http.HttpResponseNotFound("Process %s not found." % key)
+
+    ctx = dict(
+        process=process,
+        person=process.person,
+    )
 
     log = list(process.log.order_by("logdate", "progress"))
-    started = log[0].logdate
-    last_change = log[-1].logdate
-
-    distilled_log = []
-    last_progress = None
-    for l in log:
-        if last_progress != l.progress:
-            distilled_log.append((l.progress, l.changed_by, l.logdate))
-            last_progress = l.progress
+    ctx["started"] = log[0].logdate
+    ctx["last_change"] = log[-1].logdate
 
     # Map unusual steps to their previous usual ones
     unusual_step_map = {
@@ -123,18 +141,53 @@ def process(request, key):
         const.PROGRESS_DONE,
     )
 
-    # Index of current step
+    # Add past/current/future timeline
     curstep_idx = steps.index(curstep)
+    ctx["steps"] = steps
+    ctx["curstep_idx"] = curstep_idx
 
-    return render_to_response("public/nmstatus.html",
-                              dict(
-                                  process=process,
-                                  started=started,
-                                  last_change=last_change,
-                                  distilled_log=distilled_log,
-                                  steps=steps,
-                                  curstep_idx=curstep_idx,
-                              ),
+    am = request.am
+    if am:
+        can_edit = process.is_active and (am.is_fd or am.is_dam or am == process.manager)
+        ctx["can_edit"] = can_edit
+        ctx["log"] = log
+
+        if can_edit:
+            StatusUpdateForm = make_statusupdateform(am)
+            if request.method == 'POST':
+                form = StatusUpdateForm(request.POST)
+                if form.is_valid():
+                    process.progress = form.cleaned_data["progress"]
+                    process.save()
+                    log = bmodels.Log(
+                        changed_by=cur_person,
+                        process=process,
+                        progress=process.progress,
+                        logtext=form.cleaned_data["logtext"]
+                    )
+                    log.save()
+                    form = StatusUpdateForm(initial=dict(progress=process.progress))
+            else:
+                form = StatusUpdateForm(initial=dict(progress=process.progress))
+        else:
+            form = None
+        ctx["form"] = form
+    else:
+        ctx["can_edit"] = False
+        # Summarise log for privacy
+        distilled_log = []
+        last_progress = None
+        for l in log:
+            if last_progress != l.progress:
+                distilled_log.append(dict(
+                    progress=l.progress,
+                    changed_by=l.changed_by,
+                    logdate=l.logdate,
+                ))
+                last_progress = l.progress
+        ctx["log"] = distilled_log
+
+    return render_to_response("public/process.html", ctx,
                               context_instance=template.RequestContext(request))
 
 def people(request):
@@ -203,18 +256,9 @@ def progress(request, progress):
             .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
             .order_by("started")
 
-    cur_am = None
-    cur_person = None
-    if not request.user.is_anonymous():
-        cur_person = request.user.get_profile()
-        if cur_person.is_am:
-            cur_am = cur_person.am
-
     return render_to_response("public/progress.html",
                               dict(
                                   progress=progress,
-                                  cur_person=cur_person,
-                                  cur_am=cur_am,
                                   processes=processes,
                               ),
                               context_instance=template.RequestContext(request))

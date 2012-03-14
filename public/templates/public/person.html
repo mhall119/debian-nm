@@ -1,7 +1,12 @@
 {% extends "public/base.html" %}
-{% load const %}
+{% load nm %}
 {% load macros %}
-{% load perms %}
+{% load js %}
+
+{% block head_resources %}
+  {{block.super}}
+  {% jsinclude "nm" %}
+{% endblock %}
 
 {% macro process_table processes %}
 <table>
@@ -14,14 +19,11 @@
             <th>Progress</th>
             <th>AM</th>
             <th>Advocate(s)</th>
-            {% if request.am %}
-            <th>Extras</th>
-            {% endif %}
     </thead>
     <tbody>
         {% for p in processes %}
         <tr>
-	    <td><a href="{{ p.get_absolute_url }}" title="{{p.person.fullname}}">{{p.person.uid|default:p.person.fullname}}</a></td>
+        <td><a href="{{ p.get_absolute_url }}" title="{{p.person.fullname}}">{{p.person.uid|default:p.person.fullname}}</a></td>
             <td>{{p.started.date}}</td>
             <td>{{p.ended.date}}</td>
             <td>{{p.applying_for|desc_status}} ({{p.is_active|yesno:"in progress,done"}})</td>
@@ -34,23 +36,16 @@
             </td>
             <td>
                 {% if p.manager %}
-		<a href="{{ p.manager.get_absolute_url }}" title="{{p.manager.person.fullname}}">{{p.manager.person.uid|default:"None"}}</a>
+                <a href="{{ p.manager.get_absolute_url }}" title="{{p.manager.person.fullname}}">{{p.manager.person.uid|default:"None"}}</a>
                 {% else %}
                 None
                 {% endif %}
             </td>
             <td>
                 {% for a in p.advocates.all %}
-		<a href="{{ a.get_absolute_url }}" title="{{a.fullname}}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
+                <a href="{{ a.get_absolute_url }}" title="{{a.fullname}}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
                 {% endfor %}
             </td>
-            {% if request.am %}
-            <td>
-                {% if p|editable_by:request.am %}
-                <a href="{% url restricted_nmstatus key=p.lookup_key %}">edit</a>
-                {% endif %}
-            </td>
-            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
@@ -77,7 +72,7 @@
 
 <table class="personinfo">
     <tr><th>Account name</th><td>{{person.uid|default:"None chosen yet"}}</td></tr>
-    <tr><th>OpenPGP fingerprint</th><td>{{person.fpr}}</td></tr>
+    <tr><th>OpenPGP fingerprint</th><td>{{person.fpr|fingerprint}}</td></tr>
     <tr><th>Status</th><td>{{person.status|desc_status}} since {{person.status_changed}}</td></tr>
     {% if am %}
     <tr>
