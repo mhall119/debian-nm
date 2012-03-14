@@ -236,7 +236,7 @@ def nmstatus(request, key):
                               context_instance=template.RequestContext(request))
 
 def make_person_form(editor):
-    excludes = ["user"]
+    excludes = ["user", "created"]
 
     if editor.is_dam:
         pass
