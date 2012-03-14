@@ -190,18 +190,29 @@ def process(request, key):
     return render_to_response("public/process.html", ctx,
                               context_instance=template.RequestContext(request))
 
-def people(request):
-    by_tag = dict()
-    for p in bmodels.Person.objects.all().order_by("uid", "sn", "cn"):
-        by_tag.setdefault(p.status, []).append(p)
+SIMPLIFY_STATUS = {
+    const.STATUS_MM: "new",
+    const.STATUS_MM_GA: "new",
+    const.STATUS_DM: "dm",
+    const.STATUS_DM_GA: "dm",
+    const.STATUS_DD_U: "dd",
+    const.STATUS_DD_NU: "dd",
+    const.STATUS_EMERITUS_DD: "emeritus",
+    const.STATUS_EMERITUS_DM: "emeritus",
+    const.STATUS_REMOVED_DD: "removed",
+    const.STATUS_REMOVED_DM: "removed",
+}
 
-    by_status = dict()
-    for key, tag, desc in const.ALL_STATUS:
-        by_status[key[7:]] = by_tag.get(tag, [])
+def people(request):
+    people = []
+
+    for p in bmodels.Person.objects.all().order_by("uid", "sn", "cn"):
+        p.simple_status = SIMPLIFY_STATUS.get(p.status, None)
+        people.append(p)
 
     return render_to_response("public/people.html",
                               dict(
-                                  people=by_status,
+                                  people=people,
                               ),
                               context_instance=template.RequestContext(request))
 

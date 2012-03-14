@@ -40,7 +40,6 @@ $(function() {
             $.each(filters[filter], function(idx, val) { whitelist[val] = true; });
         else
             whitelist = null;
-        console.log("WL", whitelist);
 
         $(".proctable.open tbody tr").each(function(el) {
             var tag = this.getAttribute("tag");
@@ -49,7 +48,6 @@ $(function() {
             else
                 $(this).toggle(true);
         });
-        console.log(filter);
         return false;
     });
 });
