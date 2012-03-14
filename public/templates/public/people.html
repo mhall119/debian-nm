@@ -1,25 +1,52 @@
 {% extends "public/base.html" %}
-{% load macros %}
+{% load nm %}
+{% load js %}
 
-{% macro people_table plist %}
-{% if plist %}
-<table>
-<thead>
-    <tr><th>Account name</th><th>Name</th></tr>
-</thead>
-<tbody>
-    {% for p in plist %}
-    <tr>
-        <td>{{p.uid|default:"None chosen yet"}}</td>
-	<td><a href="{{ p.get_absolute_url }}">{{p.fullname}}</a></td>
-    </tr>
-    {% endfor %}
-</tbody>
-</table>
-{% else %}
-<p><i>none</i></p>
-{% endif %}
-{% endmacro %}
+{% block head_resources %}
+  {{block.super}}
+  {% jsinclude "tables" %}
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+<script type="text/javascript">
+$(function() {
+    var perstable = $("#perstable");
+    var tbody = perstable.find("tbody");
+    var cached_rows = {
+        "all": tbody.find("tr"),
+        "new": tbody.find("tr.new"),
+        "dm": tbody.find("tr.dm"),
+        "dd": tbody.find("tr.dd"),
+        "emeritus": tbody.find("tr.emeritus"),
+        "removed": tbody.find("tr.removed"),
+    };
+
+    perstable.tablesorter({
+        textExtraction: function(node) {
+            val = node.getAttribute("val");
+            if (val == null)
+                val = node.textContent || node.innerText;
+            return val;
+        },
+    });
+
+    $("a.filter").click(function(el) {
+        // Retrieve the filter name
+        var filter = this.getAttribute("href").substr(1);
+
+        if (filter == "all")
+            cached_rows["all"].show();
+        else
+        {
+            cached_rows["all"].hide();
+            cached_rows[filter].show();
+        }
+        return false;
+    });
+});
+</script>
+{% endblock %}
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url people %}">people</a>{% endblock %}
 
@@ -29,54 +56,42 @@
 
 <div id="intro">
 This is a list of all the people known in the database, grouped by status in
-the project.
+the project. You can sort the table by clicking/shift+clicking on headers, and
+filter it using the filters below.
 
 Note that the data import for things that were historically not handled by the
 NM website is still incomplete.
 </div>
 
-<ul>
-    <li><a href="#mm">People with no official status (yet)</a></li>
-    <li><a href="#mm-ga">People with no official status (yet), but a guest account</a></li>
-    <li><a href="#dm">Debian Maintainers</a></li>
-    <li><a href="#dm-ga">Debian Maintainers, with a guest account</a></li>
-    <li><a href="#dd-u">Debian Developers, uploading packages</a></li>
-    <li><a href="#dd-nu">Debian Developers</a></li>
-    <li><a href="#dd-e">Emeritus Debian Developers</a></li>
-    <li><a href="#dm-e">Emeritus Debian Maintainers</a></li>
-    <li><a href="#dd-r">Removed DD accounts</a></li>
-    <li><a href="#dm-r">Removed DM accounts</a></li>
+<ul class="menubar">
+    <li><a class="filter" href="#all">All</a></li>
+    <li><a class="filter" href="#new">New</a></li>
+    <li><a class="filter" href="#dm">DM</a></li>
+    <li><a class="filter" href="#dd">DD</a></li>
+    <li><a class="filter" href="#emeritus">Emeritus</a></li>
+    <li><a class="filter" href="#removed">Removed</a></li>
 </ul>
 
-<h2 id="mm">People with no official status (yet)</h2>
-{% usemacro people_table people.MM %}
-
-<h2 id="mm-ga">People with no official status (yet), but a guest account</h2>
-{% usemacro people_table people.MM_GA %}
-
-<h2 id="dm">Debian Maintainers</h2>
-{% usemacro people_table people.DM %}
-
-<h2 id="dm-ga">Debian Maintainers, with a guest account</h2>
-{% usemacro people_table people.DM_GA %}
-
-<h2 id="dd-u">Debian Developers, uploading packages</h2>
-{% usemacro people_table people.DD_U %}
-
-<h2 id="dd-nu">Debian Developers</h2>
-{% usemacro people_table people.DD_NU %}
-
-<h2 id="dd-e">Emeritus Debian Developers</h2>
-{% usemacro people_table people.DD_E %}
-
-<h2 id="dm-e">Emeritus Debian Maintainers</h2>
-{% usemacro people_table people.DM_E %}
-
-<h2 id="dd-r">Removed DD accounts</h2>
-{% usemacro people_table people.DD_R %}
-
-<h2 id="dm-r">Removed DM accounts</h2>
-{% usemacro people_table people.DM_R %}
+<table id="perstable" class="tablesorter {{class}}">
+<thead>
+    <tr>
+        <th>Status</th>
+        <th>Since</th>
+        <th>Account name</th>
+        <th>Name</th>
+    </tr>
+</thead>
+<tbody>
+    {% for p in people %}
+    <tr class="{{p.simple_status}}">
+        <td val="{{p.status|seq_status}}">{{p.status|desc_status}}</td>
+        <td>{{p.status_changed|date:"Y-m-d"}}</td>
+        <td>{{p.uid|default:"None chosen yet"}}</td>
+        <td><a href="{{ p.get_absolute_url }}">{{p.fullname}}</a></td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
 
 {% endblock %}
 
