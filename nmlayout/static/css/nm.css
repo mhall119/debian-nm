@@ -30,3 +30,23 @@ table.tablesorter th.headerSortDown:after {
     content: "▼";
 }
 
+ul.horizontal {
+    list-style-type: none;
+}
+ul.horizontal li {
+    display: inline;
+}
+
+ul.menubar {
+    list-style-type: none;
+    margin: auto;
+    margin-bottom: 1em;
+}
+ul.menubar li {
+    display: inline;
+    padding: 1em;
+}
+ul.menubar li a {
+    text-decoration: none;
+    font-weight: bold;
+}
