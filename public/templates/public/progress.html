@@ -17,9 +17,6 @@
             <th>Progress</th>
             <th>AM</th>
             <th>Advocate(s)</th>
-            {% if request.am %}
-            <th>Extras</th>
-            {% endif %}
     </thead>
     <tbody>
         {% for p in processes %}
@@ -41,13 +38,6 @@
                 <a href="{{ a.get_absolute_url }}" title="{{a.fullname}}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
                 {% endfor %}
             </td>
-            {% if request.am %}
-            <td>
-                {% if p|editable_by:request.am %}
-                <a href="{% url restricted_nmstatus key=p.lookup_key %}">edit</a>
-                {% endif %}
-            </td>
-            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
