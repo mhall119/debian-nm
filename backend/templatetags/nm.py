@@ -58,6 +58,8 @@ def fingerprint(value, autoescape=None):
 
     if len(value) == 40:
         formatted = "%s %s %s %s %s  %s %s %s %s %s" % tuple(_splitfp(value))
+    else:
+        formatted = value
     return mark_safe("<span class='fpr'>%s</span>" % esc(formatted))
 fingerprint.needs_autoescape = True
 
