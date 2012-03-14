@@ -1,5 +1,6 @@
 {% extends "restricted/base.html" %}
 {% load const %}
+{% load js %}
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_nmstatus key=process.lookup_key %}">{{process}}</a>{% endblock %}
 
@@ -11,9 +12,14 @@
 {% endif %}
 {% endblock %}
 
+{% block head_resources %}
+{{block.super}}
+{% jsinclude "core" %}
+{% endblock %}
+
+
 {% block head %}
 {{block.super}}
-<script src="{{ MEDIA_URL }}js/jquery-1.7.1.min.js"></script>
 <script type="text/javascript">
 $(function() {
     var prog = $("#id_progress");
