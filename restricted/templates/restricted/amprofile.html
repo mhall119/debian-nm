@@ -1,5 +1,5 @@
 {% extends "restricted/base.html" %}
-{% load const %}
+{% load nm %}
 
 {% block breadcrumbs %}{{block.super}} / <a href="{{person.get_absolute_url}}">{{person.uid}}</a> / <a href="{% url restricted_amprofile uid=person.uid %}">am settings</a>{% endblock %}
 

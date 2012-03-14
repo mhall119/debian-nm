@@ -31,6 +31,10 @@ JS_MODULES = dict(
         deps=["core"],
         files=["jquery.tablesorter.min.js"],
     ),
+    nm=dict(
+        deps=["core"],
+        files=["nm.js"],
+    ),
 )
 
 @register.simple_tag

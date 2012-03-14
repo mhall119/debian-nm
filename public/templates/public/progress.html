@@ -1,5 +1,5 @@
 {% extends "public/base.html" %}
-{% load const %}
+{% load nm %}
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url people %}">people</a> / {{progress|desc_progress}} {% endblock %}
 
@@ -17,7 +17,7 @@
             <th>Progress</th>
             <th>AM</th>
             <th>Advocate(s)</th>
-            {% if cur_am %}
+            {% if request.am %}
             <th>Extras</th>
             {% endif %}
     </thead>
@@ -41,9 +41,9 @@
                 <a href="{{ a.get_absolute_url }}" title="{{a.fullname}}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
                 {% endfor %}
             </td>
-            {% if cur_am %}
+            {% if request.am %}
             <td>
-                {% if cur_am.is_fd or cur_am.is_dam or cur_am == p.manager and p.is_active %}
+                {% if p|editable_by:request.am %}
                 <a href="{% url restricted_nmstatus key=p.lookup_key %}">edit</a>
                 {% endif %}
             </td>

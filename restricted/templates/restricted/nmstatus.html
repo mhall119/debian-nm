@@ -1,5 +1,5 @@
 {% extends "restricted/base.html" %}
-{% load const %}
+{% load nm %}
 {% load js %}
 
 {% block breadcrumbs %}{{block.super}} / <a href="{{person.get_absolute_url}}">{{person.lookup_key}}</a> / <a href="{% url restricted_nmstatus key=process.lookup_key %}">progress</a>{% endblock %}
