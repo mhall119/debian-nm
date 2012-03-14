@@ -11,7 +11,7 @@
     {% for p in plist %}
     <tr>
         <td>{{p.uid|default:"None chosen yet"}}</td>
-        <td><a href="{% url public_person key=p.lookup_key %}">{{p.fullname}}</a></td>
+	<td><a href="{{ p.get_absolute_url }}">{{p.fullname}}</a></td>
     </tr>
     {% endfor %}
 </tbody>
@@ -21,7 +21,7 @@
 {% endif %}
 {% endmacro %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url public_people %}">people</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url people %}">people</a>{% endblock %}
 
 {% comment %}
 {% block relatedpages %}

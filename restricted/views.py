@@ -24,47 +24,6 @@ from backend import const
 import backend.auth
 
 @backend.auth.is_am
-def amlist(request):
-    from django.db import connection
-    # Here is a list of active Application Managers:
-    #     Login   Name    cur max hold    done    Role
-
-    # Compute statistics indexed by AM id
-    cursor = connection.cursor()
-    cursor.execute("""
-    SELECT am.id,
-           count(*) as total,
-           count(process.is_active) as active,
-           count(process.progress=%s) as held
-      FROM am
-      JOIN process ON process.manager_id=am.id
-     GROUP BY am.id
-    """, (const.PROGRESS_AM_HOLD,))
-    stats = dict()
-    for amid, total, active, held in cursor:
-        stats[amid] = (total, active, held)
-
-    ams_active = []
-    ams_inactive = []
-    for a in bmodels.AM.objects.all().order_by("person__uid"):
-        total, active, held = stats.get(a.id, (0, 0, 0))
-        a.stats_total = total
-        a.stats_active = active
-        a.stats_done = total-active
-        a.stats_held = held
-        if a.is_am:
-            ams_active.append(a)
-        else:
-            ams_inactive.append(a)
-
-    return render_to_response("restricted/amlist.html",
-                              dict(
-                                  ams_active=ams_active,
-                                  ams_inactive=ams_inactive,
-                              ),
-                              context_instance=template.RequestContext(request))
-
-@backend.auth.is_am
 def ammain(request):
     from django.db.models import Min
     person = request.user.get_profile()

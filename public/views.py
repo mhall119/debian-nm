@@ -22,23 +22,38 @@ import backend.models as bmodels
 from backend import const
 import datetime
 
-def whoisam(request):
-    # Below is the list of Debian developers who are currently active as Application Managers:
-    ams_active = bmodels.AM.objects.filter(is_am=True).order_by("person__uid")
+def managers(request):
+    from django.db import connection
 
-    # The New Member Committee is formed of all active application managers who
-    # have approved an applicant in the last six months. Front-Desk is also
-    # member.
-    ams_ctte = bmodels.AM.objects.filter(is_am_ctte=True).order_by("person__uid")
+    # Compute statistics indexed by AM id
+    cursor = connection.cursor()
+    cursor.execute("""
+    SELECT am.id,
+           count(*) as total,
+           count(process.is_active) as active,
+           count(process.progress=%s) as held
+      FROM am
+      JOIN process ON process.manager_id=am.id
+     GROUP BY am.id
+    """, (const.PROGRESS_AM_HOLD,))
+    stats = dict()
+    for amid, total, active, held in cursor:
+        stats[amid] = (total, active, held)
 
-    # Below is the list of Debian developers who used to help as Application Managers in the past:
-    ams_inactive = bmodels.AM.objects.filter(is_am=False).order_by("person__uid")
+    # Read the list of AMs, with default sorting, and annotate with the
+    # statistics
+    ams = []
+    for a in bmodels.AM.objects.all().order_by("-is_am", "person__uid"):
+        total, active, held = stats.get(a.id, (0, 0, 0))
+        a.stats_total = total
+        a.stats_active = active
+        a.stats_done = total-active
+        a.stats_held = held
+        ams.append(a)
 
-    return render_to_response("public/whoisam.html",
+    return render_to_response("public/managers.html",
                               dict(
-                                  ams_active=ams_active,
-                                  ams_ctte=ams_ctte,
-                                  ams_inactive=ams_inactive,
+                                  ams=ams,
                               ),
                               context_instance=template.RequestContext(request))
 
