@@ -219,7 +219,7 @@ class AM(models.Model):
     # Automatically computed as true if any applicant was approved in the last
     # 6 months
     is_am_ctte = models.BooleanField(null=False, default=False)
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(null=False, default=datetime.datetime.utcnow)
 
     def __unicode__(self):
         return u"%s %c%c%c" % (
