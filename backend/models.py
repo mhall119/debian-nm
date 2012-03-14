@@ -166,7 +166,7 @@ class Person(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ("public_person", (), dict(key=self.lookup_key))
+        return ("person", (), dict(key=self.lookup_key))
 
     @property
     def active_process(self):
@@ -239,7 +239,7 @@ class AM(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ("public_person", (), dict(key=self.person.lookup_key))
+        return ("person", (), dict(key=self.person.lookup_key))
 
     @property
     def is_admin(self):

@@ -20,7 +20,7 @@
 {% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">ammain</a>{% endblock %}
 
 {% block relatedpages %}
-<a href="{% url public_person key=person.lookup_key  %}">personal page</a>
+<a href="{{ request.person.get_absolute_url }}">personal page</a>
 {% if am.is_fd or am.is_dam %}
 <a href="{% url admin:backend_person_add %}">new person</a>
 {% endif %}

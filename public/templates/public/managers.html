@@ -1,0 +1,50 @@
+{% extends "public/base.html" %}
+
+{% block breadcrumbs %}{{block.super}} / <a href="{% url public_whoisam %}">whoisam</a>{% endblock %}
+
+{% block content %}
+
+<h1>Debian New Member - Application Manager List</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Since</th>
+            <th>Uid</th>
+            <th>Name</th>
+            {% if request.am %}
+            <th>Cur</th>
+            <th>Max</th>
+            <th>Hold</th>
+            <th>Done</th>
+            <th>Active</th>
+            <th>Ctte</th>
+            <th>FD</th>
+            <th>DAM</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for am in ams %}
+        <tr>
+            <td>{{am.created|date:"Y-m-d"}}</td>
+            <td>{{am.person.uid}}</td>
+            <td><a href="{{ am.person.get_absolute_url }}">{{am.person.fullname}}</a></td>
+            {% if request.am %}
+            <td>{{am.stats_active}}</td>
+            <td>{{am.slots}}</td>
+            <td>{{am.stats_held}}</td>
+            <td>{{am.stats_done}}</td>
+            <td>{{am.is_am|yesno:"yes,-"}}</td>
+            <td>{{am.is_ctte|yesno:"yes,-"}}</td>
+            <td>{{am.is_fd|yesno:"yes,-"}}</td>
+            <td>{{am.is_dam|yesno:"yes,-"}}</td>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
