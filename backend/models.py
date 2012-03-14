@@ -103,6 +103,7 @@ class Person(models.Model):
                               choices=[x[1:3] for x in const.ALL_STATUS])
     status_changed = models.DateTimeField("when the status last changed", null=False, default=datetime.datetime.utcnow)
     fd_comment = models.TextField("Front Desk comments", null=True, blank=True)
+    created = models.DateTimeField("Person record created", null=False, default=datetime.datetime.utcnow)
 
     @property
     def is_am(self):
@@ -218,8 +219,8 @@ class AM(models.Model):
     is_dam = models.BooleanField("DAM", null=False, default=False)
     # Automatically computed as true if any applicant was approved in the last
     # 6 months
-    is_am_ctte = models.BooleanField(null=False, default=False)
-    created = models.DateTimeField(null=False, default=datetime.datetime.utcnow)
+    is_am_ctte = models.BooleanField("NM CTTE member", null=False, default=False)
+    created = models.DateTimeField("AM record created", null=False, default=datetime.datetime.utcnow)
 
     def __unicode__(self):
         return u"%s %c%c%c" % (
