@@ -109,7 +109,7 @@ def ammain(request):
                               context_instance=template.RequestContext(request))
 
 def make_am_form(editor):
-    excludes = ["person", "is_am_ctte"]
+    excludes = ["person", "is_am_ctte", "created"]
 
     if editor.is_dam:
         pass

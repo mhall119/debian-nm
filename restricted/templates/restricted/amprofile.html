@@ -23,8 +23,15 @@
 <h2>Change AM details</h2>
 
 <form action="{% url restricted_amprofile uid=person.uid %}" method="post">{% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" value="Submit" />
+<table class="personinfo">
+    {% for field in form %}
+    <tr>
+        <th>{{field.label_tag}}</th>
+        <td>{{field}} {{field.errors}}</td>
+    </tr>
+    {% endfor %}
+</table>
+    <input type="submit" value="Change">
 </form>
 
 <h2>Applicants</h2>

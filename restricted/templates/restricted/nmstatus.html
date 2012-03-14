@@ -63,18 +63,14 @@ $(function() {
     <tr><th>First name</th><td>{{person.cn}}</td></tr>
     <tr><th>Middle name</th><td>{{person.mn|default:""}}</td></tr>
     <tr><th>Last name</th><td>{{person.sn|default:""}}</td></tr>
-    <tr><th>Email</th><td>{{person.email}}</td></tr>
+    <tr><th>Email</th><td><a href="{{person.get_absolute_url}}">{{person.email}}</a></td></tr>
     <tr><th>Account name</th><td>{{person.uid|default:"none chosen yet"}}</td></tr>
     <tr><th>OpenPGP fingerprint</th><td>{{person.fpr}}</td></tr>
     <tr>
         <th>Advocate{{process.advocates.count|pluralize}}</th>
         <td>
             {% for a in process.advocates.all %}
-            {% if a.is_am %}
-            <a href="{% url restricted_amprofile uid=a.uid %}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
-            {% else %}
-            {{a.uid}}{% if not forloop.last %},{% endif %}
-            {% endif %}
+            <a href="{{ a.get_absolute_url }}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
             {% endfor %}
         </td>
     </tr>
@@ -132,13 +128,9 @@ Shortcuts:
         {% if am.is_fd %}
         <td><a href="{% url admin:backend_log_change l.id %}">edit</a></td>
         {% endif %}
-        <td>{{l.logdate}}</td>
+        <td>{{l.logdate|date:"Y-m-d"}}</td>
         <td>
-            {% if l.changed_by.is_am %}
-            <a href="{% url restricted_amprofile uid=l.changed_by.uid %}">{{l.changed_by.uid}}</a>
-            {% else %}
-            {{l.changed_by.uid}}
-            {% endif %}
+            <a href="{{l.changed_by.get_absolute_url}}">{{l.changed_by.uid}}</a>
         </td>
         <td>{{l.progress|desc_progress}}</td>
         <td>{{l.logtext}}</td>

@@ -86,6 +86,9 @@
             {% if am.is_dam %}dam,{% endif %}
             {% if am.is_am_ctte %}am ctte,{% endif %}
             {{person.am.processed.count}} applicants processed
+            {% if request.am == am or request.am.is_admin %}
+            <a href="{% url restricted_amprofile uid=am.person.uid %}">[preferences]</a>
+            {% endif %}
             {% if request.am.is_admin %}
             <a href="{% url admin:backend_am_change am.id %}">[admin]</a>
             {% endif %}
