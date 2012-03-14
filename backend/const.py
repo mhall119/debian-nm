@@ -34,6 +34,8 @@ ALL_STATUS_DESCS = dict(x[1:3] for x in ALL_STATUS)
 for key, val, desc in ALL_STATUS:
     g[key] = val
 
+SEQ_STATUS = dict(((y[1], x) for x, y in enumerate(ALL_STATUS)))
+
 ## Application targets
 #APPLY_FOR_DM = STATUS_DM
 #APPLY_FOR_DD_U = STATUS_DD_U
@@ -60,6 +62,8 @@ ALL_PROGRESS = (
 ALL_PROGRESS_DESCS = dict(x[1:3] for x in ALL_PROGRESS)
 for key, val, desc in ALL_PROGRESS:
     g[key] = val
+
+SEQ_PROGRESS = dict(((y[1], x) for x, y in enumerate(ALL_PROGRESS)))
 
 #ALLOWED_PROGRESS_AM = [ PROGRESS_AM_RCVD, PROGRESS_AM_ACKED, PROGRESS_AM_HOLD, PROGRESS_AM_OK ]
 #ALLOWED_PROGRESS_FD = [ PROGRESS_APP_NEW, PROGRESS_APP_RCVD, PROGRESS_APP_HOLD, PROGRESS_ADV_RCVD, PROGRESS_APP_OK] \

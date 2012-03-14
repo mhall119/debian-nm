@@ -285,21 +285,6 @@ def person(request, key):
                               ),
                               context_instance=template.RequestContext(request))
 
-@backend.auth.is_am
-def nmelist(request):
-    from django.db.models import Min
-
-    procs = bmodels.Process.objects.filter(is_active=True) \
-             .annotate(started=Min("log__logdate")).order_by("started")
-
-    return render_to_response("restricted/nmelist.html",
-                              dict(
-                                  procs=procs,
-                              ),
-                              context_instance=template.RequestContext(request))
-
-
-
 def make_newprocessform(person):
     choices = [x[1:3] for x in const.ALL_STATUS if x[1] != person.status]
 
