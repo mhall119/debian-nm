@@ -14,3 +14,19 @@ table.personinfo th {
     background-position: bottom left;
     background-repeat: repeat-x;
 }
+
+/* JQuery tablesorter common layout */
+table.tablesorter th {
+    cursor: pointer
+}
+table.tablesorter th.headerSortUp {
+}
+table.tablesorter th.headerSortUp:after {
+    content: "▲";
+}
+table.tablesorter th.headerSortDown {
+}
+table.tablesorter th.headerSortDown:after {
+    content: "▼";
+}
+
