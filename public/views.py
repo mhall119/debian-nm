@@ -31,8 +31,8 @@ def managers(request):
     cursor.execute("""
     SELECT am.id,
            count(*) as total,
-           count(process.is_active) as active,
-           count(process.progress=%s) as held
+           sum(case when process.is_active then 1 else 0 end) as active,
+           sum(case when process.progress=%s then 1 else 0 end) as held
       FROM am
       JOIN process ON process.manager_id=am.id
      GROUP BY am.id
