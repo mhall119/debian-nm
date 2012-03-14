@@ -27,3 +27,11 @@ def desc_progress(value):
 @register.filter
 def desc_status(value):
     return const.ALL_STATUS_DESCS.get(value, value)
+
+@register.filter
+def seq_progress(value):
+    return const.SEQ_PROGRESS.get(value, -1)
+
+@register.filter
+def seq_status(value):
+    return const.SEQ_STATUS.get(value, -1)

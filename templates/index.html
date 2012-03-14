@@ -12,12 +12,12 @@ General site features, available to all:
 <ul>
     <li><a href="{% url people %}">List of all known people</a></li>
     <li><a href="{% url managers %}">List of Application Managers</a></li>
+    <li><a href="{% url processes %}">List of open or recent processes</a></li>
 </ul>
 
 General site features still needing work:
 
 <ul>
-    <li><a href="{% url public_nmlist %}">List of applicants</a></li>
     <li><a href="{% url public_newnm %}">Join the NM process</a> (TODO: actually implement it, now it's just a checklist for applying via email)</li>
     <li>TODO: (NEW) import Debian Maintainers in the DB so they appear in the list of people</li>
     <li>TODO: stats (former index.php, stats.php, leaderboard.php, nmgraph.php)</li>
@@ -28,7 +28,6 @@ If you are an Application Manager, you can look at:
 <ul>
     <li><a href="{% url restricted_ammain %}">AM main page</a></li>
     <li><a href="{% url restricted_amprofile %}">AM personal settings</a></li>
-    <li><a href="{% url restricted_nmelist %}">List of applicants</a></li>
     <li>TODO: create new AM (former amnew.php, amnew2.php)</li>
     <li>TODO: delete NM (former deletenm.php)</li>
     <li>TODO: delete AM (former fddelete.php)</li>

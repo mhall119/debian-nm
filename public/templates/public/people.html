@@ -23,15 +23,6 @@
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url people %}">people</a>{% endblock %}
 
-{% comment %}
-{% block relatedpages %}
-{{block.super}}
-{% if cur_am %}
-<a href="{% url restricted_nmelist %}">full version</a>
-{% endif %}
-{% endblock %}
-{% endcomment %}
-
 {% block content %}
 
 <h1>Debian New Member - People list</h2>
