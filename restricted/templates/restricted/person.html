@@ -12,7 +12,14 @@
 <h1>Edit personal information for {{person.fullname}}</h1>
 
 <form action="{% url restricted_person key=person.lookup_key %}" method="post">{% csrf_token %}
-    {{ form.as_p }}
+<table class="personinfo">
+    {% for field in form %}
+    <tr>
+        <th>{{field.label_tag}}</th>
+        <td>{{field}} {{field.errors}}</td>
+    </tr>
+    {% endfor %}
+</table>
     <input type="submit" value="Submit" />
 </form>
 
