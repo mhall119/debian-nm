@@ -23,11 +23,13 @@ urlpatterns = patterns('public.views',
     url(r'^$', redirect_to, {'url': "/"}, name="public_index"),
     url(r'^newnm$', direct_to_template, {'template': 'public/newnm.html'}, name="public_newnm"),
     url(r'^managers$', 'managers', name="managers"),
-    url(r'^whoisam$', 'managers', name="public_whoisam"),
     url(r'^people$', 'people', name="people"),
     url(r'^person/(?P<key>[^/]+)$', 'person', name="person"),
     url(r'^nmlist$', 'nmlist', name="public_nmlist"),
-    url(r'^nmstatus/(?P<key>[^/]+)$', 'process', name="public_nmstatus"),
     url(r'^process/(?P<key>[^/]+)$', 'process', name="public_process"),
     url(r'^progress/(?P<progress>\w+)$', 'progress', name="public_progress"),
+
+    # Compatibility
+    url(r'^whoisam$', 'managers', name="public_whoisam"),
+    url(r'^nmstatus/(?P<key>[^/]+)$', 'process', name="public_nmstatus"),
 )
