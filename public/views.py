@@ -112,8 +112,12 @@ def process(request, key):
     )
 
     log = list(process.log.order_by("logdate", "progress"))
-    ctx["started"] = log[0].logdate
-    ctx["last_change"] = log[-1].logdate
+    if log:
+        ctx["started"] = log[0].logdate
+        ctx["last_change"] = log[-1].logdate
+    else:
+        ctx["started"] = datetime.datetime(1970, 1, 1, 0, 0, 0)
+        ctx["last_change"] = datetime.datetime(1970, 1, 1, 0, 0, 0)
 
     # Map unusual steps to their previous usual ones
     unusual_step_map = {
