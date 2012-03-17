@@ -164,7 +164,7 @@ def process(request, key):
                     process.progress = form.cleaned_data["progress"]
                     process.save()
                     log = bmodels.Log(
-                        changed_by=cur_person,
+                        changed_by=request.person,
                         process=process,
                         progress=process.progress,
                         logtext=form.cleaned_data["logtext"]
