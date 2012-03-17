@@ -25,87 +25,69 @@ import backend.auth
 
 @backend.auth.is_am
 def ammain(request):
-    from django.db.models import Min
-    person = request.user.get_profile()
+    from django.db.models import Min, Max
+    ctx = dict()
 
-    am_available = bmodels.AM.list_free()
+    ctx["am_available"] = bmodels.AM.list_free()
 
-    prog_app_new = bmodels.Process.objects.filter(progress__in=(
-        const.PROGRESS_APP_NEW,
-        const.PROGRESS_APP_RCVD,
-        const.PROGRESS_ADV_RCVD)) \
-                    .annotate(started=Min("log__logdate")).order_by("started")
+    if request.am.is_fd or request.am.is_dam:
+        DISPATCH = {
+            const.PROGRESS_APP_NEW: "prog_app_new",
+            const.PROGRESS_APP_RCVD: "prog_app_new",
+            const.PROGRESS_ADV_RCVD: "prog_app_new",
+            const.PROGRESS_APP_OK: "prog_app_ok",
+            const.PROGRESS_AM_RCVD: "prog_am_rcvd",
+            const.PROGRESS_AM_OK: "prog_am_ok",
+            const.PROGRESS_FD_OK: "prog_fd_ok",
+            const.PROGRESS_DAM_OK: "prog_dam_ok",
+        }
+        for p in bmodels.Process.objects.filter(is_active=True, progress__in=DISPATCH.keys()) \
+                        .annotate(
+                            started=Min("log__logdate"),
+                            last_change=Max("log__logdate")) \
+                        .order_by("started"):
+            tgt = DISPATCH.get(p.progress, None)
+            if tgt is not None:
+                ctx.setdefault(tgt, []).append(p)
 
-    prog_app_ok = bmodels.Process.objects.filter(progress=const.PROGRESS_APP_OK) \
-                  .annotate(started=Min("log__logdate")).order_by("started")
+        DISPATCH = {
+            const.PROGRESS_APP_HOLD: "prog_app_hold",
+            const.PROGRESS_FD_HOLD: "prog_app_hold",
+            const.PROGRESS_DAM_HOLD: "prog_app_hold",
+            const.PROGRESS_FD_HOLD: "prog_fd_hold",
+            const.PROGRESS_DAM_HOLD: "prog_dam_hold",
+        }
+        for p in bmodels.Process.objects.filter(is_active=True, manager=None, progress__in=DISPATCH.keys()) \
+                        .annotate(
+                            started=Min("log__logdate"),
+                            last_change=Max("log__logdate")) \
+                        .order_by("started"):
+            tgt = DISPATCH.get(p.progress, None)
+            if tgt is not None:
+                ctx.setdefault(tgt, []).append(p)
 
-    prog_app_hold = bmodels.Process.objects.filter(manager=None, progress__in=(
-        const.PROGRESS_APP_HOLD,
-        const.PROGRESS_FD_HOLD,
-        const.PROGRESS_DAM_HOLD)) \
-                    .annotate(started=Min("log__logdate")).order_by("started")
+    DISPATCH = {
+        const.PROGRESS_AM_RCVD: "am_prog_rcvd",
+        const.PROGRESS_AM: "am_prog_am",
+        const.PROGRESS_AM_HOLD: "am_prog_hold",
+        const.PROGRESS_AM_OK: "am_prog_done",
+        const.PROGRESS_FD_HOLD: "am_prog_done",
+        const.PROGRESS_FD_OK: "am_prog_done",
+        const.PROGRESS_DAM_HOLD: "am_prog_done",
+        const.PROGRESS_DAM_OK: "am_prog_done",
+        const.PROGRESS_DONE: "am_prog_done",
+        const.PROGRESS_CANCELLED: "am_prog_done",
+    }
+    for p in bmodels.Process.objects.filter(manager=request.am, progress__in=DISPATCH.keys()) \
+                    .annotate(
+                        started=Min("log__logdate"),
+                        last_change=Max("log__logdate")) \
+                    .order_by("started"):
+        tgt = DISPATCH.get(p.progress, None)
+        if tgt is not None:
+            ctx.setdefault(tgt, []).append(p)
 
-    prog_am_rcvd = bmodels.Process.objects.filter(progress=const.PROGRESS_AM_RCVD) \
-                   .annotate(started=Min("log__logdate")).order_by("started")
-
-    prog_am_ok = bmodels.Process.objects.filter(progress=const.PROGRESS_AM_OK) \
-                 .annotate(started=Min("log__logdate")).order_by("started")
-
-    prog_fd_hold = bmodels.Process.objects.filter(progress=const.PROGRESS_FD_HOLD) \
-                   .exclude(manager=None) \
-                   .annotate(started=Min("log__logdate")).order_by("started")
-
-    prog_fd_ok = bmodels.Process.objects.filter(progress=const.PROGRESS_FD_OK) \
-                 .annotate(started=Min("log__logdate")).order_by("started")
-
-    prog_dam_ok = bmodels.Process.objects.filter(progress=const.PROGRESS_DAM_OK) \
-                 .annotate(started=Min("log__logdate")).order_by("started")
-
-    prog_dam_hold = bmodels.Process.objects.filter(progress=const.PROGRESS_DAM_HOLD) \
-                   .exclude(manager=None) \
-                   .annotate(started=Min("log__logdate")).order_by("started")
-
-    am_prog_rcvd = bmodels.Process.objects.filter(progress=const.PROGRESS_AM_RCVD) \
-                   .filter(manager=person.am) \
-                   .annotate(started=Min("log__logdate")).order_by("started")
-
-    am_prog_am = bmodels.Process.objects.filter(progress=const.PROGRESS_AM) \
-                   .filter(manager=person.am) \
-                   .annotate(started=Min("log__logdate")).order_by("started")
-
-    am_prog_hold = bmodels.Process.objects.filter(progress=const.PROGRESS_AM_HOLD) \
-                   .filter(manager=person.am) \
-                   .annotate(started=Min("log__logdate")).order_by("started")
-
-    am_prog_done = bmodels.Process.objects.filter(manager=person.am, progress__in=(
-        const.PROGRESS_AM_OK,
-        const.PROGRESS_FD_HOLD,
-        const.PROGRESS_FD_OK,
-        const.PROGRESS_DAM_HOLD,
-        const.PROGRESS_DAM_OK,
-        const.PROGRESS_DONE,
-        const.PROGRESS_CANCELLED)) \
-                    .annotate(started=Min("log__logdate")).order_by("started")
-
-    return render_to_response("restricted/ammain.html",
-                              dict(
-                                  person=person,
-                                  am=person.am,
-                                  am_available=am_available,
-                                  prog_app_new=prog_app_new,
-                                  prog_app_ok=prog_app_ok,
-                                  prog_app_hold=prog_app_hold,
-                                  prog_am_rcvd=prog_am_rcvd,
-                                  prog_am_ok=prog_am_ok,
-                                  prog_fd_hold=prog_fd_hold,
-                                  prog_fd_ok=prog_fd_ok,
-                                  prog_dam_ok=prog_dam_ok,
-                                  prog_dam_hold=prog_dam_hold,
-                                  am_prog_rcvd=am_prog_rcvd,
-                                  am_prog_am=am_prog_am,
-                                  am_prog_hold=am_prog_hold,
-                                  am_prog_done=am_prog_done,
-                              ),
+    return render_to_response("restricted/ammain.html", ctx,
                               context_instance=template.RequestContext(request))
 
 def make_am_form(editor):

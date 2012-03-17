@@ -1,16 +1,51 @@
 {% extends "restricted/base.html" %}
+{% load js %}
 {% load macros %}
+
+{% block head_resources %}
+{{block.super}}
+{% jsinclude "tables" %}
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+<script type="text/javascript">
+$(function() {
+    $(".proctable").tablesorter({
+        textExtraction: function(node) {
+            val = node.getAttribute("val");
+            if (val == null)
+                val = node.textContent || node.innerText;
+            return val;
+        },
+    })
+});
+</script>
+{% endblock %}
 
 {% macro process_table progs %}
 {% if progs %}
-<table>
+<table class="proctable tablesorter">
+    <thead>
+        <tr>
+            <th>Started</th>
+            <th>Last</th>
+            <th>Applicant</th>
+            <th>Uid</th>
+            <th>Log</th>
+        </tr>
+    </thead>
+    <tbody>
     {% for p in progs %}
     <tr>
-        <td>{{p.started.date}}</td>
+        <td>{{p.started|date:"Y-m-d"}}</td>
+        <td>{{p.last_change|date:"Y-m-d"}}</td>
         <td><a href="{{ p.get_absolute_url }}">{{p.person}}</a></td>
+        <td><a href="{{ p.get_absolute_url }}">{{p.person.uid}}</a></td>
         <td>TODO: log</td>
     </tr>
     {% endfor %}
+    </tbody>
 </table>
 {% else %}
 <p><i>none</i></p>
@@ -33,12 +68,13 @@
 
 <p>Currently the database thinks you have the following functions:</p>
 <ul>
-    {% if am.is_am %}<li>Application Manager</li>{% endif %}
-    {% if am.is_fd %}<li>Front Desk</li>{% endif %}
-    {% if am.is_dam %}<li>Debian Account Manager</li>{% endif %}
+    {% if request.am.is_ctte %}<li>New Member Committee</li>{% endif %}
+    {% if request.am.is_am %}<li>Application Manager</li>{% endif %}
+    {% if request.am.is_fd %}<li>Front Desk</li>{% endif %}
+    {% if request.am.is_dam %}<li>Debian Account Manager</li>{% endif %}
 </ul>
 
-{% if am.is_fd or am.is_dam %}
+{% if request.am.is_fd or request.am.is_dam %}
 
 <h2>Front Desk</h2>
 
@@ -90,7 +126,7 @@ but a DAM has not fully processed them yet (sorted by FD approval):</p>
 
 <h2>Application Manager</h2>
 
-<p>Hello <b>{{person.uid}}</b>, here is a list of New Member applicants that
+<p>Hello <b>{{request.person.uid}}</b>, here is a list of New Member applicants that
 you are the AM for:</p>
 
 <h3>Applicants to Accept</h3>
