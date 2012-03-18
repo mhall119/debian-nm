@@ -85,7 +85,7 @@ $(function() {
 <h2>Front Desk</h2>
 
 <p>The following managers have free slots (#free/#slots):
-<ul>
+<ul class="horizontal">
     {% for a in am_available %}
     <li><a href="{% url restricted_amprofile uid=a.person.uid %}">{{a.person.uid}}</a>
         ({{a.stats_free}}/{{a.slots}})</li>
