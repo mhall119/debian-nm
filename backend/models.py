@@ -173,7 +173,7 @@ class Person(models.Model):
     def get_ddpo_url(self):
         return u"http://qa.debian.org/developer.php?%s" % urllib.urlencode(dict(login=self.email))
 
-    def get_ddportfolio_url(self):
+    def get_portfolio_url(self):
         parms = dict(
             email=self.email,
             name=self.fullname.encode("utf-8"),

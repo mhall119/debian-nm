@@ -56,7 +56,7 @@
 
 {% block relatedpages %}
 <a href="{{person.get_ddpo_url}}">DDPO</a>
-<a href="{{person.get_ddportfolio_url}}">DDPortfolio</a>
+<a href="{{person.get_portfolio_url}}">Portfolio</a>
 {% if request.am.is_admin %}
 <a href="{% url admin:backend_person_change person.id  %}">admin</a>
 {% if can_be_am %}
