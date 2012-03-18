@@ -23,7 +23,7 @@ $(function() {
 </script>
 {% endblock %}
 
-{% macro process_table progs %}
+{% macro process_table progs extras %}
 {% if progs %}
 <table class="proctable tablesorter">
     <thead>
@@ -32,6 +32,9 @@ $(function() {
             <th>Last</th>
             <th>Applicant</th>
             <th>Uid</th>
+	    {% if "m" in extras %}
+            <th>Manager</th>
+	    {% endif %}
             <th>Log</th>
         </tr>
     </thead>
@@ -42,6 +45,9 @@ $(function() {
         <td>{{p.last_change|date:"Y-m-d"}}</td>
         <td><a href="{{ p.get_absolute_url }}">{{p.person}}</a></td>
         <td><a href="{{ p.get_absolute_url }}">{{p.person.uid}}</a></td>
+	{% if "m" in extras %}
+        <td><a href="{{ p.manager.get_absolute_url }}">{{p.manager.person.uid}}</a></td>
+    	{% endif %}
         <td>TODO: log</td>
     </tr>
     {% endfor %}
@@ -89,38 +95,38 @@ $(function() {
 
 <p>The following people have applied but have not replied to our initial mail
 yet, or their advocacies are incomplete.</p>
-{% usemacro process_table prog_app_new %}
+{% usemacro process_table prog_app_new "" %}
 
 <p>The following applicants are waiting for an Application Manager to be
 assigned (first one is oldest).</p>
-{% usemacro process_table prog_app_ok %}
+{% usemacro process_table prog_app_ok "" %}
 
 <p>Applicants currently not ready to be assigned to an AM (ordered by hold date):</p>
-{% usemacro process_table prog_app_hold %}
+{% usemacro process_table prog_app_hold "" %}
 
 <p>Applicants assigned to AM but AM has not confirmed:</p>
-{% usemacro process_table prog_am_rcvd %}
+{% usemacro process_table prog_am_rcvd "m" %}
 
 <p>The reports of the following applicants approved by their AM need to be
 checked:</p>
-{% usemacro process_table prog_am_ok %}
+{% usemacro process_table prog_am_ok "m" %}
 
 <p>The following applicants have incomplete AM reports (ordered by hold date):</p>
-{% usemacro process_table prog_fd_hold %}
+{% usemacro process_table prog_fd_hold "m" %}
 
 
 <h2>Debian Account Manager</h2>
 
 <p>The following applicants have been approved by the NM committee and the FD
 but a DAM has not fully processed them yet (sorted by FD approval):</p>
-{% usemacro process_table prog_fd_ok %}
+{% usemacro process_table prog_fd_ok "m" %}
 
 <p>Applicants approved by a DAM, but for which no account has been created yet:</p>
-{% usemacro process_table prog_dam_ok %}
+{% usemacro process_table prog_dam_ok "m" %}
 
 <p>These are applications that have been put on hold at the DAM stage
 (sorted by hold date):</p>
-{% usemacro process_table prog_dam_hold %}
+{% usemacro process_table prog_dam_hold "m" %}
 
 {% endif %}
 
@@ -134,25 +140,25 @@ you are the AM for:</p>
 <p>These applicants have been assigned to you by the Front Desk but you have
 not confirmed that you will or will not be their AM (ordered by assignment
 date).</p>
-{% usemacro process_table am_prog_rcvd %}
+{% usemacro process_table am_prog_rcvd "" %}
 
 <h3>Applicants to process</h3>
 
 <p>The following applicants you are the AM for (ordered by the date you
 accepted them as NMs):</p>
-{% usemacro process_table am_prog_am %}
+{% usemacro process_table am_prog_am "" %}
 
 <h3>Applicants on Hold</h3>
 
 <p>Applicants who make it here have some issue with completing the process but
 are expected to be able to work around that soon (ordered by hold date).</p>
-{% usemacro process_table am_prog_hold %}
+{% usemacro process_table am_prog_hold "" %}
 
 <h3>Processed Applicants</h3>
 
 <p>These applicants you have processed through the system and are here for
 historical or informational purposes (ordered by account creation date).</p>
-{% usemacro process_table am_prog_done %}
+{% usemacro process_table am_prog_done "" %}
 
 {% comment %}
                       <H2>Key</H2>
