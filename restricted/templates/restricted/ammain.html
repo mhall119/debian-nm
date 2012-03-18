@@ -35,7 +35,7 @@ $(function() {
 	    {% if "m" in extras %}
             <th>Manager</th>
 	    {% endif %}
-            <th>Log</th>
+            <th>FD comments</th>
         </tr>
     </thead>
     <tbody>
@@ -48,7 +48,7 @@ $(function() {
 	{% if "m" in extras %}
         <td><a href="{{ p.manager.get_absolute_url }}">{{p.manager.person.uid}}</a></td>
     	{% endif %}
-        <td>TODO: log</td>
+	<td>{{ p.person.fd_comment }}</td>
     </tr>
     {% endfor %}
     </tbody>
