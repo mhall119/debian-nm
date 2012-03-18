@@ -59,9 +59,9 @@
 <a href="{{person.get_ddportfolio_url}}">DDPortfolio</a>
 {% if request.am.is_admin %}
 <a href="{% url admin:backend_person_change person.id  %}">admin</a>
-{% endif %}
 {% if can_be_am %}
 <a href="{% url admin:backend_am_add %}?person={{person.id}}">make am</a>
+{% endif %}
 {% endif %}
 {{block.super}}
 {% endblock %}
