@@ -324,6 +324,22 @@ class AM(models.Model):
             res.append(a)
         return res
 
+    @property
+    def lookup_key(self):
+        """
+        Return a key that can be used to look up this manager in the database
+        using AM.lookup.
+
+        Currently, this is the lookup key of the person.
+        """
+        return self.person.lookup_key
+
+    @classmethod
+    def lookup(cls, key):
+        p = Person.lookup(key)
+        if p is None: return None
+        return p.am_or_none
+
 
 class Process(models.Model):
     """
