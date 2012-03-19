@@ -45,8 +45,8 @@ MOCK_LOGTEXTS = [
 class Command(BaseCommand):
     help = 'Export all the NM database'
     option_list = BaseCommand.option_list + (
-        optparse.make_option("--quiet", action="store_true", dest="quiet", default=None, help="Disable progress reporting"),
-        optparse.make_option("--full", action="store_true", dest="quiet", default=None, help="Also export privacy-sensitive information"),
+        optparse.make_option("--quiet", action="store_true", default=None, help="Disable progress reporting"),
+        optparse.make_option("--full", action="store_true", default=None, help="Also export privacy-sensitive information"),
     )
 
     def handle(self, quiet=False, full=False, **opts):
@@ -58,8 +58,10 @@ class Command(BaseCommand):
 
         fd = list(bmodels.Person.objects.filter(am__is_fd=True))
 
-        people = dict()
-        for idx, p in enumerate(bmodels.Person.objects.all()):
+        # Use order_by so that dumps are easier to diff
+
+        people = []
+        for idx, p in enumerate(bmodels.Person.objects.all().order_by("uid", "email")):
             if idx and idx % 300 == 0:
                 log.info("%d people read", idx)
 
@@ -80,7 +82,7 @@ class Command(BaseCommand):
                 processes=[],
             )
 
-            people[ep["key"]] = ep
+            people.append(ep)
 
             if full:
                 ep["fd_comment"] = p.fd_comment
@@ -100,7 +102,7 @@ class Command(BaseCommand):
                     created=a.created)
 
             # Process details
-            for pr in p.processes.all():
+            for pr in p.processes.all().order_by("applying_for"):
                 epr = dict(
                     applying_for=pr.applying_for,
                     progress=pr.progress,
@@ -109,6 +111,8 @@ class Command(BaseCommand):
                     advocates=[],
                     log=[],
                 )
+                ep["processes"].append(epr)
+
                 # Also get a list of actors who can be used for mock logging later
                 if pr.manager:
                     epr["manager"] = pr.manager.lookup_key
@@ -139,9 +143,8 @@ class Command(BaseCommand):
                         el["logtext"] = l.logtext
                     else:
                         if l.changed_by:
-                            el["changed_by"] = random.choice(actors)
-                        # TODO: logtext: random
-                        pass
+                            el["changed_by"] = random.choice(actors).lookup_key
+                        el["logtext"] = random.choice(MOCK_LOGTEXTS)
 
                     epr["log"].append(el)
 
@@ -151,7 +154,7 @@ class Command(BaseCommand):
             def default(self, o):
                 if hasattr(o, "strftime"):
                     return o.strftime("%Y-%m-%d %H:%M:%S")
-                return JSONEncoder.default(self, o)
+                return json.JSONEncoder.default(self, o)
 
         json.dump(people, sys.stdout, cls=Serializer, indent=2)
 
