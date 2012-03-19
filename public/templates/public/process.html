@@ -13,6 +13,10 @@
 $(function() {
     var prog = $("#id_progress");
     var text = $("#id_logtext");
+    $("#macro_am_confirm").click(function() {
+        prog.val("{{PROGRESS_AM}}");
+        text.val(null);
+    });
     $("#macro_idok").click(function() {
         prog.val("{{PROGRESS_AM}}");
         text.val("ID check passed");
@@ -27,15 +31,51 @@ $(function() {
     });
     $("#macro_approve").click(function() {
         prog.val("{{PROGRESS_AM_OK}}");
-        text.val("Application approved");
+        text.val(null);
     });
     $("#macro_hold").click(function() {
         prog.val("{{PROGRESS_AM_HOLD}}");
-        text.val("Set on hold because of FILLME");
+        text.val("Please enter reason for hold");
     });
     $("#macro_unhold").click(function() {
         prog.val("{{PROGRESS_AM}}");
-        text.val("Back from hold");
+        text.val(null);
+    });
+    $("#macro_app_hold").click(function() {
+        prog.val("{{PROGRESS_APP_HOLD}}");
+        text.val("Please enter reason for hold");
+    });
+    $("#macro_app_approve").click(function() {
+        prog.val("{{PROGRESS_APP_OK}}");
+        text.val(null);
+    });
+    $("#macro_app_unhold").click(function() {
+        prog.val("{{PROGRESS_ADV_RCVD}}");
+        text.val(null);
+    });
+    $("#macro_fd_hold").click(function() {
+        prog.val("{{PROGRESS_FD_HOLD}}");
+        text.val("Please enter reason for hold");
+    });
+    $("#macro_fd_approve").click(function() {
+        prog.val("{{PROGRESS_FD_OK}}");
+        text.val(null);
+    });
+    $("#macro_fd_unhold").click(function() {
+        prog.val("{{PROGRESS_AM_OK}}");
+        text.val(null);
+    });
+    $("#macro_dam_hold").click(function() {
+        prog.val("{{PROGRESS_DAM_HOLD}}");
+        text.val("Please enter reason for hold");
+    });
+    $("#macro_dam_unhold").click(function() {
+        prog.val("{{PROGRESS_FD_OK}}");
+        text.val(null);
+    });
+    $("#macro_dam_approve").click(function() {
+        prog.val("{{PROGRESS_DAM_OK}}");
+        text.val(null);
     });
 });
 </script>
@@ -98,6 +138,34 @@ $(function() {
     {{ form.as_p }}
 <p>
 Shortcuts:
+{% if request.am.is_fd or request.am.is_dam %}
+    {% if process.progress == PROGRESS_ADV_RCVD %}
+    <button type="button" id="macro_app_hold">Hold</button>
+    <button type="button" id="macro_app_approve">Advocacies ok</button>
+    {% endif %}
+
+    {% if process.progress == PROGRESS_APP_HOLD %}
+    <button type="button" id="macro_app_unhold">Remove hold</button>
+    {% endif %}
+
+    {% comment %}
+    TODO: assign AM, field with uid and macros to fill it with a list of free ones
+    ("PROGRESS_APP_OK",    "app_ok",    "Advocacies have been approved"),
+    {% endcomment %}
+
+    {% if process.progress == PROGRESS_AM_OK %}
+    <button type="button" id="macro_fd_hold">FD hold</button>
+    <button type="button" id="macro_fd_approve">Approve applicant</button>
+    {% endif %}
+
+    {% if process.progress == PROGRESS_FD_HOLD %}
+    <button type="button" id="macro_fd_unhold">Back from FD hold</button>
+    {% endif %}
+{% endif %}
+
+{% if process.progress == PROGRESS_AM_RCVD %}
+<button type="button" id="macro_am_confirm">Confirm assignment</button>
+{% endif %}
 {% if process.progress == PROGRESS_AM %}
 <button type="button" id="macro_idok">ID check ok</button>
 <button type="button" id="macro_ppok">P&amp;P ok</button>
@@ -107,6 +175,17 @@ Shortcuts:
 {% endif %}
 {% if process.progress == PROGRESS_AM_HOLD %}
 <button type="button" id="macro_unhold">Back from hold</button>
+{% endif %}
+
+{% if request.am.is_dam %}
+    {% if process.progress == PROGRESS_FD_OK %}
+    <button type="button" id="macro_dam_hold">DAM hold</button>
+    <button type="button" id="macro_dam_approve">Approve applicant</button>
+    {% endif %}
+
+    {% if process.progress == PROGRESS_DAM_HOLD %}
+    <button type="button" id="macro_dam_unhold">Back from DAM hold</button>
+    {% endif %}
 {% endif %}
 </p>
 

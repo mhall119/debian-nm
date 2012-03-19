@@ -59,6 +59,29 @@ class CharNullField(models.CharField):
            # otherwise, just pass the value
            return value
 
+class TextNullField(models.TextField):
+    description = "TextField that stores NULL but returns ''"
+
+    # this is the value right out of the db, or an instance
+    def to_python(self, value):
+       if isinstance(value, models.TextField): # if an instance, just return the instance
+           return value
+       if value is None:
+           # if the db has a NULL, convert it into the Django-friendly '' string
+           return ""
+       else:
+           # otherwise, return just the value
+           return value
+
+    # catches value right before sending to db
+    def get_db_prep_value(self, value):
+       if value=="":
+           # if Django tries to save '' string, send the db None (NULL)
+           return None
+       else:
+           # otherwise, just pass the value
+           return value
+
 
 class Person(models.Model):
     """
@@ -481,7 +504,7 @@ class Log(models.Model):
                                 choices=[x[1:3] for x in const.ALL_PROGRESS])
 
     logdate = models.DateTimeField(null=False, default=datetime.datetime.utcnow)
-    logtext = models.TextField(null=False)
+    logtext = TextNullField(null=True, blank=True)
 
     def __unicode__(self):
         return u"%s: %s" % (self.logdate, self.logtext)
