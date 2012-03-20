@@ -22,6 +22,7 @@ from django.utils.translation import ugettext as _
 import backend.models as bmodels
 from backend import const
 import backend.auth
+import json
 
 @backend.auth.is_am
 def ammain(request):
@@ -258,3 +259,31 @@ def newprocess(request, key):
                                   form=form,
                               ),
                               context_instance=template.RequestContext(request))
+
+def db_export(request):
+    # In theory, this isn't needed as it's enforced by DACS
+    if request.user.is_anonymous():
+        return http.HttpResponseForbidden("You need to be logged in")
+
+    if "full" in request.GET:
+        if not request.am or not request.am.is_admin:
+            return http.HttpResponseForbidden("You need to be FD or DAM to get a full DB export")
+        full = True
+    else:
+        full = False
+
+    people = list(bmodels.export_db(full))
+
+    class Serializer(json.JSONEncoder):
+        def default(self, o):
+            if hasattr(o, "strftime"):
+                return o.strftime("%Y-%m-%d %H:%M:%S")
+            return json.JSONEncoder.default(self, o)
+
+    res = http.HttpResponse(mimetype="application/json")
+    if full:
+        res["Content-Disposition"] = "attachment; filename=nm-full.json"
+    else:
+        res["Content-Disposition"] = "attachment; filename=nm-mock.json"
+    json.dump(people, res, cls=Serializer, indent=1)
+    return res
