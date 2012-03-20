@@ -6,19 +6,19 @@ apt-get install python-django python-ldap
 
 # Configuration
 ln -s settings.py.devel settings.py
-edit settings.py if needed
+edit settings.py as needed
 
 # First setup
 ./manage.py syncdb
 
 # Fill in data
-On nono.debian.org:
- cd /srv/nm.debian.org/_new
- sudo -u nm ./export-old-db
+Visit https://nm.debian.org/am/db-export to download nm-mock.json; for privacy,
+sensitive information are replaced with mock strings.
 
-Fetch the resulting dump.json
+./manage.py import nm-mock.json
 
-./manage.py import dump.json
+If you are a Front Desk member or a DAM, you can use
+https://nm.debian.org/am/db-export?full for a full database export.
 
 # Run database maintenance
 ./manage.py maintenance
