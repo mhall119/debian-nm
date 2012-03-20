@@ -570,7 +570,7 @@ def export_db(self, full=False):
                 is_fd=am.is_fd,
                 is_dam=am.is_dam,
                 is_am_ctte=am.is_am_ctte,
-                created=a.created)
+                created=am.created)
 
         # Process details
         for pr in p.processes.all().order_by("applying_for"):
