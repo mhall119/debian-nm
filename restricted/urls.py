@@ -29,4 +29,5 @@ urlpatterns = patterns('restricted.views',
     url(r'^person/(?P<key>[^/]+)$', 'person', name="restricted_person"),
     # Create new process for a person
     url(r'^newprocess/(?P<key>[^/]+)$', 'newprocess', name="restricted_newprocess"),
+    url(r'^db-export$', 'db_export', name="restricted_db_export"),
 )

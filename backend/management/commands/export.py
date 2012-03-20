@@ -25,22 +25,9 @@ import optparse
 import sys
 import logging
 import json
-import random
 from backend import models as bmodels
 
 log = logging.getLogger(__name__)
-
-MOCK_FD_COMMENTS = [
-    "Cannot get GPG signatures because of extremely sensitive teeth",
-    "Only has internet connection on days which are prime numbers",
-    "Is a werewolf: warn AM to ignore replies when moon is full",
-    "Is a vampire: warn AM not to invite him/her into their home",
-    "Is a daemon: if unresponsive, contact Enrico for details about summoning ritual",
-]
-
-MOCK_LOGTEXTS = [
-    "ok", "hmm", "meh", "asdf", "moo", "...", u"üñįç♥ḋə"
-]
 
 class Command(BaseCommand):
     help = 'Export all the NM database'
@@ -56,99 +43,7 @@ class Command(BaseCommand):
         else:
             logging.basicConfig(level=logging.INFO, stream=sys.stderr, format=FORMAT)
 
-        fd = list(bmodels.Person.objects.filter(am__is_fd=True))
-
-        # Use order_by so that dumps are easier to diff
-
-        people = []
-        for idx, p in enumerate(bmodels.Person.objects.all().order_by("uid", "email")):
-            if idx and idx % 300 == 0:
-                log.info("%d people read", idx)
-
-            # Person details
-            ep = dict(
-                key=p.lookup_key,
-                cn=p.cn,
-                mn=p.mn,
-                sn=p.sn,
-                email=p.email,
-                uid=p.uid,
-                fpr=p.fpr,
-                status=p.status,
-                status_changed=p.status_changed,
-                created=p.created,
-                fd_comment=None,
-                am=None,
-                processes=[],
-            )
-
-            people.append(ep)
-
-            if full:
-                ep["fd_comment"] = p.fd_comment
-            else:
-                if random.randint(1, 100) < 20:
-                    ep["fd_comment"] = random.choice(MOCK_FD_COMMENTS)
-
-            # AM details
-            am = p.am_or_none
-            if am:
-                ep["am"] = dict(
-                    slots=am.slots,
-                    is_am=am.is_am,
-                    is_fd=am.is_fd,
-                    is_dam=am.is_dam,
-                    is_am_ctte=am.is_am_ctte,
-                    created=a.created)
-
-            # Process details
-            for pr in p.processes.all().order_by("applying_for"):
-                epr = dict(
-                    applying_for=pr.applying_for,
-                    progress=pr.progress,
-                    is_active=pr.is_active,
-                    manager=None,
-                    advocates=[],
-                    log=[],
-                )
-                ep["processes"].append(epr)
-
-                # Also get a list of actors who can be used for mock logging later
-                if pr.manager:
-                    epr["manager"] = pr.manager.lookup_key
-                    actors = [pr.manager.person] + fd
-                else:
-                    actors = fd
-
-                for a in pr.advocates.all():
-                    epr["advocates"].append(a.lookup_key)
-
-                # Log details
-                last_progress = None
-                for l in pr.log.all().order_by("logdate"):
-                    if not full and last_progress == l.progress:
-                        # Consolidate consecutive entries to match simplification
-                        # done by public interface
-                        continue
-
-                    el = dict(
-                        changed_by=None,
-                        progress=l.progress,
-                        logdate=l.logdate,
-                        logtext=None)
-
-                    if full:
-                        if l.changed_by:
-                            el["changed_by"] = l.changed_by.lookup_key
-                        el["logtext"] = l.logtext
-                    else:
-                        if l.changed_by:
-                            el["changed_by"] = random.choice(actors).lookup_key
-                        el["logtext"] = random.choice(MOCK_LOGTEXTS)
-
-                    epr["log"].append(el)
-
-                    last_progress = l.progress
+        people = list(bmodels.export_db(full))
 
         class Serializer(json.JSONEncoder):
             def default(self, o):
