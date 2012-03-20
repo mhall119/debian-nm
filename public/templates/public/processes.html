@@ -67,7 +67,7 @@ $(function() {
         <th>Advocate(s)</th>
         <th>Manager</th>
         {% if request.am %}
-        <th>Log</th>
+        <th>FD comments</th>
         {% endif %}
     </tr>
 </thead>
@@ -89,7 +89,13 @@ $(function() {
             <a href="{{ p.manager.get_absolute_url }}">{{p.manager.person.uid}}</a>
             {% endif %}
         </td>
-        <td>TODO: log</td>
+        {% if request.am %}
+        <td>
+            {% if p|editable_by:request.am %}
+            {{ p.person.fd_comment }}
+            {% endif %}
+        </td>
+        {% endif %}
     </tr>
     {% endfor %}
 </tbody>

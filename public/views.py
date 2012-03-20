@@ -95,7 +95,7 @@ def make_statusupdateform(editor):
             choices=choices
         )
         logtext = forms.CharField(
-            required=True,
+            required=False,
             label=_("Log text"),
             widget=forms.Textarea(attrs=dict(rows=5, cols=80))
         )
@@ -111,6 +111,35 @@ def process(request, key):
         person=process.person,
     )
 
+    # Process form ASAP, so we compute the rest with updated values
+    am = request.am
+    if am:
+        can_edit = process.is_active and (am.is_fd or am.is_dam or am == process.manager)
+        ctx["can_edit"] = can_edit
+
+        if can_edit:
+            StatusUpdateForm = make_statusupdateform(am)
+            if request.method == 'POST':
+                form = StatusUpdateForm(request.POST)
+                if form.is_valid():
+                    process.progress = form.cleaned_data["progress"]
+                    process.save()
+                    log = bmodels.Log(
+                        changed_by=request.person,
+                        process=process,
+                        progress=process.progress,
+                        logtext=form.cleaned_data["logtext"]
+                    )
+                    log.save()
+                    form = StatusUpdateForm(initial=dict(progress=process.progress))
+            else:
+                form = StatusUpdateForm(initial=dict(progress=process.progress))
+        else:
+            form = None
+        ctx["form"] = form
+    else:
+        ctx["can_edit"] = False
+
     log = list(process.log.order_by("logdate", "progress"))
     if log:
         ctx["started"] = log[0].logdate
@@ -118,6 +147,22 @@ def process(request, key):
     else:
         ctx["started"] = datetime.datetime(1970, 1, 1, 0, 0, 0)
         ctx["last_change"] = datetime.datetime(1970, 1, 1, 0, 0, 0)
+
+    if am:
+        ctx["log"] = log
+    else:
+        # Summarise log for privacy
+        distilled_log = []
+        last_progress = None
+        for l in log:
+            if last_progress != l.progress:
+                distilled_log.append(dict(
+                    progress=l.progress,
+                    changed_by=l.changed_by,
+                    logdate=l.logdate,
+                ))
+                last_progress = l.progress
+        ctx["log"] = distilled_log
 
     # Map unusual steps to their previous usual ones
     unusual_step_map = {
@@ -149,47 +194,6 @@ def process(request, key):
     curstep_idx = steps.index(curstep)
     ctx["steps"] = steps
     ctx["curstep_idx"] = curstep_idx
-
-    am = request.am
-    if am:
-        can_edit = process.is_active and (am.is_fd or am.is_dam or am == process.manager)
-        ctx["can_edit"] = can_edit
-        ctx["log"] = log
-
-        if can_edit:
-            StatusUpdateForm = make_statusupdateform(am)
-            if request.method == 'POST':
-                form = StatusUpdateForm(request.POST)
-                if form.is_valid():
-                    process.progress = form.cleaned_data["progress"]
-                    process.save()
-                    log = bmodels.Log(
-                        changed_by=request.person,
-                        process=process,
-                        progress=process.progress,
-                        logtext=form.cleaned_data["logtext"]
-                    )
-                    log.save()
-                    form = StatusUpdateForm(initial=dict(progress=process.progress))
-            else:
-                form = StatusUpdateForm(initial=dict(progress=process.progress))
-        else:
-            form = None
-        ctx["form"] = form
-    else:
-        ctx["can_edit"] = False
-        # Summarise log for privacy
-        distilled_log = []
-        last_progress = None
-        for l in log:
-            if last_progress != l.progress:
-                distilled_log.append(dict(
-                    progress=l.progress,
-                    changed_by=l.changed_by,
-                    logdate=l.logdate,
-                ))
-                last_progress = l.progress
-        ctx["log"] = distilled_log
 
     return render_to_response("public/process.html", ctx,
                               context_instance=template.RequestContext(request))

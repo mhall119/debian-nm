@@ -59,6 +59,29 @@ class CharNullField(models.CharField):
            # otherwise, just pass the value
            return value
 
+class TextNullField(models.TextField):
+    description = "TextField that stores NULL but returns ''"
+
+    # this is the value right out of the db, or an instance
+    def to_python(self, value):
+       if isinstance(value, models.TextField): # if an instance, just return the instance
+           return value
+       if value is None:
+           # if the db has a NULL, convert it into the Django-friendly '' string
+           return ""
+       else:
+           # otherwise, return just the value
+           return value
+
+    # catches value right before sending to db
+    def get_db_prep_value(self, value):
+       if value=="":
+           # if Django tries to save '' string, send the db None (NULL)
+           return None
+       else:
+           # otherwise, just pass the value
+           return value
+
 
 class Person(models.Model):
     """
@@ -104,7 +127,8 @@ class Person(models.Model):
                               choices=[x[1:3] for x in const.ALL_STATUS])
     status_changed = models.DateTimeField("when the status last changed", null=False, default=datetime.datetime.utcnow)
     fd_comment = models.TextField("Front Desk comments", null=True, blank=True)
-    created = models.DateTimeField("Person record created", null=False, default=datetime.datetime.utcnow)
+    # null=True because we currently do not have the info for old entries
+    created = models.DateTimeField("Person record created", null=True, default=datetime.datetime.utcnow)
 
     @property
     def is_am(self):
@@ -173,7 +197,7 @@ class Person(models.Model):
     def get_ddpo_url(self):
         return u"http://qa.debian.org/developer.php?%s" % urllib.urlencode(dict(login=self.email))
 
-    def get_ddportfolio_url(self):
+    def get_portfolio_url(self):
         parms = dict(
             email=self.email,
             name=self.fullname.encode("utf-8"),
@@ -241,7 +265,8 @@ class AM(models.Model):
     # Automatically computed as true if any applicant was approved in the last
     # 6 months
     is_am_ctte = models.BooleanField("NM CTTE member", null=False, default=False)
-    created = models.DateTimeField("AM record created", null=False, default=datetime.datetime.utcnow)
+    # null=True because we currently do not have the info for old entries
+    created = models.DateTimeField("AM record created", null=True, default=datetime.datetime.utcnow)
 
     def __unicode__(self):
         return u"%s %c%c%c" % (
@@ -323,6 +348,22 @@ class AM(models.Model):
                 continue
             res.append(a)
         return res
+
+    @property
+    def lookup_key(self):
+        """
+        Return a key that can be used to look up this manager in the database
+        using AM.lookup.
+
+        Currently, this is the lookup key of the person.
+        """
+        return self.person.lookup_key
+
+    @classmethod
+    def lookup(cls, key):
+        p = Person.lookup(key)
+        if p is None: return None
+        return p.am_or_none
 
 
 class Process(models.Model):
@@ -463,7 +504,7 @@ class Log(models.Model):
                                 choices=[x[1:3] for x in const.ALL_PROGRESS])
 
     logdate = models.DateTimeField(null=False, default=datetime.datetime.utcnow)
-    logtext = models.TextField(null=False)
+    logtext = TextNullField(null=True, blank=True)
 
     def __unicode__(self):
         return u"%s: %s" % (self.logdate, self.logtext)
