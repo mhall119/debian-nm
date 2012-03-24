@@ -11,71 +11,87 @@
 {{block.super}}
 <script type="text/javascript">
 $(function() {
+    var dam_mail = $("#dam-mail");
     var prog = $("#id_progress");
     var text = $("#id_logtext");
-    $("#macro_am_confirm").click(function() {
-        prog.val("{{PROGRESS_AM}}");
+
+    function reset_fields() {
+        dam_mail.hide();
         text.val(null);
+    }
+    reset_fields();
+
+    $("#macro_am_confirm").click(function() {
+        reset_fields();
+        prog.val("{{PROGRESS_AM}}");
     });
     $("#macro_idok").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_AM}}");
         text.val("ID check passed");
     });
     $("#macro_ppok").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_AM}}");
         text.val("P&P check passed");
     });
     $("#macro_tsok").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_AM}}");
         text.val("T&S check passed");
     });
     $("#macro_approve").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_AM_OK}}");
-        text.val(null);
     });
     $("#macro_hold").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_AM_HOLD}}");
         text.val("Please enter reason for hold");
     });
     $("#macro_unhold").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_AM}}");
-        text.val(null);
     });
     $("#macro_app_hold").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_APP_HOLD}}");
         text.val("Please enter reason for hold");
     });
     $("#macro_app_approve").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_APP_OK}}");
-        text.val(null);
     });
     $("#macro_app_unhold").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_ADV_RCVD}}");
-        text.val(null);
     });
     $("#macro_fd_hold").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_FD_HOLD}}");
         text.val("Please enter reason for hold");
     });
     $("#macro_fd_approve").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_FD_OK}}");
-        text.val(null);
     });
     $("#macro_fd_unhold").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_AM_OK}}");
-        text.val(null);
     });
     $("#macro_dam_hold").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_DAM_HOLD}}");
         text.val("Please enter reason for hold");
     });
     $("#macro_dam_unhold").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_FD_OK}}");
-        text.val(null);
     });
     $("#macro_dam_approve").click(function() {
+        reset_fields();
         prog.val("{{PROGRESS_DAM_OK}}");
-        text.val(null);
+        dam_mail.show();
     });
 });
 </script>
@@ -133,9 +149,9 @@ $(function() {
 
 <p>Current progress is: <b>{{ process.progress|desc_progress }}</b>.</p>
 
-{% if can_edit %}
 <form action="{{ request.build_absolute_uri }}" method="post">{% csrf_token %}
     {{ form.as_p }}
+    <input type="submit" value="Update" />
 <p>
 Shortcuts:
 {% if request.am.is_fd or request.am.is_dam %}
@@ -188,9 +204,58 @@ Shortcuts:
     {% endif %}
 {% endif %}
 </p>
-
-    <input type="submit" value="Update" />
 </form>
+
+{% if process.progress == PROGRESS_FD_OK %}
+<div id="dam-mail">
+<h2>Draft activation email</h2>
+<textarea rows="25" cols="80">
+From: {{request.person.fullname}} &lt;{{request.person.email}}&gt;
+To: Debian Keyring Maintainers &lt;keyring@rt.debian.org&gt;
+Cc: Debian Account Managers &lt;da-manager@debian.org&gt;, {{person.fullname}} &lt;{{person.email}}&gt;
+Subject: [Debian RT] Account for {{person.fullname}}
+
+{% spaceless %}
+{% if person.status == STATUS_MM %}
+Please make {{person.fullname}} (currently NOT a DM) an uploading DD.
+
+Key {{person.fpr}} should be added to the DD keyring.
+{% endif %}
+{% if person.status == STATUS_MM_GA %}
+Please make {{person.fullname}} (currently NOT a DM) an uploading DD.
+
+Key {{person.fpr}} should be added to the DD keyring.
+
+Note that {{person.fullname}} ALREADY HAS an account in LDAP.
+{% endif %}
+{% if person.status == STATUS_DM %}
+Please make {{person.fullname}} (currently a DM) an uploading DD.
+
+Key {{person.fpr}} should be removed from the DM keyring and
+added to the DD keyring.
+{% endif %}
+{% if person.status == STATUS_DM_GA %}
+Please make {{person.fullname}} (currently a DM) an uploading DD.
+
+Key {{person.fpr}} should be removed from the DM keyring and
+added to the DD keyring.
+
+Note that {{person.fullname}} ALREADY HAS an account in LDAP.
+{% endif %}
+{% endspaceless %}
+
+  First name:      {{person.cn}}
+  Middle name:     {{person.mn|default:"-"}}
+  Last name:       {{person.sn}}
+  Key fingerprint: {{person.fpr}}
+  Account:         {{person.uid}}
+  Forward email:   {{person.email}}
+
+Thank you,
+
+{{request.person.fullname}} (as DAM)
+</textarea>
+</div>
 {% endif %}
 
 {% endif %}
