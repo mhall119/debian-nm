@@ -12,11 +12,13 @@
 <script type="text/javascript">
 $(function() {
     var dam_mail = $("#dam-mail");
+    var am_mail = $("#am-mail");
     var prog = $("#id_progress");
     var text = $("#id_logtext");
 
     function reset_fields() {
         dam_mail.hide();
+        am_mail.hide();
         text.val(null);
     }
     reset_fields();
@@ -43,6 +45,7 @@ $(function() {
     $("#macro_approve").click(function() {
         reset_fields();
         prog.val("{{PROGRESS_AM_OK}}");
+        am_mail.show();
     });
     $("#macro_hold").click(function() {
         reset_fields();
@@ -210,55 +213,20 @@ Shortcuts:
 <div id="dam-mail">
 <h2>Draft activation email</h2>
 <textarea rows="25" cols="80">
-From: {{request.person.fullname}} &lt;{{request.person.email}}&gt;
-To: Debian Keyring Maintainers &lt;keyring@rt.debian.org&gt;
-Cc: Debian Account Managers &lt;da-manager@debian.org&gt;, {{person.fullname}} &lt;{{person.email}}&gt;
-Subject: [Debian RT] Account for {{person.fullname}}
-
-{% spaceless %}
-{% if person.status == STATUS_MM %}
-Please make {{person.fullname}} (currently NOT a DM) an uploading DD.
-
-Key {{person.fpr}} should be
-added to the DD keyring.
-{% endif %}
-{% if person.status == STATUS_MM_GA %}
-Please make {{person.fullname}} (currently NOT a DM) an uploading DD.
-
-Key {{person.fpr}} should be
-added to the DD keyring.
-
-Note that {{person.fullname}} already has an account in LDAP.
-{% endif %}
-{% if person.status == STATUS_DM %}
-Please make {{person.fullname}} (currently a DM) an uploading DD.
-
-Key {{person.fpr}} should be
-removed from the DM keyring and added to the DD keyring.
-{% endif %}
-{% if person.status == STATUS_DM_GA %}
-Please make {{person.fullname}} (currently a DM) an uploading DD.
-
-Key {{person.fpr}} should be
-removed from the DM keyring and added to the DD keyring.
-
-Note that {{person.fullname}} already has an account in LDAP.
-{% endif %}
-{% endspaceless %}
-
-  First name:      {{person.cn}}
-  Middle name:     {{person.mn|default:"-"}}
-  Last name:       {{person.sn}}
-  Key fingerprint: {{person.fpr}}
-  Account:         {{person.uid}}
-  Forward email:   {{person.email}}
-
-Thank you,
-
-{{request.person.fullname}} (as DAM)
+{% include "public/process-damreport.html" %}
 </textarea>
 </div>
 {% endif %}
+
+{% if process.progress == PROGRESS_AM %}
+<div id="am-mail">
+<h2>Draft AM report</h2>
+<textarea rows="25" cols="80">
+{% include "public/process-amreport.html" %}
+</textarea>
+</div>
+{% endif %}
+
 
 {% endif %}
 
