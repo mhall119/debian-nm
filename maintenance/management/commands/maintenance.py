@@ -75,6 +75,7 @@ class Checker(object):
         ids = [x[0] for x in cursor]
 
         bmodels.AM.objects.filter(id__in=ids).update(is_am_ctte=True)
+        transaction.commit_unless_managed()
         log.info("%d CTTE members", bmodels.AM.objects.filter(is_am_ctte=True).count())
 
 
