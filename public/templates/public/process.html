@@ -219,26 +219,28 @@ Subject: [Debian RT] Account for {{person.fullname}}
 {% if person.status == STATUS_MM %}
 Please make {{person.fullname}} (currently NOT a DM) an uploading DD.
 
-Key {{person.fpr}} should be added to the DD keyring.
+Key {{person.fpr}} should be
+added to the DD keyring.
 {% endif %}
 {% if person.status == STATUS_MM_GA %}
 Please make {{person.fullname}} (currently NOT a DM) an uploading DD.
 
-Key {{person.fpr}} should be added to the DD keyring.
+Key {{person.fpr}} should be
+added to the DD keyring.
 
 Note that {{person.fullname}} ALREADY HAS an account in LDAP.
 {% endif %}
 {% if person.status == STATUS_DM %}
 Please make {{person.fullname}} (currently a DM) an uploading DD.
 
-Key {{person.fpr}} should be removed from the DM keyring and
-added to the DD keyring.
+Key {{person.fpr}} should be
+removed from the DM keyring and added to the DD keyring.
 {% endif %}
 {% if person.status == STATUS_DM_GA %}
 Please make {{person.fullname}} (currently a DM) an uploading DD.
 
-Key {{person.fpr}} should be removed from the DM keyring and
-added to the DD keyring.
+Key {{person.fpr}} should be
+removed from the DM keyring and added to the DD keyring.
 
 Note that {{person.fullname}} ALREADY HAS an account in LDAP.
 {% endif %}
