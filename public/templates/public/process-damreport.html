@@ -1,0 +1,46 @@
+From: {{request.person.fullname}} &lt;{{request.person.email}}&gt;
+To: Debian Keyring Maintainers &lt;keyring@rt.debian.org&gt;
+Cc: Debian Account Managers &lt;da-manager@debian.org&gt;, {{person.fullname}} &lt;{{person.email}}&gt;
+Subject: [Debian RT] Account for {{person.fullname}}
+
+{% spaceless %}
+{% if person.status == STATUS_MM %}
+Please make {{person.fullname}} (currently NOT a DM) an uploading DD.
+
+Key {{person.fpr}} should be
+added to the DD keyring.
+{% endif %}
+{% if person.status == STATUS_MM_GA %}
+Please make {{person.fullname}} (currently NOT a DM) an uploading DD.
+
+Key {{person.fpr}} should be
+added to the DD keyring.
+
+Note that {{person.fullname}} already has an account in LDAP.
+{% endif %}
+{% if person.status == STATUS_DM %}
+Please make {{person.fullname}} (currently a DM) an uploading DD.
+
+Key {{person.fpr}} should be
+removed from the DM keyring and added to the DD keyring.
+{% endif %}
+{% if person.status == STATUS_DM_GA %}
+Please make {{person.fullname}} (currently a DM) an uploading DD.
+
+Key {{person.fpr}} should be
+removed from the DM keyring and added to the DD keyring.
+
+Note that {{person.fullname}} already has an account in LDAP.
+{% endif %}
+{% endspaceless %}
+
+  First name:      {{person.cn}}
+  Middle name:     {{person.mn|default:"-"}}
+  Last name:       {{person.sn}}
+  Key fingerprint: {{person.fpr}}
+  Account:         {{person.uid}}
+  Forward email:   {{person.email}}
+
+Thank you,
+
+{{request.person.fullname}} (as DAM)
