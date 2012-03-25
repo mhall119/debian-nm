@@ -21,13 +21,35 @@ General site features still needing work:
     <li><a href="{% url public_newnm %}">Join the NM process</a> (TODO: actually implement it, now it's just a checklist for applying via email)</li>
     <li>TODO: stats (former index.php, stats.php, leaderboard.php, nmgraph.php)</li>
 </ul>
-
+`
 If you are an Application Manager, you can look at:
 
 <ul>
     <li><a href="{% url restricted_ammain %}">AM main page</a></li>
     <li><a href="{% url restricted_amprofile %}">AM personal settings</a></li>
     <li><a href="{% url restricted_db_export %}">Database export you can use to setup a development site</a></li>
+</ul>
+
+Other TODO list items:
+
+<ul>
+    <li>send weekly email to debian-newmaint@lists.debian.org</li>
+    <li>icons for statuses (DM, DD, ...), progresses and NM roles (AM, FD, DAM)</li>
+    <li>keycheck front-end</li>
+    <li>send mail on DAM approval, and maybe on other steps, too</li>
+    <li>apply for DM</li>
+    <li>apply for guest account</li>
+    <li>apply for collab-maint commit access</li>
+    <li>'advocate this applicant' link when a DD is logged in</li>
+    <li>use <a href="https://docs.djangoproject.com/en/1.2/ref/contrib/messages/">django messageis</a> to give feedback after form submissions or nontrivial redirects</li>
+    <li>we need a way (like a secret token sent via email) for people without an account on LDAP to access the complete information about themselves</li>
+    <li>when a key/account is really activated, automatically move from DAM_OK to DONE</li>
+    <li>IRC bot to update stats in the #debian-newmaint channel topic</li>
+    {% if request.am %}
+    <li>in tables, show the last log entries with non-null logtext</li>
+    <li>minechangelogs front-end, showing also when minechangelogs index was last built, and timestamp of max changelog known by minechangelogs</li>
+    <li>in /public/process, allow to assign an AM when the applicant is in status APP_OK</li>
+    {% endif %}
 </ul>
 
 {% endblock %}
