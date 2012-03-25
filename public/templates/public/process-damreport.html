@@ -4,34 +4,31 @@ Cc: Debian Account Managers &lt;da-manager@debian.org&gt;, {{person.fullname}} &
 Subject: [Debian RT] Account for {{person.fullname}}
 
 {% spaceless %}
-{% if person.status == STATUS_MM %}
+{% if person.status == STATUS_MM or person.status == STATUS_MM_GA %}
+{% if process.applying_for == STATUS_DD_NU %}
+Please make {{person.fullname}} (currently NOT a DM) a non-uploading DD.
+
+Key {{person.fpr}} should be
+added to the debian-nonupload keyring.
+{% else %}
 Please make {{person.fullname}} (currently NOT a DM) an uploading DD.
 
 Key {{person.fpr}} should be
 added to the DD keyring.
 {% endif %}
-{% if person.status == STATUS_MM_GA %}
-Please make {{person.fullname}} (currently NOT a DM) an uploading DD.
-
-Key {{person.fpr}} should be
-added to the DD keyring.
-
-Note that {{person.fullname}} already has an account in LDAP.
 {% endif %}
-{% if person.status == STATUS_DM %}
+
+{% if person.status == STATUS_DM or person.status == STATUS_DM_GA %}
 Please make {{person.fullname}} (currently a DM) an uploading DD.
 
 Key {{person.fpr}} should be
 removed from the DM keyring and added to the DD keyring.
 {% endif %}
-{% if person.status == STATUS_DM_GA %}
-Please make {{person.fullname}} (currently a DM) an uploading DD.
 
-Key {{person.fpr}} should be
-removed from the DM keyring and added to the DD keyring.
-
+{% if person.status == STATUS_MM_GA or person.status == STATUS_DM_GA %}
 Note that {{person.fullname}} already has an account in LDAP.
 {% endif %}
+
 {% endspaceless %}
 
   First name:      {{person.cn}}
