@@ -15,6 +15,10 @@ edit settings.py as needed
 Visit https://nm.debian.org/am/db-export to download nm-mock.json; for privacy,
 sensitive information are replaced with mock strings.
 
+If you cannot login to the site, you can ask any DD to download it for you.
+There is nothing secret in the file, but I am afraid of giving out convenient
+email databases to anyone.
+
 ./manage.py import nm-mock.json
 
 If you are a Front Desk member or a DAM, you can use
