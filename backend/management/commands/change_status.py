@@ -89,6 +89,8 @@ class Command(BaseCommand):
         who = opts["who"]
         if who is None:
             who = user
+        elif who == "":
+            who = None
         else:
             who = bmodels.Person.lookup(who)
 
