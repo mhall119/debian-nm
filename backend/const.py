@@ -36,11 +36,6 @@ for key, val, desc in ALL_STATUS:
 
 SEQ_STATUS = dict(((y[1], x) for x, y in enumerate(ALL_STATUS)))
 
-## Application targets
-#APPLY_FOR_DM = STATUS_DM
-#APPLY_FOR_DD_U = STATUS_DD_U
-#APPLY_FOR_DD_NU = STATUS_DD_NU
-
 # Progress of a person in a process
 ALL_PROGRESS = (
     ("PROGRESS_APP_NEW",   "app_new",   "Applicant asked to enter the process"),
@@ -50,25 +45,17 @@ ALL_PROGRESS = (
     ("PROGRESS_APP_OK",    "app_ok",    "Advocacies have been approved"),
     ("PROGRESS_AM_RCVD",   "am_rcvd",   "Waiting for AM to confirm"),
     ("PROGRESS_AM",        "am",        "Interacting with an AM"),
-    ("PROGRESS_AM_HOLD",   "am_hold",   "AM put application on hold"),
-    ("PROGRESS_AM_OK",     "am_ok",     "AM approved the applicant"),
-    ("PROGRESS_FD_HOLD",   "fd_hold",   "FD puts application on hold"),
-    ("PROGRESS_FD_OK",     "fd_ok",     "FD approved the AM report"),
-    ("PROGRESS_DAM_HOLD",  "dam_hold",  "DAM puts application on hold"),
-    ("PROGRESS_DAM_OK",    "dam_ok",    "DAM accepted the applicant"),
+    ("PROGRESS_AM_HOLD",   "am_hold",   "AM hold"),
+    ("PROGRESS_AM_OK",     "am_ok",     "AM approved"),
+    ("PROGRESS_FD_HOLD",   "fd_hold",   "FD hold"),
+    ("PROGRESS_FD_OK",     "fd_ok",     "FD approved"),
+    ("PROGRESS_DAM_HOLD",  "dam_hold",  "DAM hold"),
+    ("PROGRESS_DAM_OK",    "dam_ok",    "DAM approved"),
     ("PROGRESS_DONE",      "done",      "Process completed"),
-    ("PROGRESS_CANCELLED", "cancelled", "Process has been canceled"),
+    ("PROGRESS_CANCELLED", "cancelled", "Process canceled"),
 )
 ALL_PROGRESS_DESCS = dict(x[1:3] for x in ALL_PROGRESS)
 for key, val, desc in ALL_PROGRESS:
     g[key] = val
 
 SEQ_PROGRESS = dict(((y[1], x) for x, y in enumerate(ALL_PROGRESS)))
-
-#ALLOWED_PROGRESS_AM = [ PROGRESS_AM_RCVD, PROGRESS_AM_ACKED, PROGRESS_AM_HOLD, PROGRESS_AM_OK ]
-#ALLOWED_PROGRESS_FD = [ PROGRESS_APP_NEW, PROGRESS_APP_RCVD, PROGRESS_APP_HOLD, PROGRESS_ADV_RCVD, PROGRESS_APP_OK] \
-#                        + ALLOWED_PROGRESS_AM + \
-#                      [ PROGRESS_FD_HOLD, PROGRESS_FD_OK, PROGRESS_CANCELLED ]
-#ALLOWED_PROGRESS_DAM = ALLOWED_PROGRESS_FD + [PROGRESS_DAM_HOLD, PROGRESS_DAM_OK, PROGRESS_DONE ]
-
-
