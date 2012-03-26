@@ -64,6 +64,7 @@ $(function() {
         <th>Progress</th>
         <th>Applying for</th>
         <th>Applicant</th>
+        <th>Uid</th>
         <th>Advocate(s)</th>
         <th>Manager</th>
         {% if request.am %}
@@ -78,7 +79,8 @@ $(function() {
         <td>{{p.last_change|date:"Y-m-d"}}</td>
         <td val="{{ p.progress|seq_progress }}"><a href="{{ p.get_absolute_url }}">{{p.progress|desc_progress}}</a></td>
         <td val="{{ p.applying_for|seq_status }}">{{p.applying_for|desc_status}}</td>
-        <td><a href="{{ p.get_absolute_url }}">{{p.person}}</a></td>
+        <td><a href="{{ p.get_absolute_url }}">{{p.person.fullname}}</a></td>
+        <td><a href="{{ p.get_absolute_url }}">{{p.person.uid}}</a></td>
         <td>
             {% for a in p.advocates.all %}
             <a href="{{ a.get_absolute_url }}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
