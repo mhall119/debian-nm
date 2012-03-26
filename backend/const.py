@@ -51,8 +51,8 @@ ALL_PROGRESS = (
     ("PROGRESS_FD_OK",     "fd_ok",     "FD approved"),
     ("PROGRESS_DAM_HOLD",  "dam_hold",  "DAM hold"),
     ("PROGRESS_DAM_OK",    "dam_ok",    "DAM approved"),
-    ("PROGRESS_DONE",      "done",      "Process completed"),
-    ("PROGRESS_CANCELLED", "cancelled", "Process canceled"),
+    ("PROGRESS_DONE",      "done",      "Completed"),
+    ("PROGRESS_CANCELLED", "cancelled", "Canceled"),
 )
 ALL_PROGRESS_DESCS = dict(x[1:3] for x in ALL_PROGRESS)
 for key, val, desc in ALL_PROGRESS:
