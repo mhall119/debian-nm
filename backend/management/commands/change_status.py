@@ -94,6 +94,11 @@ class Command(BaseCommand):
         else:
             who = bmodels.Person.lookup(who)
 
+        # Ensure we actually change something
+        if p.status == status:
+            log.error("%s already has status %s", p.fullname, status)
+            sys.exit(1)
+
         # Ensure no process is open
         if p.active_process:
             log.error("%s already has an active process, to become %s", p.fullname, p.active_process.applying_for)
