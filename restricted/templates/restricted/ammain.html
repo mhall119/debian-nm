@@ -80,7 +80,7 @@ $(function() {
 
 <p>Currently the database thinks you have the following functions:</p>
 <ul>
-    {% if request.am.is_ctte %}<li>New Member Committee</li>{% endif %}
+    {% if request.am.is_am_ctte %}<li>New Member Committee</li>{% endif %}
     {% if request.am.is_am %}<li>Application Manager</li>{% endif %}
     {% if request.am.is_fd %}<li>Front Desk</li>{% endif %}
     {% if request.am.is_dam %}<li>Debian Account Manager</li>{% endif %}

@@ -201,12 +201,8 @@ class Checker(object):
 
             keyring = getattr(self, keys)
 
-            # Show people that have a status in our DB which does not match
-            # keyring
-            for fpr, p in people_by_fpr.iteritems():
-                if p.status not in status: continue
-                if fpr not in keyring:
-                    log.warning("%s has status %s but is not in %s keyring", self._link(p), p.status, keys)
+            # Avoid reporting the same mismatch twice
+            seen = set()
 
             # Show keys that are in the keyring but do not match our db
             for fpr in keyring:
@@ -214,7 +210,16 @@ class Checker(object):
                 if p is None:
                     log.warning("Fingerprint %s is in %s keyring but not in our db", fpr, keys)
                 elif p.status not in status:
-                    log.warning("Fingerprint %s is in %s keyring its corresponding person %s has status %s", fpr, keys, self._link(p), p.status)
+                    log.warning("%s has status %s but is in %s keyring", self._link(p), p.status, keys)
+                    seen.add(fpr)
+
+            # Show people that have a status in our DB which does not match
+            # keyring
+            for fpr, p in people_by_fpr.iteritems():
+                if p.status not in status: continue
+                if fpr not in keyring and fpr not in seen:
+                    log.warning("%s has status %s but is not in %s keyring", self._link(p), p.status, keys)
+
 
     def check_ldap_consistency(self, quick=False, **kw):
         """
