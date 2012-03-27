@@ -199,6 +199,8 @@ class Checker(object):
             const.STATUS_REMOVED_DD: self.removed_dd,
         }
 
+        count = 0
+
         # Check the fingerprints on our DB
         for fpr, p in sorted(people_by_fpr.iteritems(), key=lambda x:x[1].uid):
             keyring = keyring_by_status.get(p.status)
@@ -211,10 +213,12 @@ class Checker(object):
             for status, keyring in keyring_by_status.iteritems():
                 if fpr in keyring:
                     log.warning("%s has status %s but is in %s keyring (fpr: %s)", self._link(p), p.status, status, fpr)
+                    count += 1
                     found = True
                     break
             if not found:
                 log.warning("%s has status %s but is not in any keyring (fpr: %s)", self._link(p), p.status, fpr)
+                count += 1
 
         # Spot fingerprints not in our DB
         for status, keyring in keyring_by_status.iteritems():
@@ -224,6 +228,9 @@ class Checker(object):
             for fpr in keyring:
                 if fpr not in people_by_fpr:
                     log.warning("Fingerprint %s is in %s keyring but not in our db", fpr, status)
+                    count += 1
+
+        log.warning("%d mismatches between keyring and nm.debian.org databases", count)
 
 
     def check_ldap_consistency(self, quick=False, **kw):
