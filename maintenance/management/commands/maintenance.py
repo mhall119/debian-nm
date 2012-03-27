@@ -190,43 +190,40 @@ class Checker(object):
             if p.fpr is None: continue
             people_by_fpr[p.fpr] = p
 
-        # Avoid reporting the same mismatch twice
-        seen = set()
+        keyring_by_status = {
+            const.STATUS_DM: self.dm,
+            const.STATUS_DM_GA: self.dm,
+            const.STATUS_DD_U: self.dd_u,
+            const.STATUS_DD_NU: self.dd_nu,
+            const.STATUS_EMERITUS_DD: self.emeritus_dd,
+            const.STATUS_REMOVED_DD: self.removed_dd,
+        }
 
-        # TODO: not quite sure how to handle the removed_dd keyring, until I
-        #       know what exactly is in there
-        # self.removed_dd = frozenset(kmodels.list_removed_dd())
-        for status, keys in (
-            ((const.STATUS_DM, const.STATUS_DM_GA), "dm"),
-            ((const.STATUS_DD_U,), "dd_u"),
-            ((const.STATUS_DD_NU,), "dd_nu"),
-            ((const.STATUS_EMERITUS_DD,), "emeritus_dd")):
+        # Check the fingerprints on our DB
+        for fpr, p in people_by_fpr.iteritems():
+            keyring = keyring_by_status.get(p.status)
+            # Skip the statuses we currently can't check for
+            if keyring is None: continue
+            # Skip those that are ok
+            if fpr in keyring: continue
+            # Look for the key in other keyrings
+            found = False
+            for status, keyring in keyring_by_status.iteritems():
+                if fpr in keyring:
+                    log.warning("%s has status %s but is in %s keyring", self._link(p), p.status, status)
+                    found = True
+                    break
+            if not found:
+                log.warning("%s has status %s but is not in any keyring", self._link(p), p.status)
 
-            keyring = getattr(self, keys)
-
-            # Show keys that are in the keyring but do not match our db
+        # Spot fingerprints not in our DB
+        for status, keyring in keyring_by_status.iteritems():
+            # TODO: not quite sure how to handle the removed_dd keyring, until I
+            #       know what exactly is in there
+            if status == const.STATUS_REMOVED_DD: continue
             for fpr in keyring:
-                p = people_by_fpr.get(fpr, None)
-                if p is None:
-                    log.warning("Fingerprint %s is in %s keyring but not in our db", fpr, keys)
-                elif p.status not in status:
-                    log.warning("%s has status %s but is in %s keyring", self._link(p), p.status, keys)
-                    seen.add(fpr)
-
-        for status, keys in (
-            ((const.STATUS_DM, const.STATUS_DM_GA), "dm"),
-            ((const.STATUS_DD_U,), "dd_u"),
-            ((const.STATUS_DD_NU,), "dd_nu"),
-            ((const.STATUS_EMERITUS_DD,), "emeritus_dd")):
-
-            keyring = getattr(self, keys)
-
-            # Show people that have a status in our DB but do not exist in the
-            # appropriate keyring
-            for fpr, p in people_by_fpr.iteritems():
-                if p.status not in status: continue
-                if fpr not in keyring and fpr not in seen:
-                    log.warning("%s has status %s but is not in %s keyring", self._link(p), p.status, keys)
+                if fpr not in people_by_fpr:
+                    log.warning("Fingerprint %s is in %s keyring but not in our db", fpr, status)
 
 
     def check_ldap_consistency(self, quick=False, **kw):
