@@ -200,7 +200,7 @@ class Checker(object):
         }
 
         # Check the fingerprints on our DB
-        for fpr, p in people_by_fpr.iteritems():
+        for fpr, p in sorted(people_by_fpr.iteritems(), key=lambda x:x[1].uid):
             keyring = keyring_by_status.get(p.status)
             # Skip the statuses we currently can't check for
             if keyring is None: continue
@@ -210,11 +210,11 @@ class Checker(object):
             found = False
             for status, keyring in keyring_by_status.iteritems():
                 if fpr in keyring:
-                    log.warning("%s has status %s but is in %s keyring", self._link(p), p.status, status)
+                    log.warning("%s has status %s but is in %s keyring (fpr: %s)", self._link(p), p.status, status, fpr)
                     found = True
                     break
             if not found:
-                log.warning("%s has status %s but is not in any keyring", self._link(p), p.status)
+                log.warning("%s has status %s but is not in any keyring (fpr: %s)", self._link(p), p.status, fpr)
 
         # Spot fingerprints not in our DB
         for status, keyring in keyring_by_status.iteritems():
