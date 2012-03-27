@@ -190,6 +190,9 @@ class Checker(object):
             if p.fpr is None: continue
             people_by_fpr[p.fpr] = p
 
+        # Avoid reporting the same mismatch twice
+        seen = set()
+
         # TODO: not quite sure how to handle the removed_dd keyring, until I
         #       know what exactly is in there
         # self.removed_dd = frozenset(kmodels.list_removed_dd())
@@ -201,9 +204,6 @@ class Checker(object):
 
             keyring = getattr(self, keys)
 
-            # Avoid reporting the same mismatch twice
-            seen = set()
-
             # Show keys that are in the keyring but do not match our db
             for fpr in keyring:
                 p = people_by_fpr.get(fpr, None)
@@ -213,8 +213,16 @@ class Checker(object):
                     log.warning("%s has status %s but is in %s keyring", self._link(p), p.status, keys)
                     seen.add(fpr)
 
-            # Show people that have a status in our DB which does not match
-            # keyring
+        for status, keys in (
+            ((const.STATUS_DM, const.STATUS_DM_GA), "dm"),
+            ((const.STATUS_DD_U,), "dd_u"),
+            ((const.STATUS_DD_NU,), "dd_nu"),
+            ((const.STATUS_EMERITUS_DD,), "emeritus_dd")):
+
+            keyring = getattr(self, keys)
+
+            # Show people that have a status in our DB but do not exist in the
+            # appropriate keyring
             for fpr, p in people_by_fpr.iteritems():
                 if p.status not in status: continue
                 if fpr not in keyring and fpr not in seen:
