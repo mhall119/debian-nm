@@ -64,10 +64,10 @@ $(function() {
             <td>{{am.stats_held}}</td>
             <td>{{am.stats_done}}</td>
             {% endif %}
-            <td val="{{am.is_am|yesno:"1,0"}}">{{am.is_am|yesno:"yes,-"}}</td>
-            <td val="{{am.is_am_ctte|yesno:"1,0"}}">{{am.is_am_ctte|yesno:"yes,-"}}</td>
-            <td val="{{am.is_fd|yesno:"1,0"}}">{{am.is_fd|yesno:"yes,-"}}</td>
-            <td val="{{am.is_dam|yesno:"1,0"}}">{{am.is_dam|yesno:"yes,-"}}</td>
+            <td val="{{am.is_am|yesno:"1,0"}}">{{am.is_am|yesno:"am,-"}}</td>
+            <td val="{{am.is_am_ctte|yesno:"1,0"}}">{{am.is_am_ctte|yesno:"ctte,-"}}</td>
+            <td val="{{am.is_fd|yesno:"1,0"}}">{{am.is_fd|yesno:"fd,-"}}</td>
+            <td val="{{am.is_dam|yesno:"1,0"}}">{{am.is_dam|yesno:"dam,-"}}</td>
             </td>
         </tr>
         {% endfor %}
