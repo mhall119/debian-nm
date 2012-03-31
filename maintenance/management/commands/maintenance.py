@@ -216,7 +216,7 @@ class Checker(object):
                     count += 1
                     found = True
                     break
-            if not found:
+            if not found and p.status != const.STATUS_REMOVED_DD:
                 log.warning("%s has status %s but is not in any keyring (fpr: %s)", self._link(p), p.status, fpr)
                 count += 1
 
