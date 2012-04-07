@@ -250,9 +250,9 @@ class Checker(object):
                 log.warning("Person %s exists in LDAP but not in our db", entry.uid)
                 continue
 
-            if entry.single("gidNumber") == "800":
+            if entry.single("gidNumber") == "800" and entry.single("keyFingerPrint") is not None:
                 if person.status not in (const.STATUS_DD_U, const.STATUS_DD_NU):
-                    log.warning("%s has gidNumber 800 but the db has state %s", self._link(person), person.status)
+                    log.warning("%s has gidNumber 800 and a key, but the db has state %s", self._link(person), person.status)
 
     def check_dmlist(self, quick=False, **kw):
         """
