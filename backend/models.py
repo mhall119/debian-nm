@@ -577,6 +577,7 @@ def export_db(self, full=False):
         # Process details
         for pr in p.processes.all().order_by("applying_for"):
             epr = dict(
+                applying_as=pr.applying_as,
                 applying_for=pr.applying_for,
                 progress=pr.progress,
                 is_active=pr.is_active,

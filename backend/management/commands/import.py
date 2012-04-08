@@ -80,6 +80,7 @@ class Importer(object):
         # Create process
         pr = bmodels.Process(
             person=person,
+            applying_as=info["applying_as"],
             applying_for=info["applying_for"],
             progress=info["progress"],
             is_active=info["is_active"],
