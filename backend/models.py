@@ -175,13 +175,13 @@ class Person(models.Model):
 
     @property
     def fullname(self):
-        if self.mn is None:
-            if self.sn is None:
+        if not self.mn:
+            if not self.sn:
                 return self.cn
             else:
                 return "%s %s" % (self.cn, self.sn)
         else:
-            if self.sn is None:
+            if not self.sn:
                 return "%s %s" % (self.cn, self.mn)
             else:
                 return "%s %s %s" % (self.cn, self.mn, self.sn)
