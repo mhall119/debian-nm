@@ -59,7 +59,7 @@ class parse_projectb(object):
     """
     def __init__(self, statefile=None):
         if statefile is None:
-            statefile = os.path.join(MINECHANGELOGS_CACHEDIR, "lastentries.pickle")
+            statefile = os.path.join(MINECHANGELOGS_CACHEDIR, "index-checkpoint.pickle")
         self.statefile = statefile
 
     def load_state(self):
@@ -205,7 +205,7 @@ class Indexer(object):
         Flush and save indexing information
         """
         if self.max_ts is None:
-            self.xdb.set_metadata("max_ts", "")
+            self.xdb.set_metadata("max_ts", "0")
         else:
             self.xdb.set_metadata("max_ts", str(self.max_ts))
         self.xdb.set_metadata("last_indexed", str(time.time()))
@@ -216,7 +216,10 @@ def info():
     Get information about the state of the minechangelogs database
     """
     xdb = xapian.Database(MINECHANGELOGS_INDEXDIR)
-    pass
+    return dict(
+        max_ts = float(xdb.get_metadata("max_ts")),
+        last_indexed = float(xdb.get_metadata("last_indexed")),
+    )
 
 def query(keywords):
     """
