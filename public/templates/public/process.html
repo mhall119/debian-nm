@@ -106,6 +106,9 @@ $(function() {
 {{block.super}}
 <a href="{{person.get_ddpo_url}}">DDPO</a>
 <a href="{{person.get_portfolio_url}}">Portfolio</a>
+{% if request.person %}
+<a href="{% url restricted_minechangelogs key=person.lookup_key %}">changelogs</a>
+{% endif %}
 {% if request.person.is_admin %}
 <a href="{% url admin:backend_process_change process.id %}">admin</a>
 {% endif %}

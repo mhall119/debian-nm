@@ -57,6 +57,9 @@
 {% block relatedpages %}
 <a href="{{person.get_ddpo_url}}">DDPO</a>
 <a href="{{person.get_portfolio_url}}">Portfolio</a>
+{% if request.person %}
+<a href="{% url restricted_minechangelogs key=person.lookup_key %}">changelogs</a>
+{% endif %}
 {% if request.am.is_admin %}
 <a href="{% url admin:backend_person_change person.id  %}">admin</a>
 {% if can_be_am %}

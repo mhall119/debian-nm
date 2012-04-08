@@ -20,9 +20,11 @@ from django.shortcuts import render_to_response, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils.translation import ugettext as _
 import backend.models as bmodels
+import minechangelogs.models as mmodels
 from backend import const
 import backend.auth
 import json
+import datetime
 
 @backend.auth.is_am
 def ammain(request):
@@ -287,3 +289,48 @@ def db_export(request):
         res["Content-Disposition"] = "attachment; filename=nm-mock.json"
     json.dump(people, res, cls=Serializer, indent=1)
     return res
+
+
+class MinechangelogsForm(forms.Form):
+    query = forms.CharField(
+        required=True,
+        label=_("Query"),
+        help_text=_("Enter one keyword per line. Changelog entries to be shown must match at least one keyword. You often need to tweak the keywords to improve the quality of results"),
+        widget=forms.Textarea(attrs=dict(rows=5, cols=40))
+    )
+
+def minechangelogs(request, key=None):
+    entries = None
+    info = mmodels.info()
+    info["max_ts"] = datetime.datetime.fromtimestamp(info["max_ts"])
+    info["last_indexed"] = datetime.datetime.fromtimestamp(info["last_indexed"])
+
+    if request.method == 'POST':
+        form = MinechangelogsForm(request.POST)
+        if form.is_valid():
+            query = form.cleaned_data["query"]
+            keywords = [x.strip() for x in query.split("\n")]
+            entries = list(mmodels.query(keywords))
+    else:
+        if key:
+            person = bmodels.Person.lookup(key)
+            if person is None:
+                return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
+            query = [
+                person.fullname,
+                person.email,
+            ]
+            if person.uid:
+                query.append(person.uid)
+            form = MinechangelogsForm(initial=dict(query="\n".join(query)))
+        else:
+            form = MinechangelogsForm()
+
+    return render_to_response("restricted/minechangelogs.html",
+                              dict(
+                                  form=form,
+                                  info=info,
+                                  entries=entries,
+                              ),
+                              context_instance=template.RequestContext(request))
+
