@@ -305,6 +305,13 @@ def minechangelogs(request, key=None):
     info["max_ts"] = datetime.datetime.fromtimestamp(info["max_ts"])
     info["last_indexed"] = datetime.datetime.fromtimestamp(info["last_indexed"])
 
+    if key:
+        person = bmodels.Person.lookup(key)
+        if person is None:
+            return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
+    else:
+        person = None
+
     if request.method == 'POST':
         form = MinechangelogsForm(request.POST)
         if form.is_valid():
@@ -312,10 +319,7 @@ def minechangelogs(request, key=None):
             keywords = [x.strip() for x in query.split("\n")]
             entries = list(mmodels.query(keywords))
     else:
-        if key:
-            person = bmodels.Person.lookup(key)
-            if person is None:
-                return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
+        if person:
             query = [
                 person.fullname,
                 person.email,
@@ -331,6 +335,7 @@ def minechangelogs(request, key=None):
                                   form=form,
                                   info=info,
                                   entries=entries,
+                                  person=person,
                               ),
                               context_instance=template.RequestContext(request))
 
