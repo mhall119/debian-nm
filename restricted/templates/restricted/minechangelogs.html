@@ -1,0 +1,43 @@
+{% extends "restricted/base.html" %}
+{% load nm %}
+
+{% block breadcrumbs %}{{block.super}}
+/ <a href="{{request.build_absolute_uri}}">minechangelogs</a>
+{% endblock %}
+
+{% block content %}
+
+<h1>Minechangelogs query</h1>
+
+<form action="{% url restricted_minechangelogs %}" method="post">{% csrf_token %}
+<table>
+<tr>
+    <td>
+        {{form.query.label_tag}}:<br>
+        {{form.query}}
+    </td>
+    <td>
+        {{form.query.errors}}
+        {{form.query.help_text}}
+    </td>
+</tr>
+</table>
+<input type="submit" value="Submit">
+</form>
+
+{% if entries %}
+<h2>{{entries|length}} entries</h2>
+<pre>
+{% for e in entries %}
+{{e}}
+{% endfor %}
+</pre>
+{% endif %}
+
+<table class="personinfo">
+    <tr><th>Latest log entry seen:</th><td>{{info.max_ts}}</td></tr>
+    <tr><th>Time of last indexing run:</th><td>{{info.last_indexed}}</td></tr>
+</table>
+
+{% endblock %}
+
