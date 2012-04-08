@@ -22,6 +22,11 @@ General site features still needing work:
     <li>TODO: stats (former index.php, stats.php, leaderboard.php, nmgraph.php)</li>
 </ul>
 
+Site features available to anyone with a web password:
+<ul>
+    <li><a href="{% url restricted_minechangelogs %}">minechangelogs front-end</a></li>
+</ul>
+
 If you are an Application Manager, you can look at:
 
 <ul>
@@ -47,7 +52,6 @@ Other TODO list items:
     <li>IRC bot to update stats in the #debian-newmaint channel topic</li>
     {% if request.am %}
     <li>in tables, show the last log entries with non-null logtext</li>
-    <li>minechangelogs front-end, showing also when minechangelogs index was last built, and timestamp of max changelog known by minechangelogs</li>
     <li>in /public/process, allow to assign an AM when the applicant is in status APP_OK</li>
     {% endif %}
 </ul>
