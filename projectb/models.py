@@ -1,4 +1,5 @@
 from django.db import models
+from django.db import connections
 from django.conf import settings
 
 import datetime
@@ -9,6 +10,13 @@ import time
 import subprocess
 import cPickle as pickle
 import psycopg2
+
+def cursor():
+    """
+    Return a Django sane-dbapi-style db cursor to the projectb database
+    """
+    return connections['projectb'].cursor()
+
 
 CACHE_FILE="make-dm-list.cache"
 

@@ -19,7 +19,16 @@ DATABASES = {
         'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-    }
+    },
+    'projectb': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'projectb',
+        'USER': 'guest',
+        'HOST': 'localhost',
+        # ssh ries.debian.org -L15433:127.0.0.1:5433
+        'PORT': '15433',                 # Port forwarded
+        #'PORT': '5433',                  # Local
+    },
 }
 
 # Local time zone for this installation. Choices can be found here:
@@ -148,6 +157,7 @@ INSTALLED_APPS = (
     'restricted',
     'maintenance',
     'projectb',
+    'minechangelogs',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
@@ -181,3 +191,5 @@ LOGGING = {
 
 KEYRINGS = "/home/enrico/dev/deb/keyring.debian.org/keyrings"
 LDAP_SERVER = "ldap://db.debian.org"
+MINECHANGELOGS_CACHEDIR = "./data/mc_cache"
+MINECHANGELOGS_INDEXDIR = "./data/mc_index"
