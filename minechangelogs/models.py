@@ -229,6 +229,8 @@ def query(keywords):
 
     q = None
     for a in keywords:
+        a = a.strip()
+        if not a: continue
         if ' ' in a:
             a = a.split()
             p = xapian.Query(xapian.Query.OP_PHRASE, a)
@@ -238,6 +240,7 @@ def query(keywords):
             q = p
         else:
             q = xapian.Query(xapian.Query.OP_OR, q, p)
+    if q is None: return
 
     enquire = xapian.Enquire(xdb)
     enquire.set_query(q)
