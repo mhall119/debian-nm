@@ -381,6 +381,8 @@ class Process(models.Model):
     person = models.ForeignKey(Person, related_name="processes")
     # 1.3-only: person = models.ForeignKey(Person, related_name="processes", on_delete=models.CASCADE)
 
+    applying_as = models.CharField("original status", max_length=20, null=False,
+                                    choices=[x[1:3] for x in const.ALL_STATUS])
     applying_for = models.CharField("target status", max_length=20, null=False,
                                     choices=[x[1:3] for x in const.ALL_STATUS])
     progress = models.CharField(max_length=20, null=False,
