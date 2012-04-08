@@ -109,6 +109,7 @@ class Command(BaseCommand):
         # Create a process
         pr = bmodels.Process(
             person=p,
+            applying_as=p.status,
             applying_for=status,
             progress=const.PROGRESS_DONE,
             is_active=False)

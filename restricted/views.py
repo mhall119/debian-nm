@@ -239,6 +239,7 @@ def newprocess(request, key):
                 person=person,
                 progress=const.PROGRESS_APP_NEW,
                 is_active=True,
+                applying_as=person.status,
                 applying_for=form.cleaned_data["applying_for"]
             )
             process.save()

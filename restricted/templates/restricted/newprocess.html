@@ -16,7 +16,7 @@
     <tr><th>Email</th><td>{{person.email}}</td></tr>
     <tr><th>Account name</th><td>{{person.uid|default:"none chosen yet"}}</td></tr>
     <tr><th>OpenPGP fingerprint</th><td>{{person.fpr}}</td></tr>
-    <tr><th>Current status</th><td>{{person.status}}</td></tr>
+    <tr><th>Current status</th><td>{{person.status|desc_status}}</td></tr>
     {% if can_edit %}
     <tr><th>FD comments</th><td>{{person.fd_comment}}</td></tr>
     {% endif %}
