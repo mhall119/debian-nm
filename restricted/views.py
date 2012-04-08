@@ -299,6 +299,11 @@ class MinechangelogsForm(forms.Form):
         help_text=_("Enter one keyword per line. Changelog entries to be shown must match at least one keyword. You often need to tweak the keywords to improve the quality of results"),
         widget=forms.Textarea(attrs=dict(rows=5, cols=40))
     )
+    download = forms.BooleanField(
+        required=False,
+        label=_("Download"),
+        help_text=_("Activate this field to download the changelog instead of displaying it"),
+    )
 
 def minechangelogs(request, key=None):
     entries = None
@@ -318,7 +323,16 @@ def minechangelogs(request, key=None):
         if form.is_valid():
             query = form.cleaned_data["query"]
             keywords = [x.strip() for x in query.split("\n")]
-            entries = list(mmodels.query(keywords))
+            entries = mmodels.query(keywords)
+            if form.cleaned_data["download"]:
+                res = http.HttpResponse(entries, content_type="text/plain")
+                if person:
+                    res["Content-Disposition"] = 'attachment; filename=changelogs-%s.txt' % person.lookup_key
+                else:
+                    res["Content-Disposition"] = 'attachment; filename=changelogs.txt'
+                return res
+            else:
+                entries = list(entries)
     else:
         if person:
             query = [
