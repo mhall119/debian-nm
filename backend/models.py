@@ -126,7 +126,7 @@ class Person(models.Model):
     # OpenPGP fingerprint, NULL until one has been provided
     fpr = CharNullField("OpenPGP key fingerprint", max_length=80, null=True, unique=True, blank=True)
     status = models.CharField("current status in the project", max_length=20, null=False,
-                              choices=[x[1:3] for x in const.ALL_STATUS])
+                              choices=[(x.tag, x.ldesc) for x in const.ALL_STATUS])
     status_changed = models.DateTimeField("when the status last changed", null=False, default=datetime.datetime.utcnow)
     fd_comment = models.TextField("Front Desk comments", null=True, blank=True)
     # null=True because we currently do not have the info for old entries
@@ -505,7 +505,7 @@ class Log(models.Model):
 
     # Copied from Process when the log entry is created
     progress = models.CharField(max_length=20, null=False,
-                                choices=[x[1:3] for x in const.ALL_PROGRESS])
+                                choices=[(x.tag, x.ldesc) for x in const.ALL_PROGRESS])
 
     logdate = models.DateTimeField(null=False, default=datetime.datetime.utcnow)
     logtext = TextNullField(null=True, blank=True)

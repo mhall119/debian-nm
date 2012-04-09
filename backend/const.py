@@ -15,47 +15,52 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import namedtuple
+
+Status = namedtuple("Status", ("code", "tag", "sdesc", "ldesc"))
+Progress = namedtuple("Progress", ("code", "tag", "ldesc"))
+
 g = globals()
 
 # Status of a person in Debian
 ALL_STATUS = (
-    ("STATUS_MM",          "mm",         "None"),
-    ("STATUS_MM_GA",       "mm_ga",      "None, with guest account"),
-    ("STATUS_DM",          "dm",         "Debian Maintainer"),
-    ("STATUS_DM_GA",       "dm_ga",      "Debian Maintainer, with guest account"),
-    ("STATUS_DD_U",        "dd_u",       "Debian Developer, uploading"),
-    ("STATUS_DD_NU",       "dd_nu",      "Debian Developer, non-uploading"),
-    ("STATUS_EMERITUS_DD", "dd_e",       "Debian Developer, emeritus"),
-    ("STATUS_EMERITUS_DM", "dm_e",       "Debian Maintainer, emeritus"),
-    ("STATUS_REMOVED_DD",  "dd_r",       "Debian Developer, removed"),
-    ("STATUS_REMOVED_DM",  "dm_r",       "Debian Maintainer, removed"),
+    Status("STATUS_MM",          "mm",         "None",              "None"),
+    Status("STATUS_MM_GA",       "mm_ga",      "None, account",     "None, with guest account"),
+    Status("STATUS_DM",          "dm",         "DM",                "Debian Maintainer"),
+    Status("STATUS_DM_GA",       "dm_ga",      "DM, account",       "Debian Maintainer, with guest account"),
+    Status("STATUS_DD_U",        "dd_u",       "DD, uploading",     "Debian Developer, uploading"),
+    Status("STATUS_DD_NU",       "dd_nu",      "DD, non-uploading", "Debian Developer, non-uploading"),
+    Status("STATUS_EMERITUS_DD", "dd_e",       "DD, emeritus",      "Debian Developer, emeritus"),
+    Status("STATUS_EMERITUS_DM", "dm_e",       "DM, emeritus",      "Debian Maintainer, emeritus"),
+    Status("STATUS_REMOVED_DD",  "dd_r",       "DD, removed",       "Debian Developer, removed"),
+    Status("STATUS_REMOVED_DM",  "dm_r",       "DM, removed",       "Debian Maintainer, removed"),
 )
-ALL_STATUS_DESCS = dict(x[1:3] for x in ALL_STATUS)
-for key, val, desc in ALL_STATUS:
-    g[key] = val
+ALL_STATUS_DESCS = dict((x.tag, x.ldesc) for x in ALL_STATUS)
+for s in ALL_STATUS:
+    g[s.code] = s.tag
 
-SEQ_STATUS = dict(((y[1], x) for x, y in enumerate(ALL_STATUS)))
+SEQ_STATUS = dict(((y.tag, x) for x, y in enumerate(ALL_STATUS)))
 
 # Progress of a person in a process
 ALL_PROGRESS = (
-    ("PROGRESS_APP_NEW",   "app_new",   "Applicant asked to enter the process"),
-    ("PROGRESS_APP_RCVD",  "app_rcvd",  "Applicant replied to initial mail"),
-    ("PROGRESS_APP_HOLD",  "app_hold",  "On hold before entering the queue"),
-    ("PROGRESS_ADV_RCVD",  "adv_rcvd",  "Received enough advocacies"),
-    ("PROGRESS_APP_OK",    "app_ok",    "Advocacies have been approved"),
-    ("PROGRESS_AM_RCVD",   "am_rcvd",   "Waiting for AM to confirm"),
-    ("PROGRESS_AM",        "am",        "Interacting with an AM"),
-    ("PROGRESS_AM_HOLD",   "am_hold",   "AM hold"),
-    ("PROGRESS_AM_OK",     "am_ok",     "AM approved"),
-    ("PROGRESS_FD_HOLD",   "fd_hold",   "FD hold"),
-    ("PROGRESS_FD_OK",     "fd_ok",     "FD approved"),
-    ("PROGRESS_DAM_HOLD",  "dam_hold",  "DAM hold"),
-    ("PROGRESS_DAM_OK",    "dam_ok",    "DAM approved"),
-    ("PROGRESS_DONE",      "done",      "Completed"),
-    ("PROGRESS_CANCELLED", "cancelled", "Canceled"),
+    Progress("PROGRESS_APP_NEW",   "app_new",   "Applicant asked to enter the process"),
+    Progress("PROGRESS_APP_RCVD",  "app_rcvd",  "Applicant replied to initial mail"),
+    Progress("PROGRESS_APP_HOLD",  "app_hold",  "On hold before entering the queue"),
+    Progress("PROGRESS_ADV_RCVD",  "adv_rcvd",  "Received enough advocacies"),
+    Progress("PROGRESS_APP_OK",    "app_ok",    "Advocacies have been approved"),
+    Progress("PROGRESS_AM_RCVD",   "am_rcvd",   "Waiting for AM to confirm"),
+    Progress("PROGRESS_AM",        "am",        "Interacting with an AM"),
+    Progress("PROGRESS_AM_HOLD",   "am_hold",   "AM hold"),
+    Progress("PROGRESS_AM_OK",     "am_ok",     "AM approved"),
+    Progress("PROGRESS_FD_HOLD",   "fd_hold",   "FD hold"),
+    Progress("PROGRESS_FD_OK",     "fd_ok",     "FD approved"),
+    Progress("PROGRESS_DAM_HOLD",  "dam_hold",  "DAM hold"),
+    Progress("PROGRESS_DAM_OK",    "dam_ok",    "DAM approved"),
+    Progress("PROGRESS_DONE",      "done",      "Completed"),
+    Progress("PROGRESS_CANCELLED", "cancelled", "Canceled"),
 )
-ALL_PROGRESS_DESCS = dict(x[1:3] for x in ALL_PROGRESS)
-for key, val, desc in ALL_PROGRESS:
-    g[key] = val
+ALL_PROGRESS_DESCS = dict((x.tag, x.ldesc) for x in ALL_PROGRESS)
+for p in ALL_PROGRESS:
+    g[p.code] = p.tag
 
-SEQ_PROGRESS = dict(((y[1], x) for x, y in enumerate(ALL_PROGRESS)))
+SEQ_PROGRESS = dict(((y.tag, x) for x, y in enumerate(ALL_PROGRESS)))

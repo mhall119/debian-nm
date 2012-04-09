@@ -85,9 +85,9 @@ def processes(request):
 
 def make_statusupdateform(editor):
     if editor.is_fd:
-        choices = [(x[1], "%s - %s" % (x[1], x[2])) for x in const.ALL_PROGRESS]
+        choices = [(x.tag, "%s - %s" % (x.tag, x.ldesc)) for x in const.ALL_PROGRESS]
     else:
-        choices = [x[1:3] for x in const.ALL_PROGRESS if x[0] in ("PROGRESS_AM", "PROGRESS_AM_HOLD", "PROGRESS_AM_OK")]
+        choices = [(x.tag, x.ldesc) for x in const.ALL_PROGRESS if x[0] in ("PROGRESS_AM", "PROGRESS_AM_HOLD", "PROGRESS_AM_OK")]
 
     class StatusUpdateForm(forms.Form):
         progress = forms.ChoiceField(
@@ -313,20 +313,19 @@ def stats(request):
 
     # Cook up more useful bits for the templates
 
+    ctx = dict(stats=stats)
+
     status_table = []
-    for status in (s[1] for s in const.ALL_STATUS):
+    for status in (s.tag for s in const.ALL_STATUS):
         status_table.append((status, by_status.get(status, 0)))
+    ctx["status_table"] = status_table
+    ctx["status_table_json"] = json.dumps([(s.sdesc, by_status.get(s.tag, 0)) for s in const.ALL_STATUS])
 
     progress_table = []
-    for progress in (s[1] for s in const.ALL_PROGRESS):
+    for progress in (s.tag for s in const.ALL_PROGRESS):
         progress_table.append((progress, by_progress.get(progress, 0)))
+    ctx["progress_table"] = progress_table
+    ctx["progress_table_json"] = json.dumps([(p.ldesc, by_progress.get(s.tag, 0)) for p in const.ALL_PROGRESS])
 
-
-
-    return render_to_response("public/stats.html",
-                              dict(
-                                  stats=stats,
-                                  status_table=status_table,
-                                  progress_table=progress_table,
-                              ),
+    return render_to_response("public/stats.html", ctx,
                               context_instance=template.RequestContext(request))

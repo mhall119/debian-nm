@@ -207,7 +207,7 @@ def person(request, key):
                               context_instance=template.RequestContext(request))
 
 def make_newprocessform(person):
-    choices = [x[1:3] for x in const.ALL_STATUS if x[1] != person.status]
+    choices = [(x.tag, x.ldesc) for x in const.ALL_STATUS if x[1] != person.status]
 
     class NewProcessForm(forms.Form):
         applying_for = forms.ChoiceField(
