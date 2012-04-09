@@ -28,6 +28,7 @@ urlpatterns = patterns('public.views',
     url(r'^person/(?P<key>[^/]+)$', 'person', name="person"),
     url(r'^process/(?P<key>[^/]+)$', 'process', name="public_process"),
     url(r'^progress/(?P<progress>\w+)$', 'progress', name="public_progress"),
+    url(r'^stats/$', 'stats', name="public_stats"),
 
     # Compatibility
     url(r'^whoisam$', 'managers', name="public_whoisam"),

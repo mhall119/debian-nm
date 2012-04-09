@@ -22,6 +22,7 @@ from django.utils.translation import ugettext as _
 import backend.models as bmodels
 from backend import const
 import datetime
+import json
 
 def managers(request):
     from django.db import connection
@@ -283,5 +284,49 @@ def progress(request, progress):
                               dict(
                                   progress=progress,
                                   processes=processes,
+                              ),
+                              context_instance=template.RequestContext(request))
+
+def stats(request):
+    from django.db.models import Count
+
+    stats = dict()
+
+    # Count of people by status
+    by_status = dict()
+    for row in bmodels.Person.objects.values("status").annotate(Count("status")):
+        by_status[row["status"]] = row["status__count"]
+    stats["by_status"] = by_status
+
+    # Count of applicants by progress
+    by_progress = dict()
+    for row in bmodels.Process.objects.filter(is_active=True).values("progress").annotate(Count("progress")):
+        by_progress[row["progress"]] = row["progress__count"]
+    stats["by_progress"] = by_progress
+
+    # If JSON is requested, dump them right away
+    if 'json' in request.GET:
+        res = http.HttpResponse(mimetype="application/json")
+        res["Content-Disposition"] = "attachment; filename=stats.json"
+        json.dump(stats, res, indent=1)
+        return res
+
+    # Cook up more useful bits for the templates
+
+    status_table = []
+    for status in (s[1] for s in const.ALL_STATUS):
+        status_table.append((status, by_status.get(status, 0)))
+
+    progress_table = []
+    for progress in (s[1] for s in const.ALL_PROGRESS):
+        progress_table.append((progress, by_progress.get(progress, 0)))
+
+
+
+    return render_to_response("public/stats.html",
+                              dict(
+                                  stats=stats,
+                                  status_table=status_table,
+                                  progress_table=progress_table,
                               ),
                               context_instance=template.RequestContext(request))
