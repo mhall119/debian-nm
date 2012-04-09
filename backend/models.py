@@ -527,7 +527,7 @@ MOCK_LOGTEXTS = [
     "ok", "hmm", "meh", "asdf", "moo", "...", u"üñįç♥ḋə"
 ]
 
-def export_db(self, full=False):
+def export_db(full=False):
     """
     Export the whole databae into a json-serializable array.
 
