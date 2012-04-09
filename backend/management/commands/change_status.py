@@ -70,7 +70,7 @@ class Command(BaseCommand):
             log.error("Person with key %s does not exist", person_key)
             sys.exit(1)
 
-        if status not in (x[1] for x in const.ALL_STATUS):
+        if status not in (x.tag for x in const.ALL_STATUS):
             log.error("Status %s is not valid", status)
             sys.exit(1)
 

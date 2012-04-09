@@ -185,8 +185,8 @@ class Checker(object):
         """
         Consistency check of enum values
         """
-        statuses = [x[1] for x in const.ALL_STATUS]
-        progresses = [x[1] for x in const.ALL_PROGRESS]
+        statuses = [x.tag for x in const.ALL_STATUS]
+        progresses = [x.tag for x in const.ALL_PROGRESS]
 
         for p in bmodels.Person.objects.exclude(status__in=statuses):
             log.warning("%s: invalid status %s", self._link(p), p.status)

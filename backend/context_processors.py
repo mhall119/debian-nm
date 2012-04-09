@@ -20,11 +20,11 @@ import backend.const as c
 def const(request):
     ctx = dict()
 
-    for key, val, desc in c.ALL_STATUS:
-        ctx[key] = val
+    for s in c.ALL_STATUS:
+        ctx[s.code] = s.tag
 
-    for key, val, desc in c.ALL_PROGRESS:
-        ctx[key] = val
+    for p in c.ALL_PROGRESS:
+        ctx[p.code] = p.tag
 
     return ctx
 
