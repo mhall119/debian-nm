@@ -18,7 +18,7 @@
 from collections import namedtuple
 
 Status = namedtuple("Status", ("code", "tag", "sdesc", "ldesc"))
-Progress = namedtuple("Progress", ("code", "tag", "ldesc"))
+Progress = namedtuple("Progress", ("code", "tag", "sdesc", "ldesc"))
 
 g = globals()
 
@@ -43,21 +43,21 @@ SEQ_STATUS = dict(((y.tag, x) for x, y in enumerate(ALL_STATUS)))
 
 # Progress of a person in a process
 ALL_PROGRESS = (
-    Progress("PROGRESS_APP_NEW",   "app_new",   "Applicant asked to enter the process"),
-    Progress("PROGRESS_APP_RCVD",  "app_rcvd",  "Applicant replied to initial mail"),
-    Progress("PROGRESS_APP_HOLD",  "app_hold",  "On hold before entering the queue"),
-    Progress("PROGRESS_ADV_RCVD",  "adv_rcvd",  "Received enough advocacies"),
-    Progress("PROGRESS_APP_OK",    "app_ok",    "Advocacies have been approved"),
-    Progress("PROGRESS_AM_RCVD",   "am_rcvd",   "Waiting for AM to confirm"),
-    Progress("PROGRESS_AM",        "am",        "Interacting with an AM"),
-    Progress("PROGRESS_AM_HOLD",   "am_hold",   "AM hold"),
-    Progress("PROGRESS_AM_OK",     "am_ok",     "AM approved"),
-    Progress("PROGRESS_FD_HOLD",   "fd_hold",   "FD hold"),
-    Progress("PROGRESS_FD_OK",     "fd_ok",     "FD approved"),
-    Progress("PROGRESS_DAM_HOLD",  "dam_hold",  "DAM hold"),
-    Progress("PROGRESS_DAM_OK",    "dam_ok",    "DAM approved"),
-    Progress("PROGRESS_DONE",      "done",      "Completed"),
-    Progress("PROGRESS_CANCELLED", "cancelled", "Canceled"),
+    Progress("PROGRESS_APP_NEW",   "app_new",   "Applied",     "Applicant asked to enter the process"),
+    Progress("PROGRESS_APP_RCVD",  "app_rcvd",  "Validated",   "Applicant replied to initial mail"),
+    Progress("PROGRESS_APP_HOLD",  "app_hold",  "App hold",    "On hold before entering the queue"),
+    Progress("PROGRESS_ADV_RCVD",  "adv_rcvd",  "Adv ok",      "Received enough advocacies"),
+    Progress("PROGRESS_APP_OK",    "app_ok",    "App ok",      "Advocacies have been approved"),
+    Progress("PROGRESS_AM_RCVD",   "am_rcvd",   "AM assigned", "Waiting for AM to confirm"),
+    Progress("PROGRESS_AM",        "am",        "AM",          "Interacting with an AM"),
+    Progress("PROGRESS_AM_HOLD",   "am_hold",   "AM hold",     "AM hold"),
+    Progress("PROGRESS_AM_OK",     "am_ok",     "AM ok",       "AM approved"),
+    Progress("PROGRESS_FD_HOLD",   "fd_hold",   "FD hold",     "FD hold"),
+    Progress("PROGRESS_FD_OK",     "fd_ok",     "FD ok",       "FD approved"),
+    Progress("PROGRESS_DAM_HOLD",  "dam_hold",  "DAM hold",    "DAM hold"),
+    Progress("PROGRESS_DAM_OK",    "dam_ok",    "DAM ok",      "DAM approved"),
+    Progress("PROGRESS_DONE",      "done",      "Done",        "Completed"),
+    Progress("PROGRESS_CANCELLED", "cancelled", "Canceled",    "Canceled"),
 )
 ALL_PROGRESS_DESCS = dict((x.tag, x.ldesc) for x in ALL_PROGRESS)
 for p in ALL_PROGRESS:
