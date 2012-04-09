@@ -24,13 +24,21 @@ import optparse
 import sys
 import datetime
 import logging
+import json
+import os
+import os.path
+import gzip
+import time
 from backend import models as bmodels
 from backend import const
+from backend import utils
 import keyring.models as kmodels
 import dsa.models as dmodels
 import projectb.models as pmodels
 
 log = logging.getLogger(__name__)
+
+BACKUP_DIR = getattr(settings, "BACKUP_DIR", None)
 
 class Checker(object):
     def __init__(self, quick=False, **kw):
@@ -52,6 +60,35 @@ class Checker(object):
             return "http://localhost:8000" + obj.get_absolute_url()
         else:
             return "https://%s%s" % (self.site.domain, obj.get_absolute_url())
+
+    def backup_db(self, **kw):
+        if BACKUP_DIR is None:
+            log.info("BACKUP_DIR is not set: skipping backups")
+            return
+
+        people = list(bmodels.export_db(full=True))
+
+        class Serializer(json.JSONEncoder):
+            def default(self, o):
+                if hasattr(o, "strftime"):
+                    return o.strftime("%Y-%m-%d %H:%M:%S")
+                return json.JSONEncoder.default(self, o)
+
+        # Base filename for the backup
+        fname = os.path.join(BACKUP_DIR, datetime.datetime.utcnow().strftime("%Y%m%d-db-full.json.gz"))
+        # Use a sequential number to avoid overwriting old backups when run manually
+        while os.path.exists(fname):
+            time.sleep(0.5)
+            fname = os.path.join(BACKUP_DIR, datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S-db-full.json.gz"))
+        log.info("backing up to %s", fname)
+        # Write the backup file
+        with utils.atomic_writer(fname, 0640) as fd:
+            try:
+                gzfd = gzip.GzipFile(filename=fname[:-3], mode="w", compresslevel=9, fileobj=fd)
+                json.dump(people, gzfd, cls=Serializer, indent=2)
+            finally:
+                gzfd.close()
+
 
     @transaction.commit_on_success
     def compute_am_ctte(self, **kw):
