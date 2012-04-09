@@ -325,7 +325,7 @@ def stats(request):
     for progress in (s.tag for s in const.ALL_PROGRESS):
         progress_table.append((progress, by_progress.get(progress, 0)))
     ctx["progress_table"] = progress_table
-    ctx["progress_table_json"] = json.dumps([(p.ldesc, by_progress.get(s.tag, 0)) for p in const.ALL_PROGRESS])
+    ctx["progress_table_json"] = json.dumps([(p.sdesc, by_progress.get(p.tag, 0)) for p in const.ALL_PROGRESS])
 
     return render_to_response("public/stats.html", ctx,
                               context_instance=template.RequestContext(request))

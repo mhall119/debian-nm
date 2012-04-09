@@ -46,6 +46,21 @@ $(function() {
             show: false,
         }
     });
+
+    $.jqplot('byprogress_graph', [{{progress_table_json|safe}}], {
+        title: "Processes by progress",
+        seriesDefaults: {
+            renderer: $.jqplot.PieRenderer,
+            rendererOptions: {
+                sliceMargin: 4,
+                dataLabels: "label",
+                showDataLabels: true,
+            },
+        },
+        legend: {
+            show: false,
+        }
+    });
 });
 </script>
 {% endblock %}
@@ -74,7 +89,9 @@ $(function() {
 </tbody>
 </table>
 
-<h2>Processes by progress</h2>
+<h2 style="clear: both">Processes by progress</h2>
+
+<div style="float: right; width: 400px; height: 400px;" id="byprogress_graph"></div>
 
 <table id="byprogress" class="tablesorter">
 <thead>
