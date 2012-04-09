@@ -4,7 +4,7 @@
 
 {% block head_resources %}
   {{block.super}}
-  {% jsinclude "tables" %}
+  {% jsinclude "tables,jqplot" %}
 {% endblock %}
 
 {% block head %}
@@ -31,6 +31,21 @@ $(function() {
             return val;
         },
     });
+
+    $.jqplot('bystatus_graph', [{{status_table_json|safe}}], {
+        title: "People by status",
+        seriesDefaults: {
+            renderer: $.jqplot.PieRenderer,
+            rendererOptions: {
+                sliceMargin: 4,
+                dataLabels: "label",
+                showDataLabels: true,
+            },
+        },
+        legend: {
+            show: false,
+        }
+    });
 });
 </script>
 {% endblock %}
@@ -42,6 +57,8 @@ $(function() {
 <h1>Debian New Member - Statistics</h2>
 
 <h2>People by status</h2>
+
+<div style="float: right; width: 400px; height: 400px;" id="bystatus_graph"></div>
 
 <table id="bystatus" class="tablesorter">
 <thead>

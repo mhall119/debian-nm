@@ -35,6 +35,20 @@ JS_MODULES = dict(
         deps=["core"],
         files=["nm.js"],
     ),
+    ui=dict(
+        deps=["core"],
+        files=["jquery-ui-1.8.17.tabs.min.js"],
+    ),
+    jqplot=dict(
+        deps=["core"],
+        files=[
+            "jquery.jqplot.min.js",
+            "plugins/jqplot.barRenderer.min.js",
+            "plugins/jqplot.pieRenderer.min.js",
+            "plugins/jqplot.canvasTextRenderer.min.js",
+            "plugins/jqplot.canvasAxisLabelRenderer.min.js",
+        ]
+    ),
 )
 
 @register.simple_tag
