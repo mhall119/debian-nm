@@ -325,7 +325,11 @@ def minechangelogs(request, key=None):
             keywords = [x.strip() for x in query.split("\n")]
             entries = mmodels.query(keywords)
             if form.cleaned_data["download"]:
-                res = http.HttpResponse(entries, content_type="text/plain")
+                def send_entries():
+                    for e in entries:
+                        yield e
+                        yield "\n\n"
+                res = http.HttpResponse(send_entries(), content_type="text/plain")
                 if person:
                     res["Content-Disposition"] = 'attachment; filename=changelogs-%s.txt' % person.lookup_key
                 else:
