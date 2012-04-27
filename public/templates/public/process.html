@@ -59,7 +59,7 @@ $(function() {
     $("#macro_unassign").click(function() {
         reset_fields();
         prog.val("{{PROGRESS_APP_OK}}");
-        text.val("Unassigned from {{process.manager.uid}} [TODO: please enter a reason]");
+        text.val("Unassigned from {{process.manager.person.uid}} [TODO: please enter a reason]");
     });
     $("#macro_app_hold").click(function() {
         reset_fields();
