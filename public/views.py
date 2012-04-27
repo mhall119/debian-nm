@@ -87,7 +87,7 @@ def make_statusupdateform(editor):
     if editor.is_fd:
         choices = [(x.tag, "%s - %s" % (x.tag, x.ldesc)) for x in const.ALL_PROGRESS]
     else:
-        choices = [(x.tag, x.ldesc) for x in const.ALL_PROGRESS if x[0] in ("PROGRESS_AM", "PROGRESS_AM_HOLD", "PROGRESS_AM_OK")]
+        choices = [(x.tag, x.ldesc) for x in const.ALL_PROGRESS if x[0] in ("PROGRESS_APP_OK", "PROGRESS_AM", "PROGRESS_AM_HOLD", "PROGRESS_AM_OK")]
 
     class StatusUpdateForm(forms.Form):
         progress = forms.ChoiceField(
@@ -123,6 +123,10 @@ def process(request, key):
             if request.method == 'POST':
                 form = StatusUpdateForm(request.POST)
                 if form.is_valid():
+                    if form.cleaned_data["progress"] == const.PROGRESS_APP_OK \
+                       and process.progress in [const.PROGRESS_AM_HOLD, const.PROGRESS_AM, const.PROGRESS_AM_RCVD]:
+                        # Unassign from AM
+                        process.manager = None
                     process.progress = form.cleaned_data["progress"]
                     process.save()
                     log = bmodels.Log(
