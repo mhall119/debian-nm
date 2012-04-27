@@ -56,6 +56,11 @@ $(function() {
         reset_fields();
         prog.val("{{PROGRESS_AM}}");
     });
+    $("#macro_unassign").click(function() {
+        reset_fields();
+        prog.val("{{PROGRESS_APP_OK}}");
+        text.val("Please enter reason for hold");
+    });
     $("#macro_app_hold").click(function() {
         reset_fields();
         prog.val("{{PROGRESS_APP_HOLD}}");
@@ -187,6 +192,7 @@ Shortcuts:
 
 {% if process.progress == PROGRESS_AM_RCVD %}
 <button type="button" id="macro_am_confirm">Confirm assignment</button>
+<button type="button" id="macro_unassign">Unassign</button>
 {% endif %}
 {% if process.progress == PROGRESS_AM %}
 <button type="button" id="macro_idok">ID check ok</button>
@@ -194,9 +200,11 @@ Shortcuts:
 <button type="button" id="macro_tsok">T&amp;S ok</button>
 <button type="button" id="macro_approve">Approve applicant</button>
 <button type="button" id="macro_hold">On hold</button>
+<button type="button" id="macro_unassign">Unassign</button>
 {% endif %}
 {% if process.progress == PROGRESS_AM_HOLD %}
 <button type="button" id="macro_unhold">Back from hold</button>
+<button type="button" id="macro_unassign">Unassign</button>
 {% endif %}
 
 {% if request.am.is_dam %}
