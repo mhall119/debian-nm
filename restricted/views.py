@@ -57,8 +57,6 @@ def ammain(request):
             const.PROGRESS_APP_HOLD: "prog_app_hold",
             const.PROGRESS_FD_HOLD: "prog_app_hold",
             const.PROGRESS_DAM_HOLD: "prog_app_hold",
-            const.PROGRESS_FD_HOLD: "prog_fd_hold",
-            const.PROGRESS_DAM_HOLD: "prog_dam_hold",
         }
         for p in bmodels.Process.objects.filter(is_active=True, manager=None, progress__in=DISPATCH.keys()) \
                         .annotate(
@@ -68,6 +66,21 @@ def ammain(request):
             tgt = DISPATCH.get(p.progress, None)
             if tgt is not None:
                 ctx.setdefault(tgt, []).append(p)
+
+        DISPATCH = {
+            const.PROGRESS_FD_HOLD: "prog_fd_hold",
+            const.PROGRESS_DAM_HOLD: "prog_dam_hold",
+        }
+        for p in bmodels.Process.objects.filter(is_active=True, progress__in=DISPATCH.keys()) \
+                        .exclude(manager=None) \
+                        .annotate(
+                            started=Min("log__logdate"),
+                            last_change=Max("log__logdate")) \
+                        .order_by("started"):
+            tgt = DISPATCH.get(p.progress, None)
+            if tgt is not None:
+                ctx.setdefault(tgt, []).append(p)
+
 
     DISPATCH = {
         const.PROGRESS_AM_RCVD: "am_prog_rcvd",
