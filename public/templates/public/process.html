@@ -59,7 +59,11 @@ $(function() {
     $("#macro_unassign").click(function() {
         reset_fields();
         prog.val("{{PROGRESS_APP_OK}}");
+{% if request.am.is_fd or request.am.is_dam %}
         text.val("Unassigned from {{process.manager.person.uid}} [TODO: please enter a reason]");
+{% else %}
+        text.val("Handing applicant back to Front Desk. [TODO: please enter a reason] [TODO: please send the mailbox with all your conversation so far to nm@debian.org]");
+{% endif %}
     });
     $("#macro_app_hold").click(function() {
         reset_fields();
