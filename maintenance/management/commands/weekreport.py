@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.core.management.base import BaseCommand, CommandError
+from django.core.mail import send_mail
 import django.db
 from django.conf import settings
 from django.db import connection, transaction
@@ -57,6 +58,12 @@ class Reporter(object):
         self.since = since
         self.until = until
         self.twidth = twidth
+
+    def subject(self):
+        if (self.until - self.since).days == 7:
+            return "NM report for week ending %s" % str(self.until.date())
+        else:
+            return "NM report from %s to %s" % (self.since.date(), self.until.date())
 
     def rep00_period(self, out, **opts):
         if (self.until - self.since).days == 7:
@@ -198,6 +205,8 @@ class Reporter(object):
                 print >>out, "=" * len(title)
             out.write(mout.getvalue())
 
+        print >>out
+
 
 re_date = re.compile("^\d+-\d+-\d+$")
 re_datetime = re.compile("^\d+-\d+-\d+ \d+:\d+:\d+$")
@@ -227,6 +236,7 @@ class Command(BaseCommand):
         optparse.make_option("--quiet", action="store_true", default=None, help="Disable progress reporting"),
         optparse.make_option("--since", action="store", default=None, help="Start of report period (default: a week before the end)"),
         optparse.make_option("--until", action="store", default=None, help="End of report period (default: midnight this morning)"),
+        optparse.make_option("--email", action="store", default=None, help="Email address to send the report to (default: print to stdout)"),
     )
 
     def handle(self, *fnames, **opts):
@@ -242,4 +252,13 @@ class Command(BaseCommand):
             opts["until"] = get_date(opts["until"])
 
         reporter = Reporter(**opts)
-        reporter.run(sys.stdout, **opts)
+        if opts["email"]:
+            mout = StringIO()
+            reporter.run(mout, **opts)
+            send_mail(
+                reporter.subject(),
+                mout.getvalue(),
+                "NM Front Desk <nm@debian.org>",
+                [opts["email"]])
+        else:
+            reporter.run(sys.stdout, **opts)
