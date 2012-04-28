@@ -95,11 +95,13 @@ class Reporter(object):
 
     def rep02_newams(self, out, **opts):
         "New AM candidates"
+        min_date = self.since - datetime.timedelta(days=NEW_AM_THRESHOLD)
+        max_date = self.until - datetime.timedelta(days=NEW_AM_THRESHOLD)
         new_procs = bmodels.Process.objects.filter(progress=const.PROGRESS_DONE,
                                                    applying_for__in=[const.STATUS_DD_U, const.STATUS_DD_NU]) \
                                    .annotate(
                                        ended=Max("log__logdate")) \
-                                   .filter(ended__gte=(self.until - datetime.timedelta(days=NEW_AM_THRESHOLD))) \
+                                   .filter(ended__gte=min_date, ended__lte=max_date) \
                                    .order_by("ended")
         count = new_procs.count()
         if count:
