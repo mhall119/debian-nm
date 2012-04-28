@@ -5,6 +5,14 @@
 {% block head_resources %}
   {{block.super}}
   {% jsinclude "tables,jqplot" %}
+  <style type="text/css">
+  #progstats {
+      font-size: small;
+  }
+  #progstats tbody {
+      white-space: nowrap;
+  }
+  </style>
 {% endblock %}
 
 {% block head %}
@@ -14,16 +22,7 @@ $(function() {
     var bystatus = $("#bystatus");
     var byprogress = $("#byprogress");
 
-    bystatus.tablesorter({
-        textExtraction: function(node) {
-            val = node.getAttribute("val");
-            if (val == null)
-                val = node.textContent || node.innerText;
-            return val;
-        },
-    });
-
-    byprogress.tablesorter({
+    $("table.tablesorter").tablesorter({
         textExtraction: function(node) {
             val = node.getAttribute("val");
             if (val == null)
@@ -110,6 +109,55 @@ $(function() {
     </tr>
     {% endfor %}
 </tbody>
+</table>
+
+<h2 style="clear: both">Active processes</h2>
+
+<table class="tablesorter" id="progstats">
+    <thead>
+    <tr>
+        <th>Applicant</th>
+        <th>Uid</th>
+        <th>For</th>
+        <th>Progr</th>
+        <th>Adv</th>
+        <th>Manager</th>
+        <th>Started</th>
+        <th>Last log</th>
+        <th>Total days</th>
+        <th>AM days</th>
+        <th>AM hold days</th>
+        <th>Last AM days</th>
+        <th>Last AM hold days</th>
+    </tr>
+    </thead>
+    <tbody>
+        {% for p in active_processes %}
+        <tr>
+            <td><a href="{{ p.get_absolute_url }}">{{p.person.fullname}}</a></td>
+            <td><a href="{{ p.get_absolute_url }}">{{p.person.uid}}</a></td>
+            <td val="{{ p.applying_for|seq_status }}">{{p.applying_for|sdesc_status}}</td>
+            <td val="{{ p.progress|seq_progress }}"><a href="{{ p.get_absolute_url }}">{{p.progress|sdesc_progress}}</a></td>
+            <td>
+                {% for a in p.advocates.all %}
+                <a href="{{ a.get_absolute_url }}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            </td>
+            <td>
+                {% if p.manager %}
+                <a href="{{ p.manager.get_absolute_url }}">{{p.manager.person.uid}}</a>
+                {% endif %}
+            </td>
+            <td>{{p.started|date:"Y-m-d"}}</td>
+            <td>{{p.last_change|date:"Y-m-d"}}</td>
+            <td>{{p.total_duration}}</td>
+            <td>{{p.total_am_time}}</td>
+            <td>{{p.total_amhold_time}}</td>
+            <td>{{p.last_am_time}}</td>
+            <td>{{p.last_amhold_time}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 
