@@ -150,7 +150,7 @@ class Reporter(object):
                                .order_by("last_log")
         count = procs.count()
         if count > 0:
-            print >>out, "%d processes have had no apparent activity in the last %d days:" % (
+            print >>out, "%d processes have been on hold for longer than %d days:" % (
                 count, INACTIVE_AMHOLD_PERIOD)
             print_proclist(procs)
 
