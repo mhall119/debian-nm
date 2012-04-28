@@ -23,6 +23,18 @@ from backend import const
 register = template.Library()
 
 @register.filter
+def sdesc_progress(value):
+    info = const.ALL_PROGRESS_BYTAG.get(value, None)
+    if info is None: return None
+    return info.sdesc
+
+@register.filter
+def sdesc_status(value):
+    info = const.ALL_STATUS_BYTAG.get(value, None)
+    if info is None: return None
+    return info.sdesc
+
+@register.filter
 def desc_progress(value):
     return const.ALL_PROGRESS_DESCS.get(value, value)
 

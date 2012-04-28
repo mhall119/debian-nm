@@ -24,18 +24,19 @@ g = globals()
 
 # Status of a person in Debian
 ALL_STATUS = (
-    Status("STATUS_MM",          "mm",         "None",              "None"),
-    Status("STATUS_MM_GA",       "mm_ga",      "None, account",     "None, with guest account"),
-    Status("STATUS_DM",          "dm",         "DM",                "Debian Maintainer"),
-    Status("STATUS_DM_GA",       "dm_ga",      "DM, account",       "Debian Maintainer, with guest account"),
-    Status("STATUS_DD_U",        "dd_u",       "DD, uploading",     "Debian Developer, uploading"),
-    Status("STATUS_DD_NU",       "dd_nu",      "DD, non-uploading", "Debian Developer, non-uploading"),
-    Status("STATUS_EMERITUS_DD", "dd_e",       "DD, emeritus",      "Debian Developer, emeritus"),
-    Status("STATUS_EMERITUS_DM", "dm_e",       "DM, emeritus",      "Debian Maintainer, emeritus"),
-    Status("STATUS_REMOVED_DD",  "dd_r",       "DD, removed",       "Debian Developer, removed"),
-    Status("STATUS_REMOVED_DM",  "dm_r",       "DM, removed",       "Debian Maintainer, removed"),
+    Status("STATUS_MM",          "mm",     "None",           "None"),
+    Status("STATUS_MM_GA",       "mm_ga",  "None, account",  "None, with guest account"),
+    Status("STATUS_DM",          "dm",     "DM",             "Debian Maintainer"),
+    Status("STATUS_DM_GA",       "dm_ga",  "DM, account",    "Debian Maintainer, with guest account"),
+    Status("STATUS_DD_U",        "dd_u",   "DD, upl.",       "Debian Developer, uploading"),
+    Status("STATUS_DD_NU",       "dd_nu",  "DD, non-upl.",   "Debian Developer, non-uploading"),
+    Status("STATUS_EMERITUS_DD", "dd_e",   "DD, emeritus",   "Debian Developer, emeritus"),
+    Status("STATUS_EMERITUS_DM", "dm_e",   "DM, emeritus",   "Debian Maintainer, emeritus"),
+    Status("STATUS_REMOVED_DD",  "dd_r",   "DD, removed",    "Debian Developer, removed"),
+    Status("STATUS_REMOVED_DM",  "dm_r",   "DM, removed",    "Debian Maintainer, removed"),
 )
 ALL_STATUS_DESCS = dict((x.tag, x.ldesc) for x in ALL_STATUS)
+ALL_STATUS_BYTAG = dict((x.tag, x) for x in ALL_STATUS)
 for s in ALL_STATUS:
     g[s.code] = s.tag
 
@@ -60,6 +61,7 @@ ALL_PROGRESS = (
     Progress("PROGRESS_CANCELLED", "cancelled", "Canceled",    "Canceled"),
 )
 ALL_PROGRESS_DESCS = dict((x.tag, x.ldesc) for x in ALL_PROGRESS)
+ALL_PROGRESS_BYTAG = dict((x.tag, x) for x in ALL_PROGRESS)
 for p in ALL_PROGRESS:
     g[p.code] = p.tag
 

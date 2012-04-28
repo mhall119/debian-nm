@@ -469,6 +469,107 @@ class Process(models.Model):
         # Otherwise the AM can edit if manager of this process
         return self.manager == am
 
+    class DurationStats(object):
+        AM_STATUSES = frozenset((const.PROGRESS_AM_HOLD, const.PROGRESS_AM))
+
+        def __init__(self):
+            self.first = None
+            self.last = None
+            self.last_progress = None
+            self.total_am_time = 0
+            self.total_amhold_time = 0
+            self.last_am_time = 0
+            self.last_amhold_time = 0
+            self.last_am_history = []
+
+        def process_last_am_history(self, end=None):
+            """
+            Compute AM duration stats.
+
+            end is the datetime of the end of the AM stats period. If None, the
+            current datetime is used.
+            """
+            if not self.last_am_history: return
+            if end is None:
+                end = datetime.datetime.utcnow()
+
+            time_for_progress = dict()
+            period_start = None
+            for l in self.last_am_history:
+                if period_start is None:
+                    period_start = l
+                elif l.progress != period_start.progress:
+                    days = (l.logdate - period_start.logdate).days
+                    time_for_progress[period_start.progress] = \
+                            time_for_progress.get(period_start.progress, 0) + days
+                    period_start = l
+
+            if period_start:
+                days = (end - period_start.logdate).days
+                time_for_progress[period_start.progress] = \
+                        time_for_progress.get(period_start.progress, 0) + days
+
+            self.last_am_time = time_for_progress.get(const.PROGRESS_AM, 0)
+            self.last_amhold_time = time_for_progress.get(const.PROGRESS_AM_HOLD, 0)
+            self.total_am_time += self.last_am_time
+            self.total_amhold_time += self.last_amhold_time
+
+            self.last_am_history = []
+
+        def process_log(self, l):
+            """
+            Process a log entry. Log entries must be processed in cronological
+            order.
+            """
+            if self.first is None: self.first = l
+
+            if l.progress in self.AM_STATUSES:
+                if self.last_progress not in self.AM_STATUSES:
+                    self.last_am_time = 0
+                    self.last_amhold_time = 0
+                self.last_am_history.append(l)
+            elif self.last_progress in self.AM_STATUSES:
+                self.process_last_am_history(end=l.logdate)
+
+            self.last = l
+            self.last_progress = l.progress
+
+        def stats(self):
+            """
+            Compute a dict with statistics
+            """
+            # Process pending AM history items: happens when the last log has
+            # AM_STATUSES status
+            self.process_last_am_history()
+
+            return dict(
+                # Date the process started
+                started=self.first.logdate,
+                # Date of the last log entry
+                last_change=self.last.logdate,
+                # Total duration in days
+                total_duration=(self.last.logdate-self.first.logdate).days,
+                # Days spent in AM
+                total_am_time=self.total_am_time,
+                # Days spent in AM_HOLD
+                total_amhold_time=self.total_amhold_time,
+                # Days spent in AM with the last AM
+                last_am_time=self.last_am_time,
+                # Days spent in AM_HOLD with the last AM
+                last_amhold_time=self.last_amhold_time,
+            )
+
+    def duration_stats(self):
+        stats_maker = self.DurationStats()
+        for l in self.log.order_by("logdate"):
+            stats_maker.process_log(l)
+        return stats_maker.stats()
+
+    def annotate_with_duration_stats(self):
+        s = self.duration_stats()
+        for k, v in s.iteritems():
+            setattr(self, k, v)
+
     #def get_log(self, desc=False, max=None):
     #    res = orm.object_session(self) \
     #            .query(Log) \

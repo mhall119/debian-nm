@@ -292,7 +292,7 @@ def progress(request, progress):
                               context_instance=template.RequestContext(request))
 
 def stats(request):
-    from django.db.models import Count
+    from django.db.models import Count, Min, Max
 
     stats = dict()
 
@@ -330,6 +330,14 @@ def stats(request):
         progress_table.append((progress, by_progress.get(progress, 0)))
     ctx["progress_table"] = progress_table
     ctx["progress_table_json"] = json.dumps([(p.sdesc, by_progress.get(p.tag, 0)) for p in const.ALL_PROGRESS])
+
+    # List of active processes with statistics
+    active_processes = []
+    for p in bmodels.Process.objects.filter(is_active=True):
+        p.annotate_with_duration_stats()
+        active_processes.append(p)
+    active_processes.sort(key=lambda x:x.started)
+    ctx["active_processes"] = active_processes
 
     return render_to_response("public/stats.html", ctx,
                               context_instance=template.RequestContext(request))
