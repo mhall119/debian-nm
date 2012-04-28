@@ -53,7 +53,9 @@ class CharNullField(models.CharField):
            return value
 
     # catches value right before sending to db
-    def get_db_prep_value(self, value):
+    # TODO: when using 1.4 in production, use explicit parameters defined at
+    # https://docs.djangoproject.com/en/dev/howto/custom-model-fields/
+    def get_db_prep_value(self, value, *args, **kw):
        if value=="":
            # if Django tries to save '' string, send the db None (NULL)
            return None
@@ -76,7 +78,9 @@ class TextNullField(models.TextField):
            return value
 
     # catches value right before sending to db
-    def get_db_prep_value(self, value):
+    # TODO: when using 1.4 in production, use explicit parameters defined at
+    # https://docs.djangoproject.com/en/dev/howto/custom-model-fields/
+    def get_db_prep_value(self, value, *args, **kw):
        if value=="":
            # if Django tries to save '' string, send the db None (NULL)
            return None
