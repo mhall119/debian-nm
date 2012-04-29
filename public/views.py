@@ -336,7 +336,7 @@ def stats(request):
     for p in bmodels.Process.objects.filter(is_active=True):
         p.annotate_with_duration_stats()
         active_processes.append(p)
-    active_processes.sort(key=lambda x:x.started)
+    active_processes.sort(key=lambda x:x.log_first.logdate)
     ctx["active_processes"] = active_processes
 
     return render_to_response("public/stats.html", ctx,

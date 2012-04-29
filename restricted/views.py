@@ -51,6 +51,7 @@ def ammain(request):
                         .order_by("started"):
             tgt = DISPATCH.get(p.progress, None)
             if tgt is not None:
+                p.annotate_with_duration_stats()
                 ctx.setdefault(tgt, []).append(p)
 
         DISPATCH = {
@@ -65,6 +66,7 @@ def ammain(request):
                         .order_by("started"):
             tgt = DISPATCH.get(p.progress, None)
             if tgt is not None:
+                p.annotate_with_duration_stats()
                 ctx.setdefault(tgt, []).append(p)
 
         DISPATCH = {
@@ -79,6 +81,7 @@ def ammain(request):
                         .order_by("started"):
             tgt = DISPATCH.get(p.progress, None)
             if tgt is not None:
+                p.annotate_with_duration_stats()
                 ctx.setdefault(tgt, []).append(p)
 
 
@@ -101,6 +104,7 @@ def ammain(request):
                     .order_by("started"):
         tgt = DISPATCH.get(p.progress, None)
         if tgt is not None:
+            p.annotate_with_duration_stats()
             ctx.setdefault(tgt, []).append(p)
 
     return render_to_response("restricted/ammain.html", ctx,
