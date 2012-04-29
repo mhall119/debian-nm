@@ -1,7 +1,14 @@
 From: {{request.person.fullname}} &lt;{{request.person.email}}&gt;
 To: Debian Keyring Maintainers &lt;keyring@rt.debian.org&gt;
 Cc: Debian Account Managers &lt;da-manager@debian.org&gt;, {{person.fullname}} &lt;{{person.email}}&gt;
+Reply-To: Debian Account Managers <da-manager@debian.org>
 Subject: [Debian RT] Account for {{person.fullname}}
+{% if request.person.uid == "joerg" %}
+Organization: Goliath-BBS
+Gcc: nnimap+gkar:Sentmail.DAM
+
+<#secure method=pgp mode=sign>
+{% endif %}
 
 {% spaceless %}
 {% if person.status == STATUS_MM or person.status == STATUS_MM_GA %}
