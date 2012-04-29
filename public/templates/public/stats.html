@@ -119,9 +119,9 @@ $(function() {
         <th>Applicant</th>
         <th>Uid</th>
         <th>For</th>
+        <th>Manager</th>
         <th>Progr</th>
         <th>Adv</th>
-        <th>Manager</th>
         <th>Started</th>
         <th>Last log</th>
         <th>Total days</th>
@@ -129,6 +129,9 @@ $(function() {
         <th>AM hold days</th>
         <th>Last AM days</th>
         <th>Last AM hold days</th>
+        {% if request.am.is_fd or request.am.is_dam %}
+        <th>Last log</th>
+        {% endif %}
     </tr>
     </thead>
     <tbody>
@@ -137,24 +140,33 @@ $(function() {
             <td><a href="{{ p.get_absolute_url }}">{{p.person.fullname}}</a></td>
             <td><a href="{{ p.get_absolute_url }}">{{p.person.uid}}</a></td>
             <td val="{{ p.applying_for|seq_status }}">{{p.applying_for|sdesc_status}}</td>
+            <td>
+                {% if p.manager %}
+                <a href="{{ p.manager.get_absolute_url }}">{{p.manager.person.uid}}</a>
+                {% endif %}
+            </td>
             <td val="{{ p.progress|seq_progress }}"><a href="{{ p.get_absolute_url }}">{{p.progress|sdesc_progress}}</a></td>
             <td>
                 {% for a in p.advocates.all %}
                 <a href="{{ a.get_absolute_url }}">{{a.uid}}</a>{% if not forloop.last %},{% endif %}
                 {% endfor %}
             </td>
-            <td>
-                {% if p.manager %}
-                <a href="{{ p.manager.get_absolute_url }}">{{p.manager.person.uid}}</a>
-                {% endif %}
-            </td>
-            <td>{{p.started|date:"Y-m-d"}}</td>
-            <td>{{p.last_change|date:"Y-m-d"}}</td>
+            <td>{{p.log_first.logdate|date:"Y-m-d"}}</td>
+            <td>{{p.log_last.logdate|date:"Y-m-d"}}</td>
             <td>{{p.total_duration}}</td>
             <td>{{p.total_am_time}}</td>
             <td>{{p.total_amhold_time}}</td>
             <td>{{p.last_am_time}}</td>
             <td>{{p.last_amhold_time}}</td>
+            {% if request.am.is_fd or request.am.is_dam %}
+            <td>
+                {% if p.log_last.logtext %}
+                {{ p.log_last.logtext }}
+                {% else %}
+                [{{p.log_last.progress|sdesc_progress}}]
+                {% endif %}
+            </td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>

@@ -481,6 +481,7 @@ class Process(models.Model):
             self.last_am_time = 0
             self.last_amhold_time = 0
             self.last_am_history = []
+            self.last_log_text = None
 
         def process_last_am_history(self, end=None):
             """
@@ -544,9 +545,9 @@ class Process(models.Model):
 
             return dict(
                 # Date the process started
-                started=self.first.logdate,
+                log_first=self.first,
                 # Date of the last log entry
-                last_change=self.last.logdate,
+                log_last=self.last,
                 # Total duration in days
                 total_duration=(self.last.logdate-self.first.logdate).days,
                 # Days spent in AM
@@ -557,6 +558,8 @@ class Process(models.Model):
                 last_am_time=self.last_am_time,
                 # Days spent in AM_HOLD with the last AM
                 last_amhold_time=self.last_amhold_time,
+                # Last nonempty log text
+                last_log_text=self.last_log_text,
             )
 
     def duration_stats(self):
