@@ -1,17 +1,19 @@
-{% spaceless %}
 From: {{request.person.fullname}} &lt;{{request.person.email}}&gt;
 To: Debian Keyring Maintainers &lt;keyring@rt.debian.org&gt;
 Cc: Debian Account Managers &lt;da-manager@debian.org&gt;, {{person.fullname}} &lt;{{person.email}}&gt;
 Reply-To: Debian Account Managers <da-manager@debian.org>
 Subject: [Debian RT] Account for {{person.fullname}}
-{% if request.person.uid == "joerg" %}
+{% spaceless %}
+{% if request.person.uid == "enrico" %}
 Organization: Goliath-BBS
 Gcc: nnimap+gkar:Sentmail.DAM
 --text follows this line--
 <#secure method=pgp mode=sign>
 {% endif %}
+{% endspaceless %}
 Hi
 
+{% spaceless %}
 {% if person.status == STATUS_MM or person.status == STATUS_MM_GA %}
 {% if process.applying_for == STATUS_DD_NU %}
 Please make {{person.fullname}} (currently NOT a DM) a non-uploading DD.
@@ -36,7 +38,7 @@ removed from the DM keyring and added to the DD keyring.
 {% if person.status == STATUS_MM_GA or person.status == STATUS_DM_GA %}
 Note that {{person.fullname}} already has an account in LDAP.
 {% endif %}
-
+{% endspaceless %}
 
   First name:      {{person.cn}}
   Middle name:     {{person.mn|default:"-"}}
@@ -49,4 +51,3 @@ Note that {{person.fullname}} already has an account in LDAP.
 Thank you,
 
 {{request.person.fullname}} (as DAM)
-{% endspaceless %}
