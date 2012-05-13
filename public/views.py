@@ -341,3 +341,21 @@ def stats(request):
 
     return render_to_response("public/stats.html", ctx,
                               context_instance=template.RequestContext(request))
+
+def make_findperson_form(request):
+    excludes = ["user", "created", "status_changed"]
+
+    if not request.am or not request.am.is_admin:
+        excludes.append(fd_comment)
+
+    class FindpersonForm(forms.ModelForm):
+        class Meta:
+            model = bmodels.Person
+            exclude = excludes
+    return FindpersonForm
+
+def findperson(request):
+    return render_to_response("public/findperson.html", dict(
+                                  form=make_findperson_form(request),
+                              ),
+                              context_instance=template.RequestContext(request))
