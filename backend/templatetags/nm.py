@@ -75,3 +75,34 @@ def fingerprint(value, autoescape=None):
     return mark_safe("<span class='fpr'>%s</span>" % esc(formatted))
 fingerprint.needs_autoescape = True
 
+@register.simple_tag
+def nm_js_support():
+    res = []
+
+    res.append("// Person status infrastructure")
+
+    # Status info
+    res.append("var ALL_STATUS = {")
+    for idx, s in enumerate(const.ALL_STATUS):
+        res.append('  %s: { seq: %d, sdesc: "%s", ldesc: "%s" },' % (
+            s.tag, idx, s.sdesc, s.ldesc))
+    res.append("};")
+
+    # Status constants
+    for s in const.ALL_STATUS:
+        res.append('var %s = "%s";' % (s.code, s.tag))
+
+    res.append("// Process progress infrastructure")
+
+    # Progress info
+    res.append("var ALL_PROGRESS = {")
+    for idx, s in enumerate(const.ALL_PROGRESS):
+        res.append('  %s: { seq: %d, sdesc: "%s", ldesc: "%s" },' % (
+            s.tag, idx, s.sdesc, s.ldesc))
+    res.append("};")
+
+    # Progress constants
+    for s in const.ALL_PROGRESS:
+        res.append('var %s = "%s";' % (s.code, s.tag))
+
+    return "\n".join(res)

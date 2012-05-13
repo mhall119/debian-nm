@@ -171,7 +171,7 @@ def amprofile(request, uid=None):
 
 
 def make_person_form(editor):
-    excludes = ["user", "created"]
+    excludes = ["user", "created", "status_changed"]
 
     if editor.is_dam:
         pass
