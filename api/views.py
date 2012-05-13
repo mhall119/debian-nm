@@ -28,16 +28,21 @@ import json
 class Serializer(json.JSONEncoder):
     def default(self, o):
         if hasattr(o, "strftime"):
-            return o.strftime("%Y-%m-%d %H:%M:%S")
+            return o.strftime("%s")
+            #return o.strftime("%Y-%m-%d %H:%M:%S")
         return json.JSONEncoder.default(self, o)
 
-def json_response(val):
+def json_response(val, status_code=200):
     res = http.HttpResponse(mimetype="application/json")
+    res.status_code = status_code
     json.dump(val, res, cls=Serializer, indent=1)
     return res
 
 def person_to_json(p, **kw):
-    return model_to_dict(p, **kw)
+    res = model_to_dict(p, **kw)
+    res["fullname"] = p.fullname
+    res["url"] = p.get_absolute_url()
+    return res
 
 def people(request):
     if request.method != "GET":
@@ -80,11 +85,9 @@ def people(request):
         val = request.GET.get("fd_comment", "")
         if val: people = people.filter(fd_comment__icontains=val)
 
-        for p in people:
+        for p in people.order_by("cn", "sn"):
             res.append(person_to_json(p, fields=fields))
 
-        res = dict(r=res)
+        return json_response(dict(r=res))
     except Exception, e:
-        res = dict(e=str(e))
-
-    return json_response(res)
+        return json_response(dict(e=str(e)), status_code=500)
