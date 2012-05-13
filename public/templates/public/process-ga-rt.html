@@ -1,0 +1,38 @@
+From: {{request.person.fullname}} &lt;{{request.person.email}}&gt;
+To: Debian Keyring Maintainers &lt;keyring@rt.debian.org&gt;
+Cc: Debian Account Managers &lt;da-manager@debian.org&gt;, {{person.fullname}} &lt;{{person.email}}&gt;
+Reply-To: Debian Account Managers <da-manager@debian.org>
+Subject: [Debian RT] Guest account to porter machines for {{person.fullname}}
+{% spaceless %}
+{% if request.person.uid == "joerg" %}
+Organization: Goliath-BBS
+Gcc: nnimap+gkar:Sentmail.DAM
+--text follows this line--
+<#secure method=pgp mode=sign>
+{% endif %}
+{% endspaceless %}
+Hi
+
+{% spaceless %}
+{% if person.status == STATUS_DM %}
+please create a porter account for {{person.fullname}} (currently a DM).
+{% else %}
+please create a porter account for {{person.fullname}} (sponsored by {% for a in process.advocates.all %}{% if not forloop.first %}, {% endif %}{{a.uid}}{% endfor %}).
+{% endif %}
+{% endspaceless %}
+
+  First name:        {{person.cn}}
+  Middle name:       {{person.mn|default:"-"}}
+  Last name:         {{person.sn}}
+  Key fingerprint:   {{person.fpr}}
+  Preferred usename: {{person.uid}}
+  Forward email:     {{person.email}}
+  Access period:     90 days.
+  Host(s)/arch(es):  TODO: still to be filled
+
+{{person.fullname}} has accepted the DMUP in a signed mail.
+
+-- 
+Thank you,
+
+{{request.person.fullname}} (as DAM)
