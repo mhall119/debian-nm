@@ -449,7 +449,10 @@ class Process(models.Model):
         Currently, this is the email if the process is active, else the id.
         """
         if self.is_active:
-            return self.person.email
+            if self.person.processes.filter(is_active=True).count() == 1:
+                return self.person.email
+            else:
+                return self.id
         else:
             return self.id
 
