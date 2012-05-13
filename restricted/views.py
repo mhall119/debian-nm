@@ -192,7 +192,13 @@ def person(request, key):
     person = bmodels.Person.lookup(key)
     if person is None:
         return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
-    process = person.active_process
+    process = person.active_processes
+    # FIXME: for now, just pick the first one. To do things properly we need to
+    #        be passed what process we should go back to
+    if process:
+        process = process[0]
+    else:
+        process = None
 
     def next_step():
         if process:

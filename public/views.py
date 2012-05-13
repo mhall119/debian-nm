@@ -243,12 +243,6 @@ def person(request, key):
             .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
             .order_by("is_active", "ended")
 
-    active_process = None
-    for p in processes:
-        if p.is_active:
-            active_process = p
-            break
-
     can_be_am = False
     if person.is_am:
         am = person.am
@@ -264,7 +258,6 @@ def person(request, key):
     ctx = dict(
         person=person,
         am=am,
-        active_process=active_process,
         processes=processes,
         am_processes=am_processes,
         can_be_am=can_be_am,
