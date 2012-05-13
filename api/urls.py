@@ -1,4 +1,4 @@
-# nm.debian.org website RESTish API
+# nm.debian.org website API
 #
 # Copyright (C) 2012  Enrico Zini <enrico@debian.org>
 #
@@ -21,7 +21,7 @@ from django.views.generic.simple import direct_to_template, redirect_to
 
 urlpatterns = patterns('api.views',
     url(r'^$', direct_to_template, {'template': "api/doc.html"}, name="api_doc"),
-#    url(r'^processes$', 'processes', name="processes"),
+    url(r'^people$', 'people', name="api_people"),
 #    url(r'^managers$', 'managers', name="managers"),
 #    url(r'^people(?:/(?P<status>\w+))?$', 'people', name="people"),
 #    url(r'^person/(?P<key>[^/]+)$', 'person', name="person"),
