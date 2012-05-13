@@ -82,7 +82,7 @@ def people(request):
         val = request.GET.get("status", "")
         if val: people = people.filter(status=val)
 
-        if request.person.is_admin:
+        if request.person and request.person.is_admin:
             val = request.GET.get("fd_comment", "")
             if val: people = people.filter(fd_comment__icontains=val)
 
