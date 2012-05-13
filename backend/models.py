@@ -216,6 +216,29 @@ class Person(models.Model):
             parms["username"] = self.uid
         return u"http://portfolio.debian.net/result?%s" % urllib.urlencode(parms)
 
+    def get_allowed_processes(self):
+        "Return a lits of processes that this person can begin"
+        already_applying = frozenset(x["applying_for"] for x in self.processes.filter(is_active=True).values("applying_for"))
+
+        pre_dd_statuses = frozenset((const.STATUS_MM, const.STATUS_MM_GA,
+                                     const.STATUS_DM, const.STATUS_DM_GA,
+                                     const.STATUS_EMERITUS_DD, const.STATUS_EMERITUS_DM,
+                                     const.STATUS_REMOVED_DD, const.STATUS_REMOVED_DM))
+
+        already_applying_for_dd = const.STATUS_DD_U in already_applying or const.STATUS_DD_NU in already_applying
+
+        res = []
+        if self.status == const.STATUS_MM and const.STATUS_MM_GA not in already_applying:
+            res.append(const.STATUS_MM_GA)
+        if self.status == const.STATUS_MM and const.STATUS_DM not in already_applying:
+            res.append(const.STATUS_DM)
+        if self.status == const.STATUS_MM_GA and const.STATUS_DM_GA not in already_applying:
+            res.append(const.STATUS_DM_GA)
+        if self.status in pre_dd_statuses and not already_applying_for_dd:
+            res.append(const.STATUS_DD_U)
+            res.append(const.STATUS_DD_NU)
+        return res
+
     @property
     def active_process(self):
         """

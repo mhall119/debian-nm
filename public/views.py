@@ -272,18 +272,8 @@ def person(request, key):
 
 
     # List of statuses the person is already applying for
-    already_applying = frozenset(x["applying_for"] for x in person.processes.filter(is_active=True).values("applying_for"))
-    pre_dd_statuses = frozenset((const.STATUS_MM, const.STATUS_MM_GA,
-                                 const.STATUS_DM, const.STATUS_DM_GA,
-                                 const.STATUS_EMERITUS_DD, const.STATUS_EMERITUS_DM,
-                                 const.STATUS_REMOVED_DD, const.STATUS_REMOVED_DM))
-    already_applying_for_dd = const.STATUS_DD_U in already_applying or const.STATUS_DD_NU in already_applying
-
-    ctx["can_start_mm_ga_process"] = person.status == const.STATUS_MM and const.STATUS_MM_GA not in already_applying
-    ctx["can_start_dm_process"] = person.status == const.STATUS_MM and const.STATUS_DM not in already_applying
-    ctx["can_start_dm_ga_process"] = person.status == const.STATUS_MM_GA and const.STATUS_DM_GA not in already_applying
-    ctx["can_start_dd_u_process"] = person.status in pre_dd_statuses and not already_applying_for_dd
-    ctx["can_start_dd_nu_process"] = person.status in pre_dd_statuses and not already_applying_for_dd
+    for st in person.get_allowed_processes():
+        ctx["can_start_%s_process" % st] = True
 
     ctx["adv_processes"] = person.advocated \
                 .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
