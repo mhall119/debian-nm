@@ -28,7 +28,7 @@ urlpatterns = patterns('restricted.views',
     # Edit personal info
     url(r'^person/(?P<key>[^/]+)$', 'person', name="restricted_person"),
     # Create new process for a person
-    url(r'^newprocess/(?P<key>[^/]+)$', 'newprocess', name="restricted_newprocess"),
+    url(r'^newprocess_(?P<applying_for>[^/]+)/(?P<key>[^/]+)$', 'newprocess', name="restricted_newprocess"),
     # Show changelogs (minechangelogs)
     url(r'^minechangelogs/(?P<key>[^/]+)?$', 'minechangelogs', name="restricted_minechangelogs"),
     url(r'^db-export$', 'db_export', name="restricted_db_export"),

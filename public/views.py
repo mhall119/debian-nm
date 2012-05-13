@@ -261,20 +261,25 @@ def person(request, key):
         if person.status in (const.STATUS_DD_U, const.STATUS_DD_NU) and person.status_changed and (datetime.datetime.utcnow() - person.status_changed > datetime.timedelta(days=6*30)):
             can_be_am = True
 
-    adv_processes = person.advocated \
+    ctx = dict(
+        person=person,
+        am=am,
+        active_process=active_process,
+        processes=processes,
+        am_processes=am_processes,
+        can_be_am=can_be_am,
+    )
+
+
+    # List of statuses the person is already applying for
+    for st in person.get_allowed_processes():
+        ctx["can_start_%s_process" % st] = True
+
+    ctx["adv_processes"] = person.advocated \
                 .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
                 .order_by("is_active", "ended")
 
-    return render_to_response("public/person.html",
-                              dict(
-                                  person=person,
-                                  am=am,
-                                  active_process=active_process,
-                                  processes=processes,
-                                  am_processes=am_processes,
-                                  adv_processes=adv_processes,
-                                  can_be_am=can_be_am,
-                              ),
+    return render_to_response("public/person.html", ctx,
                               context_instance=template.RequestContext(request))
 
 def progress(request, progress):

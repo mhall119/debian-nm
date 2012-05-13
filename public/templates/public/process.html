@@ -5,12 +5,24 @@
 {% block head_resources %}
 {{block.super}}
 {% jsinclude "nm" %}
+<style type="text/css">
+#checklist {
+    float: right;
+    clear: right;
+    font-size: small;
+}
+</style>
 {% endblock %}
 
 {% block head %}
 {{block.super}}
 <script type="text/javascript">
+{% nm_js_support %}
+
 $(function() {
+    var is_admin = {{request.am.is_admin|yesno:"true,false"}};
+    var is_dam = {{request.am.is_dam|yesno:"true,false"}};
+    var cur_progress = "{{process.progress}}";
     var dam_mail = $("#dam-mail");
     var am_mail = $("#am-mail");
     var prog = $("#id_progress");
@@ -23,88 +35,150 @@ $(function() {
     }
     reset_fields();
 
-    $("#macro_am_confirm").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_AM}}");
-    });
-    $("#macro_idok").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_AM}}");
-        text.val("ID check passed");
-    });
-    $("#macro_ppok").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_AM}}");
-        text.val("P&P check passed");
-    });
-    $("#macro_tsok").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_AM}}");
-        text.val("T&S check passed");
-    });
-    $("#macro_approve").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_AM_OK}}");
-        am_mail.show();
-    });
-    $("#macro_hold").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_AM_HOLD}}");
-        text.val("Please enter reason for hold");
-    });
-    $("#macro_unhold").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_AM}}");
-    });
-    $("#macro_unassign").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_APP_OK}}");
-{% if request.am.is_fd or request.am.is_dam %}
-        text.val("Unassigned from {{process.manager.person.uid}} [TODO: please enter a reason]");
-{% else %}
-        text.val("Handing applicant back to Front Desk. [TODO: please enter a reason] [TODO: please send the mailbox with all your conversation so far to nm@debian.org]");
+    // Define all available shortcuts
+    //
+    // Possible fields:
+    //   label: label to show on the button
+    //   prog_if: only show button when progress is one of these values
+    //   prog_to: button sets progress to this value
+    //   logtext: button sets log text to this value
+    //   hook: function to execute on button press
+    var macros = [
+{% if process.applying_for == STATUS_MM_GA or process.applying_for == STATUS_DM_GA %}
+    {
+        dam: true,
+        label: "DAM approve",
+        prog_if: [ PROGRESS_APP_NEW ],
+        prog_to: PROGRESS_DAM_OK,
+        hook: function() { dam_mail.show(); },
+    }
 {% endif %}
+
+{% if process.applying_for == STATUS_DD_U or process.applying_for == STATUS_DD_NU %}
+    {
+        label: "Confirm assignment",
+        prog_if: [ PROGRESS_AM_RCVD ],
+        prog_to: PROGRESS_AM,
+    }, {
+        label: "ID check ok",
+        prog_if: [ PROGRESS_AM ],
+        prog_to: PROGRESS_AM,
+        logtext: "ID check passed",
+    }, {
+        label: "P&P ok",
+        prog_if: [ PROGRESS_AM ],
+        prog_to: PROGRESS_AM,
+        logtext: "P&P check passed",
+    }, {
+        label: "T&S ok",
+        prog_if: [ PROGRESS_AM ],
+        prog_to: PROGRESS_AM,
+        logtext: "T&S check passed",
+    }, {
+        label: "Approve applicant",
+        prog_if: [ PROGRESS_AM ],
+        prog_to: PROGRESS_AM_OK,
+        hook: function() { am_mail.show(); },
+    }, {
+        label: "On hold",
+        prog_if: [ PROGRESS_AM ],
+        prog_to: PROGRESS_AM_HOLD,
+        logtext: "Please enter reason for hold",
+    }, {
+        label: "Back from hold",
+        prog_if: [ PROGRESS_AM_HOLD ],
+        prog_to: PROGRESS_AM,
+    }, {
+        label: "Unassign",
+        prog_if: [ PROGRESS_AM_RCVD, PROGRESS_AM, PROGRESS_AM_HOLD ],
+        prog_to: PROGRESS_APP_OK,
+{% if request.am.is_fd or request.am.is_dam %}
+        logtext: "Unassigned from {{process.manager.person.uid}} [TODO: please enter a reason]",
+{% else %}
+        logtext: "Handing applicant back to Front Desk. [TODO: please enter a reason] [TODO: please send the mailbox with all your conversation so far to nm@debian.org]",
+{% endif %}
+    }, {
+        admin: true,
+        label: "Hold",
+        prog_if: [ PROGRESS_ADV_RCVD ],
+        prog_to: PROGRESS_APP_HOLD,
+        logtext: "Please enter reason for hold",
+    }, {
+        admin: true,
+        label: "Advocacies ok",
+        prog_if: [ PROGRESS_ADV_RCVD ],
+        prog_to: PROGRESS_APP_OK,
+    }, {
+        admin: true,
+        label: "Unhold",
+        prog_if: [ PROGRESS_APP_HOLD ],
+        prog_to: PROGRESS_ADV_RCVD,
+{% comment %}
+TODO: assign AM, field with uid and macros to fill it with a list of free ones
+      ("PROGRESS_APP_OK",    "app_ok",    "Advocacies have been approved"),
+{% endcomment %}
+    }, {
+        admin: true,
+        label: "FD hold",
+        prog_if: [ PROGRESS_AM_OK ],
+        prog_to: PROGRESS_FD_HOLD,
+        logtext: "Please enter reason for hold",
+    }, {
+        admin: true,
+        label: "FD approve",
+        prog_if: [ PROGRESS_AM_OK ],
+        prog_to: PROGRESS_FD_OK,
+    }, {
+        admin: true,
+        label: "Unhold",
+        prog_if: [ PROGRESS_FD_OK ],
+        prog_to: PROGRESS_AM_OK,
+    }, {
+        dam: true,
+        label: "DAM hold",
+        prog_if: [ PROGRESS_FD_OK ],
+        prog_to: PROGRESS_DAM_HOLD,
+        logtext: "Please enter reason for hold",
+    }, {
+        dam: true,
+        label: "DAM approve",
+        prog_if: [ PROGRESS_FD_OK ],
+        prog_to: PROGRESS_DAM_OK,
+        hook: function() { dam_mail.show(); },
+    }, {
+        dam: true,
+        label: "Unhold",
+        prog_if: [ PROGRESS_DAM_HOLD ],
+        prog_to: PROGRESS_FD_OK,
+    }
+{% endif %}
+    ];
+
+    // Add available shortcuts to the page
+    var shortcuts = $("#shortcut_buttons");
+    var shortcuts_found = false;
+    $.each(macros, function(idx, m) {
+        // Check the right user level
+        if (m.admin && ! is_admin) return;
+        if (m.dam && ! is_dam) return;
+
+        // Filter out macros not for the current progress
+        if ($.inArray(cur_progress, m.prog_if) == -1) return;
+
+        // Create button
+        var b = $("<button>").text(m.label);
+        b.click(function(ev) {
+            reset_fields();
+            prog.val(m.prog_to);
+            if (m.logtext) text.val(m.logtext);
+            if (m.hook) m.hook();
+            ev.preventDefault();
+        });
+
+        shortcuts.append(b);
+        shortcuts_found = true;
     });
-    $("#macro_app_hold").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_APP_HOLD}}");
-        text.val("Please enter reason for hold");
-    });
-    $("#macro_app_approve").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_APP_OK}}");
-    });
-    $("#macro_app_unhold").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_ADV_RCVD}}");
-    });
-    $("#macro_fd_hold").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_FD_HOLD}}");
-        text.val("Please enter reason for hold");
-    });
-    $("#macro_fd_approve").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_FD_OK}}");
-    });
-    $("#macro_fd_unhold").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_AM_OK}}");
-    });
-    $("#macro_dam_hold").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_DAM_HOLD}}");
-        text.val("Please enter reason for hold");
-    });
-    $("#macro_dam_unhold").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_FD_OK}}");
-    });
-    $("#macro_dam_approve").click(function() {
-        reset_fields();
-        prog.val("{{PROGRESS_DAM_OK}}");
-        dam_mail.show();
-    });
+    $("#shortcuts").toggle(shortcuts_found);
 });
 </script>
 {% endblock %}
@@ -127,6 +201,21 @@ $(function() {
 {% block content %}
 
 <h1>Status Page for {{person.fullname}}</h1>
+
+{% if process.applying_for == STATUS_MM_GA or process.applying_for == STATUS_DM_GA %}
+<div id="checklist">
+<h2>Guest account activation checklist</h2>
+<ul>
+    <li>If DM or in NM, no advocate is required</li>
+    <li>If neither DM or in NM, an advocate DD is required</li>
+    <li>List of architectures or machines needed</li>
+    <li>DMUP acceptance in a signed mail</li>
+    <li>DMUP needs to be signed with the key that will go in LDAP</li>
+</ul>
+See: <a href="http://lists.debian.org/debian-project/2010/09/msg00026.html">handling of guest accounts on debian.org machines</a>.
+</div>
+{% endif %}
+
 
 <h2>Personal information</h2>
 
@@ -167,67 +256,26 @@ $(function() {
 <form action="{{ request.build_absolute_uri }}" method="post">{% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="Update" />
-<p>
-Shortcuts:
-{% if request.am.is_fd or request.am.is_dam %}
-    {% if process.progress == PROGRESS_ADV_RCVD %}
-    <button type="button" id="macro_app_hold">Hold</button>
-    <button type="button" id="macro_app_approve">Advocacies ok</button>
-    {% endif %}
-
-    {% if process.progress == PROGRESS_APP_HOLD %}
-    <button type="button" id="macro_app_unhold">Remove hold</button>
-    {% endif %}
-
-    {% comment %}
-    TODO: assign AM, field with uid and macros to fill it with a list of free ones
-    ("PROGRESS_APP_OK",    "app_ok",    "Advocacies have been approved"),
-    {% endcomment %}
-
-    {% if process.progress == PROGRESS_AM_OK %}
-    <button type="button" id="macro_fd_hold">FD hold</button>
-    <button type="button" id="macro_fd_approve">Approve applicant</button>
-    {% endif %}
-
-    {% if process.progress == PROGRESS_FD_HOLD %}
-    <button type="button" id="macro_fd_unhold">Back from FD hold</button>
-    {% endif %}
-{% endif %}
-
-{% if process.progress == PROGRESS_AM_RCVD %}
-<button type="button" id="macro_am_confirm">Confirm assignment</button>
-<button type="button" id="macro_unassign">Unassign</button>
-{% endif %}
-{% if process.progress == PROGRESS_AM %}
-<button type="button" id="macro_idok">ID check ok</button>
-<button type="button" id="macro_ppok">P&amp;P ok</button>
-<button type="button" id="macro_tsok">T&amp;S ok</button>
-<button type="button" id="macro_approve">Approve applicant</button>
-<button type="button" id="macro_hold">On hold</button>
-<button type="button" id="macro_unassign">Unassign</button>
-{% endif %}
-{% if process.progress == PROGRESS_AM_HOLD %}
-<button type="button" id="macro_unhold">Back from hold</button>
-<button type="button" id="macro_unassign">Unassign</button>
-{% endif %}
-
-{% if request.am.is_dam %}
-    {% if process.progress == PROGRESS_FD_OK %}
-    <button type="button" id="macro_dam_hold">DAM hold</button>
-    <button type="button" id="macro_dam_approve">Approve applicant</button>
-    {% endif %}
-
-    {% if process.progress == PROGRESS_DAM_HOLD %}
-    <button type="button" id="macro_dam_unhold">Back from DAM hold</button>
-    {% endif %}
-{% endif %}
-</p>
+    <input type="reset" value="Reset" />
 </form>
 
+<div id="shortcuts">
+<p>Shortcuts: <span id="shortcut_buttons"></span></p>
 <p>Clicking on a Shortcut button will prefill the "Progress" form field, but will
 not submit the form. That is so that you have a chance to add a log entry if
 you wish to add a note to the progress update.</p>
+</div>
 
+{% if process.applying_for == STATUS_MM_GA or process.applying_for == STATUS_DM_GA %}
+<div id="dam-mail">
+<h2>Draft activation email</h2>
+<textarea rows="25" cols="80">
+{% include "public/process-ga-rt.html" %}
+</textarea>
+</div>
+{% endif %}
+
+{% if process.applying_for == STATUS_DD_U or process.applying_for == STATUS_DD_NU %}
 {% if process.progress == PROGRESS_FD_OK %}
 <div id="dam-mail">
 <h2>Draft activation email</h2>
@@ -244,6 +292,7 @@ you wish to add a note to the progress update.</p>
 {% include "public/process-amreport.html" %}
 </textarea>
 </div>
+{% endif %}
 {% endif %}
 
 

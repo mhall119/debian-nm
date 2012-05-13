@@ -65,6 +65,11 @@
 {% if can_be_am %}
 <a href="{% url admin:backend_am_add %}?person={{person.id}}">make am</a>
 {% endif %}
+{% if can_start_mm_ga_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_MM_GA %}">request guest account</a>{% endif %}
+{% if can_start_dm_ga_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_DM_GA %}">request guest account</a>{% endif %}
+{% if can_start_dm_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_DM %}">request DM</a>{% endif %}
+{% if can_start_dd_u_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_DD_U %}">join NM (upl.)</a>{% endif %}
+{% if can_start_dd_nu_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_DD_NU %}">join NM (nonupl.)</a>{% endif %}
 {% endif %}
 {{block.super}}
 {% endblock %}
@@ -104,10 +109,6 @@
 <h2>Personal history</h2>
 
 {% usemacro process_table processes %}
-
-{% if request.am.is_admin and not active_process %}
-<a href="{% url restricted_newprocess key=person.lookup_key %}">new process</a>
-{% endif %}
 
 {% if adv_processes %}
 

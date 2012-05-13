@@ -240,45 +240,34 @@ def make_newprocessform(person):
     return NewProcessForm
 
 @backend.auth.is_admin
-def newprocess(request, key):
+def newprocess(request, applying_for, key):
+    """
+    Create a new process
+    """
     person = bmodels.Person.lookup(key)
     if person is None:
         return http.HttpResponseNotFound("Person %s not found" % key)
 
-    if person.active_process:
-        return http.HttpResponseForbidden("Person %s already has an active process" % key)
+    if applying_for not in person.get_allowed_processes():
+        return http.HttpResponseForbidden("Person %s cannot start a %s process" % (key, applying_for))
 
-    NewProcessForm = make_newprocessform(person)
-    if request.method == 'POST':
-        form = NewProcessForm(request.POST)
-        if form.is_valid():
-            process = bmodels.Process(
-                person=person,
-                progress=const.PROGRESS_APP_NEW,
-                is_active=True,
-                applying_as=person.status,
-                applying_for=form.cleaned_data["applying_for"]
-            )
-            process.save()
+    process = bmodels.Process(
+        person=person,
+        progress=const.PROGRESS_APP_NEW,
+        is_active=True,
+        applying_as=person.status,
+        applying_for=applying_for,
+    )
+    process.save()
 
-            log = bmodels.Log(
-                changed_by=request.person,
-                process=process,
-                progress=process.progress,
-                logtext=form.cleaned_data["logtext"]
-            )
-            log.save()
-            # TODO: message
-            return redirect('person', key=key)
-    else:
-        form = NewProcessForm(initial=dict(logtext="New process created"))
+    log = bmodels.Log(
+        changed_by=request.person,
+        process=process,
+        progress=process.progress,
+    )
+    log.save()
 
-    return render_to_response("restricted/newprocess.html",
-                              dict(
-                                  person=person,
-                                  form=form,
-                              ),
-                              context_instance=template.RequestContext(request))
+    return redirect('public_process', key=process.lookup_key)
 
 def db_export(request):
     # In theory, this isn't needed as it's enforced by DACS
