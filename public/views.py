@@ -355,7 +355,9 @@ def make_findperson_form(request):
     return FindpersonForm
 
 def findperson(request):
+    FindpersonForm = make_findperson_form(request)
+
     return render_to_response("public/findperson.html", dict(
-                                  form=make_findperson_form(request),
+                                  form=FindpersonForm(),
                               ),
                               context_instance=template.RequestContext(request))
