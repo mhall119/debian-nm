@@ -242,14 +242,12 @@ class Person(models.Model):
         return res
 
     @property
-    def active_process(self):
+    def active_processes(self):
         """
-        Return the active Process for this person, if any, else None
+        Return a list of all the active Processes for this person, if any; else
+        the empty list.
         """
-        try:
-            return Process.objects.get(person=self, is_active=True)
-        except Process.DoesNotExist:
-            return None
+        return list(Process.objects.filter(person=self, is_active=True).order_by("id"))
 
     @property
     def lookup_key(self):
@@ -472,8 +470,8 @@ class Process(models.Model):
             except Person.DoesNotExist:
                 return None
 
-            res = p.active_process
-            if res: return res
+            res = p.active_processes
+            if res: return res[0]
 
             try:
                 from django.db.models import Max

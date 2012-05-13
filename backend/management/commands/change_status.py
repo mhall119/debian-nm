@@ -100,8 +100,8 @@ class Command(BaseCommand):
             sys.exit(1)
 
         # Ensure no process is open
-        if p.active_process:
-            log.error("%s already has an active process, to become %s", p.fullname, p.active_process.applying_for)
+        if p.active_processes:
+            log.error("%s already has an active process, to become %s", p.fullname, ", ".join(x.active_processes.applying_for for x in p.active_processes))
             sys.exit(1)
 
         # Perform the status change
