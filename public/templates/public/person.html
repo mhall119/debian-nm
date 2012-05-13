@@ -65,6 +65,10 @@
 {% if can_be_am %}
 <a href="{% url admin:backend_am_add %}?person={{person.id}}">make am</a>
 {% endif %}
+{% if can_start_mm_ga_process %}<a href="TODO">request guest account</a>{% endif %}
+{% if can_start_dm_process %}<a href="TODO">request DM</a>{% endif %}
+{% if can_start_dm_ga_process %}<a href="TODO">request guest account</a>{% endif %}
+{% if can_start_dd_u_process or can_start_dd_nu_process %}<a href="TODO">join NM</a>{% endif %}
 {% endif %}
 {{block.super}}
 {% endblock %}

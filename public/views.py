@@ -261,20 +261,35 @@ def person(request, key):
         if person.status in (const.STATUS_DD_U, const.STATUS_DD_NU) and person.status_changed and (datetime.datetime.utcnow() - person.status_changed > datetime.timedelta(days=6*30)):
             can_be_am = True
 
-    adv_processes = person.advocated \
+    ctx = dict(
+        person=person,
+        am=am,
+        active_process=active_process,
+        processes=processes,
+        am_processes=am_processes,
+        can_be_am=can_be_am,
+    )
+
+
+    # List of statuses the person is already applying for
+    already_applying = frozenset(x["applying_for"] for x in person.processes.filter(is_active=True).values("applying_for"))
+    pre_dd_statuses = frozenset((const.STATUS_MM, const.STATUS_MM_GA,
+                                 const.STATUS_DM, const.STATUS_DM_GA,
+                                 const.STATUS_EMERITUS_DD, const.STATUS_EMERITUS_DM,
+                                 const.STATUS_REMOVED_DD, const.STATUS_REMOVED_DM))
+    already_applying_for_dd = const.STATUS_DD_U in already_applying or const.STATUS_DD_NU in already_applying
+
+    ctx["can_start_mm_ga_process"] = person.status == const.STATUS_MM and const.STATUS_MM_GA not in already_applying
+    ctx["can_start_dm_process"] = person.status == const.STATUS_MM and const.STATUS_DM not in already_applying
+    ctx["can_start_dm_ga_process"] = person.status == const.STATUS_MM_GA and const.STATUS_DM_GA not in already_applying
+    ctx["can_start_dd_u_process"] = person.status in pre_dd_statuses and not already_applying_for_dd
+    ctx["can_start_dd_nu_process"] = person.status in pre_dd_statuses and not already_applying_for_dd
+
+    ctx["adv_processes"] = person.advocated \
                 .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
                 .order_by("is_active", "ended")
 
-    return render_to_response("public/person.html",
-                              dict(
-                                  person=person,
-                                  am=am,
-                                  active_process=active_process,
-                                  processes=processes,
-                                  am_processes=am_processes,
-                                  adv_processes=adv_processes,
-                                  can_be_am=can_be_am,
-                              ),
+    return render_to_response("public/person.html", ctx,
                               context_instance=template.RequestContext(request))
 
 def progress(request, progress):
