@@ -136,6 +136,12 @@ $(function() {
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url people %}">people</a>{% endblock %}
 
+{% block relatedpages %}
+<a href="{% url people %}">all people</a>
+{{block.super}}
+{% endblock %}
+
+
 {% block content %}
 
 <h1>Debian New Member - Find{% if request.am.is_admin %}/create{% endif %} person</h2>
