@@ -357,7 +357,18 @@ def make_findperson_form(request):
 def findperson(request):
     FindpersonForm = make_findperson_form(request)
 
+    if request.method == 'POST':
+        if not request.am or not request.am.is_admin:
+            return http.HttpResponseForbidden("Only FD members can create new people in the site")
+
+        form = FindpersonForm(request.POST)
+        if form.is_valid():
+            person = form.save()
+            return redirect(person.get_absolute_url())
+    else:
+        form = FindpersonForm()
+
     return render_to_response("public/findperson.html", dict(
-                                  form=FindpersonForm(),
+                                  form=form,
                               ),
                               context_instance=template.RequestContext(request))
