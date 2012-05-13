@@ -230,6 +230,8 @@ class Person(models.Model):
         res = []
         if self.status == const.STATUS_MM and const.STATUS_MM_GA not in already_applying:
             res.append(const.STATUS_MM_GA)
+        if self.status == const.STATUS_DM and const.STATUS_DM_GA not in already_applying:
+            res.append(const.STATUS_DM_GA)
         if self.status == const.STATUS_MM and const.STATUS_DM not in already_applying:
             res.append(const.STATUS_DM)
         if self.status == const.STATUS_MM_GA and const.STATUS_DM_GA not in already_applying:
