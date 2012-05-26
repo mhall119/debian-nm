@@ -21,14 +21,14 @@ please create a porter account for {{person.fullname}} (sponsored by {% for a in
 {% endif %}
 {% endspaceless %}
 
-  First name:        {{person.cn}}
-  Middle name:       {{person.mn|default:"-"}}
-  Last name:         {{person.sn}}
-  Key fingerprint:   {{person.fpr}}
-  Preferred usename: {{person.uid}}
-  Forward email:     {{person.email}}
-  Access period:     default.
-  Host(s)/arch(es):  TODO: still to be filled
+  First name:       {{person.cn}}
+  Middle name:      {{person.mn|default:"-"}}
+  Last name:        {{person.sn}}
+  Key fingerprint:  {{person.fpr}}
+  Username:         {{person.uid}}
+  Forward email:    {{person.email}}
+  Access period:    default.
+  Host(s)/arch(es): TODO: still to be filled
 
 {{person.fullname}} has accepted the DMUP in a signed mail.
 
