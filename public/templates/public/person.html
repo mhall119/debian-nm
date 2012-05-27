@@ -71,6 +71,7 @@
 {% if can_start_dd_u_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_DD_U %}">join NM (upl.)</a>{% endif %}
 {% if can_start_dd_nu_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_DD_NU %}">join NM (nonupl.)</a>{% endif %}
 {% endif %}
+{% if request.am.is_admin and request.person != person %}<a href="{% url impersonate key=person.lookup_key %}?url={{request.build_absolute_uri}}">impersonate</a>{% endif %}
 {{block.super}}
 {% endblock %}
 
