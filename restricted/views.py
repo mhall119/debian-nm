@@ -23,6 +23,7 @@ import backend.models as bmodels
 import minechangelogs.models as mmodels
 from backend import const
 import backend.auth
+import backend.email
 import json
 import datetime
 
@@ -391,3 +392,102 @@ def impersonate(request, key=None):
         return redirect('home')
     else:
         return redirect(url)
+
+
+class AdvocateDDForm(forms.Form):
+    uploading = forms.BooleanField(required=True, label=_("Upload rights"))
+    logtext = forms.CharField(required=True, label=_("Advocacy message"), widget=forms.Textarea)
+
+
+def advocate_as_dd(request, key):
+    person = bmodels.Person.lookup(key)
+    if person is None:
+        return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
+
+    if not request.person.can_advocate_as_dd(person):
+        return http.HttpResponseForbidden("Cannot advocate %s" % key)
+
+    dd_statuses = (const.STATUS_DD_U, const.STATUS_DD_NU)
+    dm_statuses = (const.STATUS_DM, const.STATUS_DM_GA)
+
+    # Get the existing process, if any
+    procs = list(person.processes.filter(is_active=True, applying_for__in=dd_statuses))
+    if len(procs) > 1:
+        return http.HttpResponseServerError("There is more than one active process applying for DD. Please ask Front Desk people to fix that before proceeding")
+    if not procs:
+        proc = None
+    else:
+        proc = procs[0]
+
+    if person.status in dm_statuses:
+        is_dm = True
+        # Have they been DM for more than 6 months?
+        now = datetime.datetime.utcnow()
+
+        if now - person.status_changed >= datetime.timedelta(days=6*30):
+            # Yes
+            is_early = False
+        else:
+            # Maybe: one can have become a DM a year ago and DM_GA just
+            # yesterday
+            last_change = None
+            for p in person.processes.filter(is_active=False, applying_for__in=dm_statuses) \
+                                     .annotate(last_change=Max("log__logdate")) \
+                                     .order_by("-last_change"):
+                last_change = p.last_change
+            is_early = now - last_change < datetime.timedelta(days=6*30)
+    else:
+        is_dm = False
+        is_early = True
+
+    if request.method == "POST":
+        form = AdvocateDDForm(request.POST)
+        if form.is_valid():
+            # Create process if missing
+            if proc is None:
+                proc = bmodels.Process(
+                    person=person,
+                    applying_as=person.status,
+                    applying_for=const.STATUS_DD_U if form.cleaned_data["uploading"] else const.STATUS_DD_NU,
+                    progress=const.PROGRESS_ADV_RCVD,
+                    is_active=True)
+                proc.save()
+                # Log the change
+                lt = bmodels.Log(
+                    changed_by=request.person,
+                    process=proc,
+                    progress=const.PROGRESS_APP_NEW,
+                    logtext="Process created by %s advocating %s" % (request.person.lookup_key, person.fullname),
+                )
+                lt.save()
+            # Add advocate
+            proc.advocates.add(request.person)
+            # Log the change
+            lt = bmodels.Log(
+                changed_by=request.person,
+                process=proc,
+                progress=proc.progress,
+                logtext=form.cleaned_data["logtext"]
+            )
+            lt.save()
+            # Send mail
+            backend.email.announce_public(request, "Advocacy for %s" % person.fullname,
+                                          "Hello,\n\n%s\n\n%s (via nm.debian.org)\n" % (
+                                              lt.logtext,
+                                              request.person.fullname))
+            return redirect('public_process', key=proc.lookup_key)
+    else:
+        initial = dict()
+        if proc:
+            uploading=(proc.applying_for == const.STATUS_DD_U)
+        form = AdvocateDDForm(initial=initial)
+
+    return render_to_response("restricted/advocate-dd.html",
+                              dict(
+                                  form=form,
+                                  person=person,
+                                  process=proc,
+                                  is_dm=is_dm,
+                                  is_early=is_early,
+                              ),
+                              context_instance=template.RequestContext(request))

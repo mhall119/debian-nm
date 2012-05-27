@@ -173,6 +173,26 @@ class Person(models.Model):
 
         return True
 
+    def can_advocate_as_dd(self, person):
+        """
+        Check if this person can advocate that person as DD
+        """
+        dd_statuses = (const.STATUS_DD_U, const.STATUS_DD_NU)
+        # Advocate must be DD
+        if self.status not in dd_statuses:
+            return False
+
+        # Applicant must not be DD
+        if person.status in dd_statuses:
+            return False
+
+        # One must not be advocate already
+        for p in person.processes.filter(is_active=True, applying_for__in=dd_statuses):
+            if self in p.advocates.all():
+                return False
+
+        return True
+
     @property
     def fullname(self):
         if not self.mn:

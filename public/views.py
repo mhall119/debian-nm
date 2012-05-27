@@ -261,6 +261,7 @@ def person(request, key):
         processes=processes,
         am_processes=am_processes,
         can_be_am=can_be_am,
+        can_advocate_as_dd=(request.person and request.person.can_advocate_as_dd(person)),
     )
 
 
