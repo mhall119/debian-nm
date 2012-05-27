@@ -376,3 +376,18 @@ def login_redirect(request):
         return redirect('home')
     else:
         return redirect(url)
+
+def impersonate(request, key=None):
+    if key is None:
+        del request.session["impersonate"]
+    elif request.person.is_admin:
+        person = bmodels.Person.lookup(key)
+        if person is None:
+            return http.HttpResponseNotFound("Person %s not found" % key)
+        request.session["impersonate"] = person.lookup_key
+
+    url = request.GET.get("url", None)
+    if url is None:
+        return redirect('home')
+    else:
+        return redirect(url)

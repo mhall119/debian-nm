@@ -99,6 +99,15 @@ class NMInfoMiddleware(object):
     def process_request(self, request):
         if request.user.is_authenticated():
             request.person = request.user.get_profile()
+
+            # Implement impersonation if requested in session
+            if request.person.is_admin:
+                key = request.session.get("impersonate", None)
+                if key is not None:
+                    person = bmodels.Person.lookup(key)
+                    if person is not None:
+                        request.person = person
+
             request.am = request.person.am_or_none
         else:
             request.person = None

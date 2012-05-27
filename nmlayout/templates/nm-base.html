@@ -28,13 +28,15 @@
   <li><a href="{% url root_faq %}">Site FAQ</a></li>
 {% endblock %}
 
-{% block breadcrumbs %}<a href="{% url home %}">nm</a>{% endblock %}
+{% block breadcrumbs %}{% if request.session.impersonate %}<a href="{% url impersonate %}?url={{request.build_absolute_uri}}">[{{request.user}} as {{request.person.lookup_key}}]</a> {% endif %}<a href="{% url home %}">nm</a>{% endblock %}
 
 {% block relatedpages %}
 {% if user.is_anonymous %}
 <a href="{% url login_redirect %}?url={{request.build_absolute_uri}}">login</a>
 {% else %}
-<a href="{% url restricted_ammain %}">{{user.username}}</a>
+{% if request.person.is_am %}
+<a href="{% url restricted_ammain %}">{{request.person.lookup_key}}</a>
+{% endif %}
 <a href="https://sso.debian.org/cgi-bin/dacs/dacs_signout?DACS_BROWSER=1&ENABLE_AUTH_HANDLERS=1&DACS_JURISDICTION=DEBIAN&DACS_AUTH_SUCCESS_HANDLER=DACS_ERROR_URL&DACS_ERROR_URL={{request.build_absolute_uri}}">logout</a>
 
 {% endif %}
