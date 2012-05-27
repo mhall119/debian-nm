@@ -31,6 +31,7 @@
 <div id="checklist">
 <h2>Important information</h2>
 <ul>
+    {% if is_early %}
     <li class="warning">
     <b>Warning:</b>
     {% if is_dm %}
@@ -44,6 +45,7 @@
     {{person.fullname}}, but <em>please provide a good reason</em> of why an account is
     needed so quickly.
     </li>
+    {% endif %}
     {% if not process %}
     <li>You are starting a new NM process for {{person.fullname}},
     so you need to specify whether they need upload rights</li>
@@ -54,8 +56,8 @@
     <li>See <a href="http://wiki.debian.org/FrontDesk/AdvocacyTips">here</a> for advocacy tips, and
     <a href="https://lists.debian.org/debian-devel-announce/2010/05/msg00003.html">here</a>
     for some more rationale.</li>
-    {% if is_early %}
-    {% endif %}
+    <li>Please be verbose if you can. You may want to write the advocacy in a
+    proper text editor and paste it in the form when you are happy with it.</li>
 </ul>
 </div>
 
