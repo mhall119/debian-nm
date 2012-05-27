@@ -396,7 +396,7 @@ def impersonate(request, key=None):
 
 class AdvocateDDForm(forms.Form):
     uploading = forms.BooleanField(required=True, label=_("Upload rights"))
-    logtext = forms.CharField(required=True, label=_("Advocacy message"), widget=forms.Textarea)
+    logtext = forms.CharField(required=True, label=_("Advocacy message"), widget=forms.Textarea(attrs={'cols': 80, 'rows': 30}))
 
 
 def advocate_as_dd(request, key):
