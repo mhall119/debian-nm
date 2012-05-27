@@ -13,6 +13,7 @@ table.personinfo th {
     background-image: url('Pics/greydot.png');
     background-position: bottom left;
     background-repeat: repeat-x;
+    vertical-align: top;
 }
 
 /* JQuery tablesorter common layout */
@@ -54,4 +55,11 @@ ul.menubar li a {
 span.fpr {
     white-space: pre;
     font-family: monospace;
+}
+
+#checklist {
+    float: right;
+    clear: right;
+    font-size: small;
+    width: 33%;
 }

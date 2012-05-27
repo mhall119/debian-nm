@@ -35,5 +35,7 @@ urlpatterns = patterns('restricted.views',
     url(r'^login-redirect$', 'login_redirect', name="login_redirect"),
     # Impersonate a user
     url(r'^impersonate/(?P<key>[^/]+)?$', 'impersonate', name="impersonate"),
+    # Advocate a person to become DD
+    url(r'^advocate-dd/(?P<key>[^/]+)$', 'advocate_as_dd', name="advocate_as_dd"),
     url(r'^db-export$', 'db_export', name="restricted_db_export"),
 )

@@ -1,0 +1,81 @@
+{% extends "restricted/base.html" %}
+{% load nm %}
+
+{% block head_resources %}
+{{block.super}}
+<style type="text/css">
+    li.warning {
+        border: 1pt dashed black;
+        background-color: #FDD;
+        padding: 2pt;
+    }
+</style>
+{% endblock %}
+
+
+{% comment %}
+{% block breadcrumbs %}{{block.super}}
+{% if process %}
+/ <a href="{{ process.get_absolute_url }}">{{person.lookup_key}}</a>
+{% else %}
+/ <a href="{{ person.get_absolute_url }}">{{person.lookup_key}}</a>
+{% endif %}
+/ <a href="{{request.build_absolute_uri}}">edit personal info</a>
+{% endblock %}
+{% endcomment %}
+
+{% block content %}
+
+<h1>Advocate {{person.fullname}} to become Debian Developer</h1>
+
+<div id="checklist">
+<h2>Important information</h2>
+<ul>
+    <li class="warning">
+    <b>Warning:</b>
+    {% if is_dm %}
+    {{person.fullname}} seems to have been a DM for less than 6 months:
+    {% else %}
+    {{person.fullname}} does not seem to be a DM:
+    {% endif %}
+    this could be a bit of a rush. The general rule is that
+    <a href="http://www.debian.org/devel/join/">Before applying as DD, you
+        should have been a DM for about six months</a>. You can still advocate
+    {{person.fullname}}, but <em>please provide a good reason</em> of why an account is
+    needed so quickly.
+    </li>
+    {% if not process %}
+    <li>You are starting a new NM process for {{person.fullname}},
+    so you need to specify whether they need upload rights</li>
+    {% endif %}
+    <li>An email with your advocacy message will be sent to the
+        <a href="http://lists.debian.org/debian-newmaint">debian-newmaint</a>
+        <em>public</em> mailing list</li>
+    <li>See <a href="http://wiki.debian.org/FrontDesk/AdvocacyTips">here</a> for advocacy tips, and
+    <a href="https://lists.debian.org/debian-devel-announce/2010/05/msg00003.html">here</a>
+    for some more rationale.</li>
+    {% if is_early %}
+    {% endif %}
+</ul>
+</div>
+
+<form action="{% url advocate_as_dd key=person.lookup_key %}" method="post">{% csrf_token %}
+<table class="personinfo">
+{% if process %}
+    {{form.uploading.as_hidden}}
+{% else %}
+    <tr>
+        <th>{{form.uploading.label_tag}}:</th>
+        <td>{{form.uploading}} {{form.uploading.errors}}</td>
+    </tr>
+{% endif %}
+    <tr>
+        <th>{{form.logtext.label_tag}}:</th>
+        <td>{{form.logtext}} {{form.logtext.errors}}</td>
+    </tr>
+</table>
+    <input type="submit" value="Advocate" />
+</form>
+
+{% endblock %}
+
