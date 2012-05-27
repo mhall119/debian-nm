@@ -32,7 +32,7 @@
 
 {% block relatedpages %}
 {% if user.is_anonymous %}
-<a href="https://sso.debian.org/sso/login?DACS_AUTH_SUCCESS_HANDLER={{request.build_absolute_uri}}&DACS_ERROR_URL={{request.build_absolute_uri}}">login</a>
+<a href="{% url login_redirect %}?url={{request.build_absolute_uri}}">login</a>
 {% else %}
 <a href="{% url restricted_ammain %}">{{user.username}}</a>
 <a href="https://sso.debian.org/cgi-bin/dacs/dacs_signout?DACS_BROWSER=1&ENABLE_AUTH_HANDLERS=1&DACS_JURISDICTION=DEBIAN&DACS_AUTH_SUCCESS_HANDLER=DACS_ERROR_URL&DACS_ERROR_URL={{request.build_absolute_uri}}">logout</a>
