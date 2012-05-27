@@ -467,7 +467,10 @@ def advocate_as_dd(request, key):
                 changed_by=request.person,
                 process=proc,
                 progress=proc.progress,
-                logtext=form.cleaned_data["logtext"]
+                logtext="I advocate %s to become %s DD.\nAdvocacy text:\n\n%s" % (
+                    person.fullname,
+                    ("uploading" if form.cleaned_data["uploading"] else "non-uploading"),
+                    form.cleaned_data["logtext"])
             )
             lt.save()
             # Send mail
