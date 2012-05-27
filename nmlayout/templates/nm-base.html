@@ -37,7 +37,7 @@
 {% if request.person.is_am %}
 <a href="{% url restricted_ammain %}">{{request.person.lookup_key}}</a>
 {% endif %}
-<a href="https://sso.debian.org/cgi-bin/dacs/dacs_signout?DACS_BROWSER=1&ENABLE_AUTH_HANDLERS=1&DACS_JURISDICTION=DEBIAN&DACS_AUTH_SUCCESS_HANDLER=DACS_ERROR_URL&DACS_ERROR_URL={{request.build_absolute_uri}}">logout</a>
+<a href="https://sso.debian.org/cgi-bin/dacs/dacs_signout?SIGNOUT_HANDLER={{request.build_absolute_uri}}">logout</a>
 
 {% endif %}
 {% comment %}
