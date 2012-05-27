@@ -133,7 +133,7 @@ def amprofile(request, uid=None):
     from django.db.models import Min
 
     if uid is None:
-        person = request.user.get_profile()
+        person = request.person
     else:
         try:
             person = bmodels.Person.objects.get(uid=uid)
@@ -147,7 +147,7 @@ def amprofile(request, uid=None):
     if request.method == 'POST':
         form = AMForm(request.POST, instance=am)
         if form.is_valid():
-            cur_am = request.user.get_profile().am
+            cur_am = request.am
             if cur_am == am or cur_am.is_fd or cur_am.is_dam:
                 form.save()
             else:
