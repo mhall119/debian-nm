@@ -1,6 +1,8 @@
 From: {{request.person.fullname}} &lt;{{request.person.email}}&gt;
-To: Debian Account Managers &lt;da-manager@debian.org&gt;, NM Frontdesk &lt;nm@debian.org&gt;
+To: debian-newmaint@lists.debian.org
 Subject: AM report for {{person.fullname}}
+
+I recommend to accept {{person.fullname}} as a Debian Developer.
 
 1. Identification &amp; Account Data
 --------------------------------
@@ -9,57 +11,8 @@ Subject: AM report for {{person.fullname}}
    Last name:       {{person.sn|default:"-"}}
    Key fingerprint: {{person.fpr}}
    Account:         {{person.uid}}
-   Forward email:   {{person.email}}
-
-   ID check passed, key signed by __ existing developers:
-
-   Output from keycheck.sh:
-
-   TODO: please insert the output of
-         ./keycheck.sh {{person.fpr}}
-
 
 2. Background
 -------------
-   Applicant writes:
-   [...]
+   [...applicant public short bio goes here...]
 
-   Google says:
-   [...]
-
-2a. Advocate writes (Frontdesk and DAM only)
---------------------------------------------
-{% for adv in process.advocates.all %}
-   From: {{adv.fullname}} &lt;{{adv.email}}&gt;
-   [...]
-{% endfor %}
-
-   Other voices
-   [...]
-
-3. Philosophy and Procedures
------------------------------
-   {{person.cn}} has a good understanding of Debian's philosophy and procedures
-   and answered all my questions about the social contract,
-   DFSG, BTS, etc. in a good way. {{person.cn}} committed to uphold the SC and DFSG
-   in _his/her_ Debian work and accepts the DMUP.
-
-4. Tasks and Skills
--------------------
-   {{person.cn}} has a good understanding of the technical side of Debian.
-   {{person.cn}} is maintainer of __ (sponsored by __).
-   All packages are in good shape.
-   {{person.cn}} also answered my other questions regarding T&amp;S without problems
-   and provided patches for RC bugs.
-
-5. Recommendation
------------------
-   I recommend to accept {{person.fullname}} as a Debian Developer.
-
-5a. Personal comment about Applicant (Frontdesk, DAM)
------------------------------------------------------
-   [...]
-
-6. Attachments (Frontdesk, DAM)
--------------------------------
-   Logs of discussion with applicant (mbox.gz)
