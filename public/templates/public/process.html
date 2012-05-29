@@ -71,7 +71,7 @@ $(function() {
         label: "Approve applicant",
         prog_if: [ PROGRESS_AM ],
         prog_to: PROGRESS_AM_OK,
-        logtext: "Please enter personal comment about applicant",
+        logtext: "Please enter personal comment about applicant.\nDon't forget to send the mailbox and any other relevant data you collected (like minechangelogs output) to nm@debian.org",
         hook: function() { am_mail.show(); },
     }, {
         label: "On hold",
