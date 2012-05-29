@@ -17,6 +17,8 @@ $(function() {
     var form = $("#search_form");
     var fsubmit = $("#search_form_submit");
     var perstable = $("#perstable");
+    var startmessage = $("#startmessage");
+    var emptymessage = $("#emptymessage");
     var tbody = $("tbody", perstable);
     var results = [];
     var ayt_timeout = null;
@@ -32,6 +34,8 @@ $(function() {
 
         fsubmit.hide();
         perstable.hide();
+        emptymessage.hide();
+        startmessage.hide();
 
         // Check if the form has been filled
         var has_data = false;
@@ -41,7 +45,11 @@ $(function() {
         });
 
         // If not, just leave stuff hidden and do nothing
-        if (!has_data) return;
+        if (!has_data)
+        {
+            startmessage.show();
+            return;
+        }
 
         $.getJSON("{% url api_people %}?" + query, function(data, textStatus, jqXHR) {
             tbody.empty();
@@ -62,9 +70,14 @@ $(function() {
             });
 
             if (data.r.length > 0)
+            {
                 perstable.show();
+            }
             else
+            {
                 fsubmit.show();
+                emptymessage.show();
+            }
 
             old_query = query;
         });
@@ -92,6 +105,8 @@ $(function() {
 
     // Hide the persons table if it is empty
     perstable.hide();
+
+    emptymessage.hide();
 
     // Only submit the form if it is allowed and if there are no results
     form.submit(function(ev) {
@@ -166,6 +181,9 @@ create a new Person record.
     <input id="search_form_submit" type="submit" value="Create person" />
 {% endif %}
 </form>
+
+<p id="startmessage">Results are shown as you type.</p>
+<p id="emptymessage">No results.</p>
 
 <table id="perstable" class="tablesorter {{class}}">
 <thead>
