@@ -71,6 +71,7 @@ $(function() {
         label: "Approve applicant",
         prog_if: [ PROGRESS_AM ],
         prog_to: PROGRESS_AM_OK,
+        logtext: "Please enter personal comment about applicant",
         hook: function() { am_mail.show(); },
     }, {
         label: "On hold",
@@ -280,7 +281,7 @@ you wish to add a note to the progress update.</p>
 
 {% if process.progress == PROGRESS_AM %}
 <div id="am-mail">
-<h2>Draft AM report</h2>
+<h2>Draft approval mail to debian-newmaint</h2>
 <textarea rows="25" cols="80">
 {% include "public/process-amreport.html" %}
 </textarea>
