@@ -6,19 +6,63 @@
 
 <h1>Debian New Member - Join the NM process</h2>
 
-<p>We apologise this is not yet ready on the new web interface.<p>
+<h2>If you are a DD, or have a guest account on Debian machines</h2>
 
-<p>For now, to join the process please mail nm@debian.org taking care to:</p>
+<p>In this case you have an entry in the site database:
+<a href="{% url public_findperson %}">look it up</a>, and send a link to your
+advocate(s). They can then:
+<ol>
+	<li>login;</li>
+	<li>click on "advocate for DD" on the top right of the page;</li>
+	<li>follow the simple instructions.</li>
+</ol>
+</p>
+
+
+<h2>If you don't yet have an entry in the system</h2>
+
+<p>In this case you need to ask for a FD member to enter your information in
+the site database so that people can advocate you.</p>
+
+<p>Please mail nm@debian.org taking care to:</p>
 
 <ul>
-    <li>Say that you want to become a Debian Developer</li>
-    <li>Say if you also need to upload packages</li>
-    <li>Cc your advocate(s)</li>
+    <li>Say that you want to become a Debian Developer.</li>
+    <li>Say if you also need to upload packages.</li>
+    <li>Cc your advocate(s).</li>
     <li>Say what username you would like (minimum 3 characters, check
-        <a href="http://db.debian.org">db.debian.org</a> to see if it is free)</li>
-    <li>Add anything else you may think is useful</li>
-    <li>Sign the email with the key you use to sign packages</li>
+        <a href="http://db.debian.org">db.debian.org</a> to see if it is free).</li>
+    <li>Add anything else you may think is useful.</li>
+    <li>Sign the email with the key you use to sign your Debian work.</li>
 </ul>
+
+<p>Here is an example you can use as a template. Don't forget to sign it with
+the right key:</p>
+<pre>
+From: $NAME &lt;$EMAIL&gt;
+To: nm@debian.org
+Cc: $ADVOCATE1@debian.org, $ADVOCATE2@debian.org
+
+Dear Front Desk,
+
+I would like join the NM process. $ADVOCATE1 and $ADVOCATE2 have agreed to
+advocate my application.
+
+My information is:
+
+               First name: _________
+              Middle name: _________ (if applicable)
+                Last name: _________ (if applicable)
+            Email address: _________
+       Preferred username: _________ (check <a href="{% url public_findperson %}">here</a> for duplicates)
+  OpenPGP key fingerprint: _________
+
+I have been doing this and that with this and that person for so much time and
+I could use DD privileges so that I could also do these and those other things.
+
+--
+$NAME
+</pre>
 
 {% endblock %}
 
