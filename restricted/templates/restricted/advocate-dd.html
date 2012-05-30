@@ -40,8 +40,9 @@
     </li>
     {% endif %}
     {% if not process %}
-    <li>You are starting a new NM process for {{person.fullname}},
-    so you need to specify whether they need upload rights</li>
+    <li>You are starting a new NM process for {{person.fullname}}. Please only
+    do so if you are sure {{person.cn}} wants to apply.</li>
+    <li>Also, so you need to specify whether they need upload rights</li>
     {% endif %}
     <li>An email with your advocacy message will be sent to the
         <a href="http://lists.debian.org/debian-newmaint">debian-newmaint</a>
