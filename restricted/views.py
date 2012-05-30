@@ -400,6 +400,8 @@ class AdvocateDDForm(forms.Form):
 
 
 def advocate_as_dd(request, key):
+    from django.db.models import Min, Max
+
     person = bmodels.Person.lookup(key)
     if person is None:
         return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
