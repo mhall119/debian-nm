@@ -437,7 +437,10 @@ def advocate_as_dd(request, key):
                                      .annotate(last_change=Max("log__logdate")) \
                                      .order_by("-last_change"):
                 last_change = p.last_change
-            is_early = now - last_change < datetime.timedelta(days=6*30)
+            if last_change:
+                is_early = now - last_change < datetime.timedelta(days=6*30)
+            else:
+                is_early = True
     else:
         is_dm = False
         is_early = True
