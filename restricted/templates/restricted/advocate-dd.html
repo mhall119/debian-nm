@@ -13,16 +13,9 @@
 {% endblock %}
 
 
-{% comment %}
 {% block breadcrumbs %}{{block.super}}
-{% if process %}
-/ <a href="{{ process.get_absolute_url }}">{{person.lookup_key}}</a>
-{% else %}
 / <a href="{{ person.get_absolute_url }}">{{person.lookup_key}}</a>
-{% endif %}
-/ <a href="{{request.build_absolute_uri}}">edit personal info</a>
 {% endblock %}
-{% endcomment %}
 
 {% block content %}
 
