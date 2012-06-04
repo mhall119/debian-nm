@@ -474,7 +474,7 @@ def advocate_as_dd(request, key):
                 progress=proc.progress,
                 logtext="I advocate %s to become %s DD.\nAdvocacy text:\n\n%s" % (
                     person.fullname,
-                    ("uploading" if form.cleaned_data["uploading"] else "non-uploading"),
+                    ("uploading" if proc.applying_for==const.STATUS_DD_U else "non-uploading"),
                     form.cleaned_data["logtext"])
             )
             lt.save()
