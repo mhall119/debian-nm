@@ -1,5 +1,6 @@
 {% extends "restricted/base.html" %}
 {% load nm %}
+{% load minechangelogs %}
 
 {% block breadcrumbs %}{{block.super}}
 {% if person %}
@@ -35,7 +36,7 @@
 <h2>{{entries|length}} entries</h2>
 <pre>
 {% for e in entries %}
-{{e}}
+{{e|mc_format_entry:keywords}}
 {% endfor %}
 </pre>
 {% endif %}
