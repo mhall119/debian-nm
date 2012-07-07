@@ -157,7 +157,42 @@ class Checker(object):
             if finalised_msg is not None:
                 old_status = proc.person.status
                 proc.finalize(finalised_msg)
-                log.info(u"%s finalised: %s changes status %s->%s", proc, proc.person, old_status, proc.person.status)
+                log.info(u"%s finalised: %s changes status %s->%s", self._link(proc), proc.person.uid, old_status, proc.person.status)
+
+    @transaction.commit_on_success
+    def compute_new_guest_accounts_from_dsa(self, **kw):
+        """
+        Create new Person entries for guest accounts created by DSA
+        """
+        for entry in dmodels.list_people():
+            # Skip DDs
+            if entry.single("gidNumber") == "800" and entry.single("keyFingerPrint") is not None: continue
+
+            # Skip people we already know of
+            if bmodels.Person.objects.filter(uid=entry.uid).exists(): continue
+
+            # Skip people without fingerprints
+            if entry.single("keyFingerPrint") is None: continue
+
+            # Check for fingerprint duplicates
+            try:
+                p = bmodels.Person.objects.get(fpr=entry.single("keyFingerPrint"))
+                log.warning("%s has the same fingerprint as LDAP uid %s", self._link(p), entry.uid)
+                continue
+            except bmodels.Person.DoesNotExist:
+                pass
+
+            p = bmodels.Person(
+                cn=entry.single("cn"),
+                mn=entry.single("mn"),
+                sn=entry.single("sn"),
+                email=entry.single("emailForward"),
+                uid=entry.uid,
+                fpr=entry.single("keyFingerPrint"),
+                status=const.STATUS_MM_GA,
+            )
+            p.save()
+            log.info("%s (guest account only) imported from LDAP", self._link(p))
 
     def check_one_process_per_person(self, **kw):
         """
