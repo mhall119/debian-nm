@@ -619,6 +619,32 @@ class Process(models.Model):
         for k, v in s.iteritems():
             setattr(self, k, v)
 
+    def finalize(self, logtext, tstamp=None):
+        """
+        Bring the process to completion, by setting its progress to DONE,
+        adding a log entry and updating the person status.
+        """
+        if self.progress != const.PROGRESS_DAM_OK:
+            raise ValueError("cannot finalise progress %s: status is %s instead of %s" % (
+                unicode(self), self.progress, const.PROGRESS_DAM_OK))
+
+        if tstamp is None:
+            tstamp = datetime.datetime.utcnow()
+
+        self.progress = const.PROGRESS_DONE
+        self.person.status = self.applying_for
+        self.person.status_changed = tstamp
+        l = Log(
+            changed_by=None,
+            process=self,
+            progress=self.progress,
+            logdate=tstamp,
+            logtext=logtext
+        )
+        l.save()
+        self.save()
+        self.person.save()
+
     #def get_log(self, desc=False, max=None):
     #    res = orm.object_session(self) \
     #            .query(Log) \

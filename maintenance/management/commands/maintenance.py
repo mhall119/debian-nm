@@ -130,6 +130,35 @@ class Checker(object):
                  bmodels.Process.objects.filter(is_active=True).count(),
                  cursor.rowcount)
 
+    @transaction.commit_on_success
+    def compute_progress_finalisations_on_accounts_created(self, **kw):
+        """
+        Update pending dm_ga processes after the account is created
+        """
+        # Get a lits of accounts from DSA
+        dm_ga_uids = set()
+        dd_uids = set()
+        for entry in dmodels.list_people():
+            if entry.single("gidNumber") == "800" and entry.single("keyFingerPrint") is not None:
+                dd_uids.add(entry.uid)
+            else:
+                dm_ga_uids.add(entry.uid)
+
+        # Check if pending processes got an account
+        for proc in bmodels.Process.objects.filter(is_active=True):
+            if proc.progress != const.PROGRESS_DAM_OK: continue
+            finalised_msg = None
+
+            if proc.applying_for == const.STATUS_DM_GA and proc.person.uid in dm_ga_uids:
+                finalised_msg = "guest LDAP account created by DSA"
+            if proc.applying_for in (const.STATUS_DD_NU, const.STATUS_DD_U) and proc.person.uid in dd_uids:
+                finalised_msg = "LDAP account created by DSA"
+
+            if finalised_msg is not None:
+                old_status = proc.person.status
+                proc.finalize(finalised_msg)
+                log.info(u"%s finalised: %s changes status %s->%s", proc, proc.person, old_status, proc.person.status)
+
     def check_one_process_per_person(self, **kw):
         """
         Check that one does not have more than one open process at the current time

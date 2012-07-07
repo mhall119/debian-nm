@@ -113,19 +113,29 @@ class Importer(object):
 
         # Pass 1: import people and AMs
         for info in people:
-            if count_people and count_people % 300 == 0:
-                log.info("%d people imported", count_people)
-            self.import_person(info["key"], info)
-            count_people += 1
+            try:
+                if count_people and count_people % 300 == 0:
+                    log.info("%d people imported", count_people)
+                self.import_person(info["key"], info)
+                count_people += 1
+            except:
+                import json
+                log.info("Offending record at pass 1: %s", json.dumps(info, indent=2))
+                raise
 
         # Pass 2: import processes and logs
         for info in people:
-            person = self.people[info["key"]]
-            for proc in info["processes"]:
-                if count_procs and count_procs % 300 == 0:
-                    log.info("%d processes imported", count_procs)
-                self.import_process(person, proc)
-                count_procs += 1
+            try:
+                person = self.people[info["key"]]
+                for proc in info["processes"]:
+                    if count_procs and count_procs % 300 == 0:
+                        log.info("%d processes imported", count_procs)
+                    self.import_process(person, proc)
+                    count_procs += 1
+            except:
+                import json
+                log.info("Offending record at pass 2: %s", json.dumps(info, indent=2))
+                raise
 
         return dict(
             people=count_people,
