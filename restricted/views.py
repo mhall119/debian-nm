@@ -331,6 +331,7 @@ def minechangelogs(request, key=None):
     else:
         person = None
 
+    keywords=None
     if request.method == 'POST':
         form = MinechangelogsForm(request.POST)
         if form.is_valid():
@@ -364,6 +365,7 @@ def minechangelogs(request, key=None):
 
     return render_to_response("restricted/minechangelogs.html",
                               dict(
+                                  keywords=keywords,
                                   form=form,
                                   info=info,
                                   entries=entries,
