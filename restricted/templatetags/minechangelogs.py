@@ -5,7 +5,7 @@ import re
 
 register = template.Library()
 
-@register.filter(name='mc_format_entry', needs_autoescape=True)
+@register.filter(name='mc_format_entry')
 def mc_format_entry(value, keywords, autoescape=None):
     if autoescape:
         esc = conditional_escape
@@ -37,3 +37,4 @@ def mc_format_entry(value, keywords, autoescape=None):
             tokenized[i] = esc(tokenized[i])
 
     return mark_safe("".join(tokenized))
+mc_format_entry.needs_autoescape=True
