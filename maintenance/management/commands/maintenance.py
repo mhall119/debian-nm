@@ -157,7 +157,7 @@ class Checker(object):
             if finalised_msg is not None:
                 old_status = proc.person.status
                 proc.finalize(finalised_msg)
-                log.warn("%s finalised: %s changes status %s->%s", proc, proc.person, old_status, proc.person.status)
+                log.info(u"%s finalised: %s changes status %s->%s", proc, proc.person, old_status, proc.person.status)
 
     def check_one_process_per_person(self, **kw):
         """
