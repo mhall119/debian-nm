@@ -62,12 +62,13 @@ $(function() {
 
 <div id="intro">
 {% if status %}
-This is a list of all the people known in the database who have status "{{status|desc_status}}".
+This is a list of all the <b>{{people|length}}</b> people known in the
+database who have status "{{status|desc_status}}".
 You can sort the table by clicking/shift+clicking on headers.
 {% else %}
-This is a list of all the people known in the database, grouped by status in
-the project. You can sort the table by clicking/shift+clicking on headers, and
-filter it using the filters below.
+This is a list of all the <b>{{people|length}}</b> people known in the
+database, grouped by status in the project. You can sort the table by
+clicking/shift+clicking on headers, and filter it using the filters below.
 {% endif %}
 
 Note that the data import for things that were historically not handled by the
