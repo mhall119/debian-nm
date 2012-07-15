@@ -148,6 +148,11 @@ function compute_matches(data)
     });
 
     var summarize = function(el, other) {
+        if (!el.cloud || is_empty(el.cloud))
+            return $("<span class='summary'>no packages</span>");
+        if (!other)
+            other = {};
+
         // Make a sortable array of our tags
         var main_tags = $.map(el.cloud, function(val, idx) {
             return { name:idx, tfidf:val.tfidf, count:val.count };
@@ -171,19 +176,23 @@ function compute_matches(data)
     };
 
     $.each(nms, function(idx, nm) {
-        if (!nm.cloud) { no_info.push(nm); return; }
-        if (is_empty(nm.cloud)) { no_pkgs.push(nm); return; }
-        compute_tfidf(nm);
-
         var matches = [];
-        $.each(ams, function(idx, am) {
-            if (!am.cloud) return;
-            if (is_empty(am.cloud)) return;
+        if (!nm.cloud) 
+        {
+            $.each(ams, function(idx, am) { matches.push([0, am]); });
+        } else if (is_empty(nm.cloud)) {
+            $.each(ams, function(idx, am) { matches.push([0, am]); });
+        } else {
+            compute_tfidf(nm);
 
-            //var sim = jaccard_similarity(nm.cloud, am.cloud);
-            var sim = cosine_similarity(nm.cloud, am.cloud);
-            matches.push([sim, am]);
-        });
+            $.each(ams, function(idx, am) {
+                var sim = 0;
+                if (am.cloud && !is_empty(am.cloud))
+                    //sim = jaccard_similarity(nm.cloud, am.cloud);
+                    sim = cosine_similarity(nm.cloud, am.cloud);
+                matches.push([sim, am]);
+            });
+        }
 
         matches.sort(function(a, b) { return b[0] - a[0]; });
         $.each(matches, function(idx, el) {
@@ -210,36 +219,6 @@ function compute_matches(data)
 
             //out.append("" + sim + " " + nm.name + " → " + am.name + "\n");
         });
-    });
-
-    $.each(no_pkgs, function(idx, el) {
-        var tr = $("<tr>").addClass(el.role+"-"+el.key);
-        if (el.role == "nm")
-        {
-            tr.append("<td>no packages</td>");
-            tr.append($("<td>").text(el.name));
-            tr.append("<td colspan='4'></td>");
-        } else {
-            tr.append("<td colspan='4'></td>");
-            tr.append($("<td>").text(el.name));
-            tr.append("<td>no packages</td>");
-        }
-        out.append(tr);
-    });
-
-    $.each(no_info, function(idx, el) {
-        var tr = $("<tr>").addClass(el.role+"-"+el.key);
-        if (el.role == "nm")
-        {
-            tr.append("<td>no info</td>");
-            tr.append($("<td>").text(el.name));
-            tr.append("<td colspan='4'>");
-        } else {
-            tr.append("<td colspan='4'>");
-            tr.append($("<td>").text(el.name));
-            tr.append("<td>no info</td>");
-        }
-        out.append(tr);
     });
 
     $(".matchtable").tablesorter();
