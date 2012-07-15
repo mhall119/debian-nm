@@ -194,6 +194,7 @@ function compute_matches(data)
             toggle.data("am", am);
             toggle.data("nm", nm);
             toggle.click(toggle_line);
+            tr.append($("<td>").text(sim.toFixed(6)));
             tr.append($("<td>").append(toggle));
             tr.append($("<td>").text(am.name));
             tr.append($("<td>").append(summarize(am, nm.cloud)));
@@ -232,6 +233,8 @@ function compute_matches(data)
         }
         out.append(tr);
     });
+
+    $(".matchtable").tablesorter();
 }
 
 $(function() {
@@ -260,14 +263,8 @@ $(function() {
         }
     );
 
-    $(".proctable").tablesorter({
-        textExtraction: function(node) {
-            val = node.getAttribute("val");
-            if (val == null)
-                val = node.textContent || node.innerText;
-            return val;
-        },
-    })
+    $(".amtable").tablesorter();
+    $(".proctable").tablesorter();
 });
 </script>
 {% endblock %}
@@ -280,7 +277,7 @@ $(function() {
 
 <h2>Free AMs</h2>
 
-<table class="amtable">
+<table class="amtable tablesorter">
 <thead>
 <tr>
     <th>Name</th><th>Uid</th><th>Free slots</th>
@@ -340,9 +337,9 @@ $(function() {
 significant tags that they have in common. The number next to the tags if their
 ranking by significance for the NM or AM.</p>
 
-<table>
+<table class="matchtable tablesorter">
 <thead>
-    <tr><th>NM summary</th><th>NM</th><th>Action</th><th>AM</th><th>AM summary</th></tr>
+    <tr><th>NM summary</th><th>NM</th><th>Score</th><th>Action</th><th>AM</th><th>AM summary</th></tr>
 </thead>
 <tbody id="matches">
     <tr><td colspan="4">Loading data from <a href="http://debtags.debian.net">debtags.debian.net</a>...</td></tr>
