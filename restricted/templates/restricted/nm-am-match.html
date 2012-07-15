@@ -117,7 +117,7 @@ function compute_matches(data)
     var summarize = function(el, other) {
         // Make a sortable array of our tags
         var main_tags = $.map(el.cloud, function(val, idx) {
-            return { name:idx, tfidf:val.tfidf };
+            return { name:idx, tfidf:val.tfidf, count:val.count };
         });
         // Sort it by tfidf
         main_tags.sort(function(a, b) { return b.tfidf - a.tfidf; });
@@ -128,11 +128,11 @@ function compute_matches(data)
         main_tags = $.grep(main_tags, function(el) {
             return other[el.name] ? true : false;
         });
-        // Get the top 4
-        //main_tags = main_tags.slice(0, 4);
+        // Get the top 10
+        main_tags = main_tags.slice(0, 10);
         var res = $("<ul class='summary'>");
         $.each(main_tags, function(idx, el) {
-            res.append($("<li>").text("" + el.rank + ": " + el.name));
+            res.append($("<li>").text("" + el.rank + ": " + el.name + " (" + el.count + ")"));
         });
         return res;
     };
