@@ -501,3 +501,42 @@ def advocate_as_dd(request, key):
                                   is_early=is_early,
                               ),
                               context_instance=template.RequestContext(request))
+
+@backend.auth.is_admin
+def nm_am_match(request):
+    from django.db.models import Min, Max
+    procs = []
+    for p in bmodels.Process.objects.filter(is_active=True, progress=const.PROGRESS_APP_OK) \
+                    .annotate(
+                        started=Min("log__logdate"),
+                        last_change=Max("log__logdate")) \
+                    .order_by("started"):
+        p.annotate_with_duration_stats()
+        procs.append(p)
+    ams = bmodels.AM.list_free()
+
+    json_ams = dict()
+    for a in ams:
+        json_ams[a.person.lookup_key] = dict(
+            name=a.person.fullname,
+            uid=a.person.uid,
+            email=a.person.email,
+            key=a.person.lookup_key,
+        )
+    json_nms = dict()
+    for p in procs:
+        json_nms[p.lookup_key] = dict(
+            name=p.person.fullname,
+            uid=p.person.uid,
+            email=p.person.email,
+            key=p.lookup_key,
+        )
+
+    ctx = dict(
+        procs=procs,
+        ams=ams,
+        json_ams=json.dumps(json_ams),
+        json_nms=json.dumps(json_nms),
+    )
+    return render_to_response("restricted/nm-am-match.html", ctx,
+                              context_instance=template.RequestContext(request))

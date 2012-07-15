@@ -37,5 +37,8 @@ urlpatterns = patterns('restricted.views',
     url(r'^impersonate/(?P<key>[^/]+)?$', 'impersonate', name="impersonate"),
     # Advocate a person to become DD
     url(r'^advocate-dd/(?P<key>[^/]+)$', 'advocate_as_dd', name="advocate_as_dd"),
+    # Export database
     url(r'^db-export$', 'db_export', name="restricted_db_export"),
+    # Help matching NMs and AMs
+    url(r'^nm-am-match$', 'nm_am_match', name="restricted_nm_am_match"),
 )
