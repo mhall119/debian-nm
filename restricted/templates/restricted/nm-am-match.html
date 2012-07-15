@@ -27,6 +27,9 @@ table.proctable {
 table.proctable tbody {
   white-space: nowrap;
 }
+form.assignform {
+  display: inline;
+}
 </style>
 {% endblock %}
 
@@ -190,12 +193,17 @@ function compute_matches(data)
             var tr = $("<tr>").addClass(class_for_record(nm)).addClass(class_for_record(am));
             tr.append($("<td>").append(summarize(nm, am.cloud)));
             tr.append($("<td>").text(nm.name));
-            var toggle = $("<a href='#'>toggle</a>");
+            var toggle = $("<button>toggle</button>");
             toggle.data("am", am);
             toggle.data("nm", nm);
             toggle.click(toggle_line);
+            var assign = $("<form class='assignform' method='post' action=''>")
+                .append($("<input type='hidden' name='am'>").val(am.key))
+                .append($("<input type='hidden' name='nm'>").val(nm.key))
+                .append($("<input type='hidden' name='csrfmiddlewaretoken' value='{{csrf_token}}'>"))
+                .append($("<input type='submit' value='assign'>"));
             tr.append($("<td>").text(sim.toFixed(6)));
-            tr.append($("<td>").append(toggle));
+            tr.append($("<td>").append(toggle).append(" ").append(assign));
             tr.append($("<td>").text(am.name));
             tr.append($("<td>").append(summarize(am, nm.cloud)));
             out.append(tr);
