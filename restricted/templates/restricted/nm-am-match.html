@@ -55,6 +55,11 @@ function is_empty(obj)
     return true;
 }
 
+function class_for_record(rec)
+{
+    return rec.role + "-" + rec.key.replace(/[.@]+/g, "_");
+}
+
 // Vector-space difference
 function cosine_similarity(s1, s2)
 {
@@ -92,6 +97,31 @@ function jaccard_similarity(s1, s2)
     });
 
     return cintersection / cunion;
+}
+
+function toggle_line(ev)
+{
+    ev.preventDefault();
+    var el = $(ev.target);
+    var am = el.data("am");
+    var nm = el.data("nm");
+    var am_class = class_for_record(am);
+    var nm_class = class_for_record(nm);
+    var matches = $("#matches");
+    if (el.data("selected"))
+    {
+        matches.find("tr." + nm_class).show().find("ul").show();
+        el.data("selected", false);
+    } else {
+        el.data("selected", true);
+        matches.find("tr." + nm_class).each(function(idx, el) {
+            var el = $(el);
+            if (el.hasClass(am_class))
+                el.find("ul").hide();
+            else
+                el.hide();
+        });
+    }
 }
 
 function compute_matches(data)
@@ -157,9 +187,14 @@ function compute_matches(data)
             var sim = el[0];
             var am = el[1];
 
-            var tr = $("<tr>");
+            var tr = $("<tr>").addClass(class_for_record(nm)).addClass(class_for_record(am));
             tr.append($("<td>").append(summarize(nm, am.cloud)));
             tr.append($("<td>").text(nm.name));
+            var toggle = $("<a href='#'>toggle</a>");
+            toggle.data("am", am);
+            toggle.data("nm", nm);
+            toggle.click(toggle_line);
+            tr.append($("<td>").append(toggle));
             tr.append($("<td>").text(am.name));
             tr.append($("<td>").append(summarize(am, nm.cloud)));
             out.append(tr);
@@ -169,14 +204,14 @@ function compute_matches(data)
     });
 
     $.each(no_pkgs, function(idx, el) {
-        var tr = $("<tr>");
+        var tr = $("<tr>").addClass(el.role+"-"+el.key);
         if (el.role == "nm")
         {
             tr.append("<td>no packages</td>");
             tr.append($("<td>").text(el.name));
-            tr.append("<td colspan='2'></td>");
+            tr.append("<td colspan='3'></td>");
         } else {
-            tr.append("<td colspan='2'></td>");
+            tr.append("<td colspan='3'></td>");
             tr.append($("<td>").text(el.name));
             tr.append("<td>no packages</td>");
         }
@@ -184,7 +219,7 @@ function compute_matches(data)
     });
 
     $.each(no_info, function(idx, el) {
-        var tr = $("<tr>");
+        var tr = $("<tr>").addClass(el.role+"-"+el.key);
         if (el.role == "nm")
         {
             tr.append("<td>no info</td>");
@@ -307,7 +342,7 @@ ranking by significance for the NM or AM.</p>
 
 <table>
 <thead>
-    <tr><th>NM summary</th><th>NM</th><th>AM</th><th>AM summary</th></tr>
+    <tr><th>NM summary</th><th>NM</th><th>Action</th><th>AM</th><th>AM summary</th></tr>
 </thead>
 <tbody id="matches">
     <tr><td colspan="4">Loading data from <a href="http://debtags.debian.net">debtags.debian.net</a>...</td></tr>

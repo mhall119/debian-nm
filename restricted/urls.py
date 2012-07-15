@@ -40,5 +40,5 @@ urlpatterns = patterns('restricted.views',
     # Export database
     url(r'^db-export$', 'db_export', name="restricted_db_export"),
     # Help matching NMs and AMs
-    url(r'^nm-am-match$', 'nm_am_match', name="restricted_nm_am_match"),
+    url(r'^nm-am-match/$', 'nm_am_match', name="restricted_nm_am_match"),
 )
