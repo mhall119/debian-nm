@@ -1,0 +1,318 @@
+{% extends "restricted/base.html" %}
+{% load js %}
+{% load macros %}
+{% load nm %}
+
+{% block head_resources %}
+{{block.super}}
+{% jsinclude "tables" %}
+<style type="text/css">
+ul.summary {
+  padding: 0;
+  margin: 0;
+  font-size: small;
+}
+ul.summary li {
+  list-style:none;
+}
+table.amtable {
+  font-size: small;
+}
+table.amtable tbody {
+  white-space: nowrap;
+}
+table.proctable {
+  font-size: small;
+}
+table.proctable tbody {
+  white-space: nowrap;
+}
+</style>
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+<script type="text/javascript">
+var ams = {{json_ams|safe}};
+var nms = {{json_nms|safe}};
+
+function to_dict(data)
+{
+    var res = {};
+    $.each(data, function(idx, el) {
+        res[el[0]] = el[1];
+    });
+    return res;
+}
+
+function is_empty(obj)
+{
+    for (var i in obj) {
+        if (obj.hasOwnProperty(i)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Vector-space difference
+function cosine_similarity(s1, s2)
+{
+    // http://en.wikipedia.org/wiki/Cosine_similarity
+    // sum(Ai*Bi) / (sqrt(sum(Ai^2)) * sqrt(sum(Bi^2)))
+    var sumprods = 0;
+    var sumai2 = 0;
+    var sumbi2 = 0;
+
+    $.each(s1, function(idx, el) {
+        if (s2[idx])
+            sumprods += el.tfidf * s2[idx].tfidf;
+        sumai2 += el.tfidf * el.tfidf;
+    });
+    $.each(s2, function(idx, el) {
+        sumbi2 += el.tfidf * el.tfidf;
+    });
+
+    return sumprods / (sumai2 * sumbi2);
+}
+
+// At least one of the two sets must be nonempty
+function jaccard_similarity(s1, s2)
+{
+    var cintersection = 0;
+    var cunion = 0;
+
+    $.each(s1, function(idx, el) {
+        cunion += el;
+        if (s2[idx])
+            cintersection += Math.abs(el - s2[idx]);
+    });
+    $.each(s2, function(idx, el) {
+        cunion += el;
+    });
+
+    return cintersection / cunion;
+}
+
+function compute_matches(data)
+{
+    var out = $("#matches");
+    out.empty();
+
+    var no_pkgs = [];
+    var no_info = [];
+
+    var compute_tfidf = function(el) {
+        $.each(el.cloud, function(idx, stats) {
+            stats.tfidf = stats.count * Math.log(data.pkg_count / stats.tot);
+        });
+    };
+
+    $.each(ams, function(idx, am) {
+        if (!am.cloud) { no_info.push(am); return; }
+        if (is_empty(am.cloud)) { no_pkgs.push(am); return; }
+        compute_tfidf(am);
+    });
+
+    var summarize = function(el, other) {
+        // Make a sortable array of our tags
+        var main_tags = $.map(el.cloud, function(val, idx) {
+            return { name:idx, tfidf:val.tfidf };
+        });
+        // Sort it by tfidf
+        main_tags.sort(function(a, b) { return b.tfidf - a.tfidf; });
+        // Assign ranks
+        var rank = 0;
+        $.each(main_tags, function(idx, el) { el.rank = ++rank; });
+        // Keep only the common tags
+        main_tags = $.grep(main_tags, function(el) {
+            return other[el.name] ? true : false;
+        });
+        // Get the top 4
+        main_tags = main_tags.slice(0, 4);
+        var res = $("<ul class='summary'>");
+        $.each(main_tags, function(idx, el) {
+            res.append($("<li>").text("" + el.rank + ": " + el.name));
+        });
+        return res;
+    };
+
+    $.each(nms, function(idx, nm) {
+        if (!nm.cloud) { no_info.push(nm); return; }
+        if (is_empty(nm.cloud)) { no_pkgs.push(nm); return; }
+        compute_tfidf(nm);
+
+        var matches = [];
+        $.each(ams, function(idx, am) {
+            if (!am.cloud) return;
+            if (is_empty(am.cloud)) return;
+
+            //var sim = jaccard_similarity(nm.cloud, am.cloud);
+            var sim = cosine_similarity(nm.cloud, am.cloud);
+            matches.push([sim, am]);
+        });
+
+        matches.sort(function(a, b) { return b[0] - a[0]; });
+        $.each(matches, function(idx, el) {
+            var sim = el[0];
+            var am = el[1];
+
+            var tr = $("<tr>");
+            tr.append($("<td>").append(summarize(nm, am.cloud)));
+            tr.append($("<td>").text(nm.name));
+            tr.append($("<td>").text(am.name));
+            tr.append($("<td>").append(summarize(am, nm.cloud)));
+            out.append(tr);
+
+            //out.append("" + sim + " " + nm.name + " → " + am.name + "\n");
+        });
+    });
+
+    $.each(no_pkgs, function(idx, el) {
+        var tr = $("<tr>");
+        if (el.role == "nm")
+        {
+            tr.append("<td>no packages</td>");
+            tr.append($("<td>").text(el.name));
+            tr.append("<td colspan='2'></td>");
+        } else {
+            tr.append("<td colspan='2'></td>");
+            tr.append($("<td>").text(el.name));
+            tr.append("<td>no packages</td>");
+        }
+        out.append(tr);
+    });
+
+    $.each(no_info, function(idx, el) {
+        var tr = $("<tr>");
+        if (el.role == "nm")
+        {
+            tr.append("<td>no info</td>");
+            tr.append($("<td>").text(el.name));
+            tr.append("<td colspan='2'>");
+        } else {
+            tr.append("<td colspan='2'>");
+            tr.append($("<td>").text(el.name));
+            tr.append("<td>no info</td>");
+        }
+        out.append(tr);
+    });
+}
+
+$(function() {
+    // Retrieve tag clouds
+    var todo = {};
+    $.each(ams, function(idx, val) {
+        todo[val.key] = JSON.stringify([val.uid, val.email]);
+    });
+    $.each(nms, function(idx, val) {
+        todo[val.key] = JSON.stringify([val.email]);
+    });
+
+    $.getJSON(
+        "http://debtags.debian.net/reports/tags_for_maintainer",
+        todo,
+        function(data) {
+            // Fill in cloud members
+            $.each(data.maints, function(key, el) {
+                var nm = nms[key];
+                if (nm) { nm.cloud = el; nm.role = "nm"; return; }
+                var am = ams[key];
+                if (am) { am.cloud = el; am.role = "am"; return; }
+                console.log("Server returned unknown key", key);
+            });
+            compute_matches(data);
+        }
+    );
+
+    $(".proctable").tablesorter({
+        textExtraction: function(node) {
+            val = node.getAttribute("val");
+            if (val == null)
+                val = node.textContent || node.innerText;
+            return val;
+        },
+    })
+});
+</script>
+{% endblock %}
+
+{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">ammain</a> / nm-am-match{% endblock %}
+
+{% block content %}
+
+<h1>Associate AMs with NMs</h1>
+
+<h2>Free AMs</h2>
+
+<table class="amtable">
+<thead>
+<tr>
+    <th>Name</th><th>Uid</th><th>Free slots</th>
+</tr>
+</thead>
+<tbody>
+{% for a in ams %}
+<tr>
+    <td><a href="{% url restricted_amprofile uid=a.person.uid %}">{{a.person.fullname}}</a></td>
+    <td><a href="{% url restricted_amprofile uid=a.person.uid %}">{{a.person.uid}}</a></td>
+    <td>{{a.stats_free}}/{{a.slots}}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+<h2>Pending NMs</h2>
+
+<table class="proctable tablesorter">
+    <thead>
+        <tr>
+            <th>Started</th>
+            <th>Last</th>
+            <th>Applicant</th>
+            <th>Uid</th>
+            <th>Adv.</th>
+            <th>Last log</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for p in procs %}
+    <tr>
+        <td>{{p.started|date:"Y-m-d"}}</td>
+        <td>{{p.last_change|date:"Y-m-d"}}</td>
+        <td><a href="{{ p.get_absolute_url }}">{{p.person}}</a></td>
+        <td><a href="{{ p.get_absolute_url }}">{{p.person.uid}}</a></td>
+        <td>
+            {% for a in p.advocates.all %}
+            <a href="{{ a.get_absolute_url }}">{{a.uid}}</a>
+            {% endfor %}
+        </td>
+        <td>
+            {% if p.log_last.logtext %}
+            {{ p.log_last.logtext }}
+            {% else %}
+            [{{p.log_last.progress|sdesc_progress}}]
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h2>Suggested matches</h2>
+
+<p>Best match is shown first. Next to each person there is a list of the most
+significant tags that they have in common. The number next to the tags if their
+ranking by significance for the NM or AM.</p>
+
+<table>
+<thead>
+    <tr><th>NM summary</th><th>NM</th><th>AM</th><th>AM summary</th></tr>
+</thead>
+<tbody id="matches">
+    <tr><td colspan="4">Loading data from <a href="http://debtags.debian.net">debtags.debian.net</a>...</td></tr>
+</tbody>
+</table>
+
+{% endblock %}
+
