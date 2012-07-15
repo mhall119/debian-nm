@@ -689,6 +689,11 @@ class Log(models.Model):
     def __unicode__(self):
         return u"%s: %s" % (self.logdate, self.logtext)
 
+    @classmethod
+    def for_process(cls, proc, **kw):
+        kw.setdefault("process", proc)
+        kw.setdefault("progress", proc.progress)
+        return cls(**kw)
 
 
 MOCK_FD_COMMENTS = [

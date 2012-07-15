@@ -199,3 +199,4 @@ MINECHANGELOGS_INDEXDIR = "./data/mc_index"
 
 EMAIL_PUBLIC_ANNOUNCES = "enrico@enricozini.org"
 EMAIL_PRIVATE_ANNOUNCES = "enrico@enricozini.org"
+EMAIL_PERSONAL_DIVERT = ["enrico@enricozini.org"]
