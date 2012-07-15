@@ -129,7 +129,7 @@ function compute_matches(data)
             return other[el.name] ? true : false;
         });
         // Get the top 4
-        main_tags = main_tags.slice(0, 4);
+        //main_tags = main_tags.slice(0, 4);
         var res = $("<ul class='summary'>");
         $.each(main_tags, function(idx, el) {
             res.append($("<li>").text("" + el.rank + ": " + el.name));
