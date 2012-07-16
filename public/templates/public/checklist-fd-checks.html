@@ -1,0 +1,39 @@
+{% load nm %}
+
+<h2>Things to check in the mailbox</h2>
+
+<ul>
+  <li>The mailbox should be complete with the mails from all involved
+  sides.</li>
+  <li>All signatures should validate.</li>
+  <li>SC + DMUP agreement is present.</li>
+  <li>Agreement SC + DMUP is signed with the key that is to go in the DD
+  keyring: {{person.fpr|fingerprint}}.</li>
+  <li>No mails appear to be missing (missing bits of a thread, missing T&amp;S
+  without a reason...)</li>
+  <li>Ensure that the login name requested in the mail conversation matches the
+  one in the AM report.</li>
+  <li>Ensure that the forward email address requested in the mail conversation
+  matches the one in the AM report.</li>
+</ul>
+
+<h2>Things to check in the OpenPGP key</h2>
+
+<ul>
+  <li>Run keycheck.sh again on the applicant key that will go in the keyring,
+  as sometimes the AM might run keycheck on the 1024 key and forget to run in
+  on the 4096 key.</li>
+  <li>Make sure key is 4096 bits, if not check if there is a good reason. Same
+  for number of signatures, if there is only one, no other trust paths, and no
+  good reason.</li>
+  <li>Check if applicant is in the DM keyring: if they are, keyring-maint prefers
+  to move the existing key from DM to DD, so the DD key should match the DM key
+  and the agreement should be signed with that key.</li>
+</ul>
+
+<h2>Things to do after the FD check</h2>
+
+<ul>
+  <li>Run /srv/nm.debian.org/bin/nm_stats and update IRC #debian-newmaint
+  topic. (FIXME: I'm not sure nm_stats works atm)</li>
+</ul>

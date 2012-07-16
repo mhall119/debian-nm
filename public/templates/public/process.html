@@ -213,6 +213,12 @@ See: <a href="http://lists.debian.org/debian-project/2010/09/msg00026.html">hand
 
 <h2>Personal information</h2>
 
+{% if can_edit %}
+{% if process.progress == PROGRESS_AM_OK %}
+<div id="checklist">{% include "public/checklist-fd-checks.html" %}</div>
+{% endif %}
+{% endif %}
+
 <table class="personinfo">
     <tr><th>Applicant</th><td><a href="{{person.get_absolute_url}}">{{person.fullname}} &lt;{{person.email}}&gt;</a></td></tr>
     <tr><th>Received application</th><td>{{started|date:"Y-m-d"}}</td></tr>
