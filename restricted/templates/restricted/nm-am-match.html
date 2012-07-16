@@ -113,9 +113,11 @@ function toggle_line(ev)
     var matches = $("#matches");
     if (el.data("selected"))
     {
+        el.text("try");
         matches.find("tr." + nm_class).show().find("ul").show();
         el.data("selected", false);
     } else {
+        el.text("reset");
         el.data("selected", true);
         matches.find("tr." + nm_class).each(function(idx, el) {
             var el = $(el);
@@ -202,7 +204,7 @@ function compute_matches(data)
             var tr = $("<tr>").addClass(class_for_record(nm)).addClass(class_for_record(am));
             tr.append($("<td>").append(summarize(nm, am.cloud)));
             tr.append($("<td>").text(nm.name));
-            var toggle = $("<button>toggle</button>");
+            var toggle = $("<button>try</button>");
             toggle.data("am", am);
             toggle.data("nm", nm);
             toggle.click(toggle_line);
