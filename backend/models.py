@@ -443,6 +443,15 @@ class Process(models.Model):
 
     archive_key = models.CharField("mailbox archive key", max_length=128, null=False, unique=True)
 
+    def save(self, *args, **kw):
+        if not self.archive_key:
+            ts = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            if self.person.uid:
+                self.archive_key = "%s-%s-%s" % (ts, self.applying_for, self.person.uid)
+            else:
+                self.archive_key = "%s-%s-%s" % (ts, self.applying_for, self.person.email)
+        super(Process, self).save(*args, **kw)
+
     def __unicode__(self):
         return u"%s to become %s (%s)" % (
             unicode(self.person),
