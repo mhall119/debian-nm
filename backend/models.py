@@ -441,6 +441,8 @@ class Process(models.Model):
     # True if progress NOT IN (PROGRESS_DONE, PROGRESS_CANCELLED)
     is_active = models.BooleanField(null=False, default=False)
 
+    archive_key = models.CharField("mailbox archive key", max_length=128, null=False, unique=True)
+
     def __unicode__(self):
         return u"%s to become %s (%s)" % (
             unicode(self.person),
