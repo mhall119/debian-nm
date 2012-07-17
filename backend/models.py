@@ -764,6 +764,7 @@ def export_db(full=False):
                 applying_for=pr.applying_for,
                 progress=pr.progress,
                 is_active=pr.is_active,
+                archive_key=pr.archive_key,
                 manager=None,
                 advocates=[],
                 log=[],

@@ -83,6 +83,7 @@ class Importer(object):
             applying_as=info["applying_as"],
             applying_for=info["applying_for"],
             progress=info["progress"],
+            archive_key=info["archive_key"],
             is_active=info["is_active"],
         )
         if info["manager"]:
