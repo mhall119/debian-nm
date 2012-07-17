@@ -1,0 +1,187 @@
+#!/usr/bin/python
+
+import sys
+import re
+import shutil
+import os.path
+from email.parser import HeaderParser
+from email.utils import getaddresses
+
+DESTDIR = "."
+TESTING = True
+
+class AddressError(Exception):
+    pass
+
+class LookupError(Exception):
+    pass
+
+
+if TESTING:
+    def connect():
+        import sqlite3
+        return sqlite3.connect("db-used-for-development.sqlite")
+    def Q(s):
+        return s.replace("%s", "?")
+else:
+    def connect():
+        import psycopg2
+        return psycopg2.connect("dbname=test user=postgres")
+    def Q(s):
+        return s
+
+
+class Dispatcher(object):
+    def __init__(self, infd=sys.stdin):
+        self.re_dest = re.compile("^archive-(.+)@nm.debian.org$")
+        self.infd = infd
+        self._db = None
+
+        # Parse the header only, leave the body in the input pipe
+        self.msg = HeaderParser().parse(self.infd)
+
+        # History of lookup attempts
+        self.lookup_attempts = []
+
+    @property
+    def db(self):
+        if self._db is None:
+            self._db = connect()
+        return self._db
+
+    def log_lookup(self, msg):
+        self.lookup_attempts.append(msg)
+
+    def get_dest_key(self):
+        to = self.msg.get("Delivered-To", None)
+        if to is None:
+            raise AddressError("Delivered-To not found in mail")
+
+        if to == "archive@nm.debian.org":
+            sefl.log_lookup("no dest key")
+            return None
+
+        mo = self.re_dest.match(to)
+        if mo is None:
+            self.log_lookup("invalid delivered-to: '%s'" % to)
+            return None
+
+        self.log_lookup("dest key: '%s'" % mo.group(1))
+        return mo.group(1)
+
+    def deliver_to_failsafe(self, reason=None, exc=None):
+        if reason is None:
+            reason = "exception %s: %s" % (str(exc.__class__), str(exc))
+        self.msg["NM-Archive-Failsafe-Reason"] = reason
+        self.msg["NM-Archive-Lookup-History"] = ": ".join(self.lookup_attempts)
+
+        with open(os.path.join(DESTDIR, "failsafe.mbox"), "a") as out:
+            print >>out, self.msg.as_string(True)
+            shutil.copyfileobj(sys.stdin, self.infd)
+
+    def deliver_to_archive_key(self, arc_key):
+        self.msg["NM-Archive-Lookup-History"] = ": ".join(self.lookup_attempts)
+        with open(os.path.join(DESTDIR, "%s.mbox" % arc_key), "a") as out:
+            print >>out, self.msg.as_string(True)
+            shutil.copyfileobj(sys.stdin, self.infd)
+
+    def archive_key_from_dest_key(self, dest_key):
+        cur = self.db.cursor()
+        query = """
+        SELECT pr.archive_key
+          FROM person p
+          JOIN process pr ON pr.person_id = p.id
+        """
+        if '=' in dest_key:
+            # Lookup email
+            email = dest_key.replace("=", "@")
+            self.log_lookup("lookup by email '%s'" % email)
+            cur.execute(Q(query + "WHERE p.email=%s"), (email,))
+        else:
+            # Lookup uid
+            self.log_lookup("lookup by uid '%s'" % dest_key)
+            cur.execute(Q(query + "WHERE p.uid=%s"), (dest_key,))
+
+        # Get the person ID
+        arc_key = None
+        for i, in cur:
+            arc_key = i
+        return arc_key
+
+    def archive_key_from_headers(self):
+        # Get all Person ID given emails in From and To and Cc addresses
+        emails = []
+        emails += self.msg.get_all('from', [])
+        emails += self.msg.get_all('to', [])
+        emails += self.msg.get_all('cc', [])
+        emails += self.msg.get_all('resent-to', [])
+        emails += self.msg.get_all('resent-cc', [])
+        if not emails:
+            raise LookupError("No emails found in message headers")
+
+        uids = []
+        for name, email in emails:
+            if email.endswith("@debian.org"):
+                uids.append(email[:-11])
+
+        where = [
+            "email IN (%s)" % (", ".join(("%s",) * len(emails)))
+        ]
+        if uids:
+            where.append("uid IN (%s)" % (", ".join(("%s",) * len(uids))))
+        query = "SELECT id FROM person WHERE %s" % (" AND ".join(where))
+
+        cur = self.db.cursor()
+        cur.execute(Q(query), emails + uids)
+        pids = []
+        for pid, in cur:
+            pids.append(pid)
+
+        if not pids:
+            raise LookupError("No people found in the database who match any email header")
+
+        # If only one active process with AM from and NM to or vice-versa, use that one
+        query = """
+        SELECT pr.archive_key
+          FROM process pr
+          JOIN am a ON pr.manager_id = a.id
+         WHERE pr.is_active = 1
+           AND (pr.person_id IN (%s) OR a.person_id IN (%s))
+        """ % (
+            ("%s",) * len(pids),
+            ("%s",) * len(pids),
+        )
+        cur.execute(Q(query), pids + pids)
+        arc_keys = []
+        for ak, in cur:
+            arc_keys.append(ak)
+
+        if len(arc_keys) == 0:
+            raise LookupError("No active processes found matching the email headers")
+        if len(arc_keys) > 1:
+            raise LookupError("Too many (%d) active processes found matching the email headers" % len(arc_keys))
+        return arc_keys[0]
+
+    def get_arc_key(self):
+        dest_key = self.get_dest_key()
+        if dest_key is not None:
+            arc_key = self.archive_key_from_dest_key(dest_key)
+            if arc_key is not None:
+                return arc_key
+
+        return self.archive_key_from_headers()
+
+
+def main():
+    dispatcher = Dispatcher(sys.stdin)
+    try:
+        arc_key = dispatcher.get_arc_key()
+        dispatcher.deliver_to_archive_key(arc_key)
+        return 0
+    except Exception, e:
+        dispatcher.deliver_to_failsafe(exc=e)
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())
+
