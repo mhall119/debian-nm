@@ -15,14 +15,14 @@ from cStringIO import StringIO
 
 Dispatcher = imp.load_source("ape", "./archive-process-email").Dispatcher
 
-class TestDestkeyLookup(unittest.TestCase):
+class TestLookup(unittest.TestCase):
     def setUp(self):
         # Get an active process with an AM and a uid
         self.proc = bmodels.Process.objects.filter(manager__isnull=False, person__uid__isnull=False, is_active=True)[0]
 
     def make_email(self, dk=None, src="am", dst="nm"):
         """
-        src and dst can be "am", "nm", "fd"
+        src and dst can be "am", "nm", "fd", or a list of Person objects
         """
         from email.mime.text import MIMEText
         from email.utils import formataddr
@@ -34,6 +34,8 @@ class TestDestkeyLookup(unittest.TestCase):
                 return formataddr((self.proc.person.fullname, self.proc.person.email))
             elif t == "fd":
                 return "Enrico Zini <enrico@enricozini.org>"
+            elif isinstance(t, list):
+                return ", ".join(formataddr((p.fullname, p.email)) for p in t)
             else:
                 raise KeyError("Invalid actor: '%s'" % t)
 
@@ -43,12 +45,14 @@ class TestDestkeyLookup(unittest.TestCase):
         res["Subject"] = "Test mail"
         if dk is not None:
             res["Delivered-To"] = "archive-%s@nm.debian.org" % dk
+        else:
+            res["Delivered-To"] = "archive@nm.debian.org"
         return res.as_string()
 
     def make_dispatcher(self, **kw):
         return Dispatcher(StringIO(self.make_email(**kw)))
 
-    def testEmail(self):
+    def testDestkeyEmail(self):
         dest = self.proc.person.email.replace("@", "=")
         d = self.make_dispatcher(dk=dest)
         key = d.get_dest_key()
@@ -56,13 +60,42 @@ class TestDestkeyLookup(unittest.TestCase):
         arc_key = d.archive_key_from_dest_key(key)
         self.assertEquals(arc_key, self.proc.archive_key)
 
-    def testUid(self):
+    def testDestkeyUid(self):
         dest = self.proc.person.uid
         d = self.make_dispatcher(dk=dest)
         key = d.get_dest_key()
         self.assertEquals(key, dest)
         arc_key = d.archive_key_from_dest_key(key)
         self.assertEquals(arc_key, self.proc.archive_key)
+
+    def testInfer(self):
+        d = self.make_dispatcher(src="nm", dst="am")
+        self.assertEquals(d.get_arc_keys(), [self.proc.archive_key])
+        self.assertNotIn("lookup by distinct nm and am gave 0 results", d.lookup_attempts)
+
+        d = self.make_dispatcher(src="am", dst="nm")
+        self.assertEquals(d.get_arc_keys(), [self.proc.archive_key])
+        self.assertNotIn("lookup by distinct nm and am gave 0 results", d.lookup_attempts)
+
+        d = self.make_dispatcher(src="fd", dst="nm")
+        self.assertEquals(d.get_arc_keys(), [self.proc.archive_key])
+
+    def testInferMultidest(self):
+        # Find an AM with multiple NMs
+        am = None
+        procs = None
+        for a in bmodels.AM.objects.all():
+            procs = a.processed.filter(is_active=True)
+            if procs.count() > 1:
+                am = a
+                procs = list(procs)
+                break
+        assert am
+        # AM sends an email to all their applicants
+        d = self.make_dispatcher(src=[am.person], dst=[p.person for p in procs])
+        self.assertEquals(sorted(d.get_arc_keys()), sorted(p.archive_key for p in procs))
+        self.assertNotIn("lookup by distinct nm and am gave 0 results", d.lookup_attempts)
+
 
 if __name__ == '__main__':
     unittest.main()
