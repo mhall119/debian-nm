@@ -21,6 +21,21 @@ class LookupError(Exception):
 # overridden to a replace of %s to ? when using sqlite.
 Q = lambda s: s
 
+class umask_override(object):
+    def __init__(self, umask):
+        self.new_umask = umask
+        self.old_umask = None
+
+    def __enter__(self):
+        # Set umask
+        self.old_umask = os.umask(self.new_umask)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Restore umask
+        os.umask(self.old_umask)
+        return False
+
 
 class Dispatcher(object):
     def __init__(self, infd=sys.stdin, destdir=DEFAULT_DESTDIR):
@@ -75,14 +90,16 @@ class Dispatcher(object):
             reason = "exception %s: %s" % (exc.__class__.__name__, str(exc))
         self.msg["NM-Archive-Failsafe-Reason"] = reason
 
-        with open(os.path.join(self.destdir, "failsafe.mbox"), "a") as out:
-            print >>out, self.msg.as_string(True)
-            shutil.copyfileobj(sys.stdin, self.infd)
+        with umask_override(007) as uo:
+            with open(os.path.join(self.destdir, "failsafe.mbox"), "a") as out:
+                print >>out, self.msg.as_string(True)
+                shutil.copyfileobj(sys.stdin, self.infd)
 
     def deliver_to_archive_key(self, arc_key):
-        with open(os.path.join(self.destdir, "%s.mbox" % arc_key), "a") as out:
-            print >>out, self.msg.as_string(True)
-            shutil.copyfileobj(sys.stdin, self.infd)
+        with umask_override(007) as uo:
+            with open(os.path.join(self.destdir, "%s.mbox" % arc_key), "a") as out:
+                print >>out, self.msg.as_string(True)
+                shutil.copyfileobj(sys.stdin, self.infd)
 
     def archive_key_from_dest_key(self, dest_key):
         cur = self.db.cursor()
