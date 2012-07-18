@@ -526,6 +526,14 @@ class Process(models.Model):
             return fname
         return None
 
+    @property
+    def archive_email(self):
+        if self.person.uid:
+            key = self.person.uid
+        else:
+            key = self.person.email.replace("@", "=")
+        return "archive-%s@nm.debian.org" % key
+
     def can_be_edited(self, am=None):
         # FD and DAM can edit anything
         if am is not None and (am.is_fd or am.is_dam):
