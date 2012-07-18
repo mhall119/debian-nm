@@ -90,13 +90,13 @@ class Dispatcher(object):
             reason = "exception %s: %s" % (exc.__class__.__name__, str(exc))
         self.msg["NM-Archive-Failsafe-Reason"] = reason
 
-        with umask_override(007) as uo:
+        with umask_override(037) as uo:
             with open(os.path.join(self.destdir, "failsafe.mbox"), "a") as out:
                 print >>out, self.msg.as_string(True)
                 shutil.copyfileobj(sys.stdin, self.infd)
 
     def deliver_to_archive_key(self, arc_key):
-        with umask_override(007) as uo:
+        with umask_override(037) as uo:
             with open(os.path.join(self.destdir, "%s.mbox" % arc_key), "a") as out:
                 print >>out, self.msg.as_string(True)
                 shutil.copyfileobj(sys.stdin, self.infd)
