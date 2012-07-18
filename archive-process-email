@@ -50,6 +50,7 @@ class Dispatcher(object):
 
     def log_lookup(self, msg):
         self.lookup_attempts.append(msg)
+        self.msg.add_header("NM-Archive-Lookup-History", msg)
 
     def get_dest_key(self):
         to = self.msg.get("Delivered-To", None)
@@ -73,14 +74,12 @@ class Dispatcher(object):
         if reason is None:
             reason = "exception %s: %s" % (exc.__class__.__name__, str(exc))
         self.msg["NM-Archive-Failsafe-Reason"] = reason
-        self.msg["NM-Archive-Lookup-History"] = ": ".join(self.lookup_attempts)
 
         with open(os.path.join(self.destdir, "failsafe.mbox"), "a") as out:
             print >>out, self.msg.as_string(True)
             shutil.copyfileobj(sys.stdin, self.infd)
 
     def deliver_to_archive_key(self, arc_key):
-        self.msg["NM-Archive-Lookup-History"] = ": ".join(self.lookup_attempts)
         with open(os.path.join(self.destdir, "%s.mbox" % arc_key), "a") as out:
             print >>out, self.msg.as_string(True)
             shutil.copyfileobj(sys.stdin, self.infd)
