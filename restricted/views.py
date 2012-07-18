@@ -597,3 +597,32 @@ def nm_am_match(request):
     )
     return render_to_response("restricted/nm-am-match.html", ctx,
                               context_instance=template.RequestContext(request))
+
+def mail_archive(request, key):
+    process = bmodels.Process.lookup(key)
+    if process is None:
+        return http.HttpResponseNotFound("Process %s not found." % key)
+
+    if not process.can_be_edited(request.am):
+        return http.HttpResponseForbidden("Cannot download mailbox for %s" % key)
+
+    fname = process.mailbox_file
+    if fname is None:
+        return http.HttpResponseNotFound("No mailbox for process %s." % key)
+
+    user_fname = "%s.mbox" % (process.person.uid or process.person.email)
+
+    res = http.HttpResponse(mimetype="application/octet-stream")
+    res["Content-Disposition"] = "attachment; filename=%s.gz" % user_fname
+
+    # Compress the mailbox and pass it to the request
+    from gzip import GzipFile
+    import os.path
+    import shutil
+    outfd = GzipFile(user_fname, "wb", fileobj=res, mtime=os.path.getmtime(fname))
+    try:
+        with open(fname) as infd:
+            shutil.copyfileobj(infd, outfd)
+    finally:
+        outfd.close()
+    return res

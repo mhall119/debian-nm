@@ -237,7 +237,18 @@ See: <a href="http://lists.debian.org/debian-project/2010/09/msg00026.html">hand
     <tr><th>Manager</th><td><a href="{{process.manager.get_absolute_url}}">{{process.manager.person.uid}}</a></td></tr>
     {% endif %}
     <tr><th>Process</th><td>{{process.applying_as|desc_status}} → {{process.applying_for|desc_status}}</td></tr>
-    <tr><th>Progress</th><td>{{process.progress|desc_progress}}</td></tr>
+    <tr>
+        <th>Progress</th>
+        <td>{{process.progress|desc_progress}}
+            {% if can_edit %}
+                {% if process.mailbox_file %}
+                <a href="{% url download_mail_archive key=process.lookup_key %}">(download mail archive)</a>
+                {% else %}
+                (no mail archive yet)
+                {% endif %}
+            {% endif %}
+        </td>
+    </tr>
     <tr><th>Account created</th><td>{% if process.progress == PROGRESS_DONE %}yes{% else %}no{% endif %}</td></tr>
     {% if can_edit %}
     <tr><th>FD comments</th><td>{{person.fd_comment}}</td></tr>
