@@ -619,7 +619,7 @@ def mail_archive(request, key):
     from gzip import GzipFile
     import os.path
     import shutil
-    outfd = GzipFile(user_fname, "wb", fileobj=res, mtime=os.path.getmtime(fname))
+    outfd = GzipFile(user_fname, "wb", 9, res, os.path.getmtime(fname))
     try:
         with open(fname) as infd:
             shutil.copyfileobj(infd, outfd)
