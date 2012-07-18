@@ -540,6 +540,10 @@ def nm_am_match(request):
             "I have just assigned you a new NM applicant: %(nmname)s, who is"
             " %(nmcurstatus)s and is applying for %(nmnewstatus)s." % parms, 72))
         lines.append("")
+        if nm.mailbox_file:
+            lines.append("The mailbox with everything so far can be downloaded at:")
+            lines.append(request.build_absolute_uri(reverse("download_mail_archive", kwargs=dict(key=nm.lookup_key))))
+            lines.append("")
         lines.extend(textwrap.wrap(
             "Note that you have not acknowledged the assignment yet, and"
             " could still refuse it, for example if you do not"
