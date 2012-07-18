@@ -3,12 +3,13 @@
 import sys
 import re
 import shutil
+import os
 import os.path
 from email.parser import HeaderParser
 from email.utils import getaddresses
 
-DESTDIR = "."
-TESTING = True
+VERSION="0.1"
+DEFAULT_DESTDIR = "/org/nm.debian.org/mbox/applicants"
 
 class AddressError(Exception):
     pass
@@ -16,24 +17,15 @@ class AddressError(Exception):
 class LookupError(Exception):
     pass
 
-
-if TESTING:
-    def connect():
-        import sqlite3
-        return sqlite3.connect("db-used-for-development.sqlite")
-    def Q(s):
-        return s.replace("%s", "?")
-else:
-    def connect():
-        import psycopg2
-        return psycopg2.connect("dbname=test user=postgres")
-    def Q(s):
-        return s
+# Function that processes query strings before going to the database. It is
+# overridden to a replace of %s to ? when using sqlite.
+Q = lambda s: s
 
 
 class Dispatcher(object):
-    def __init__(self, infd=sys.stdin):
+    def __init__(self, infd=sys.stdin, destdir=DEFAULT_DESTDIR):
         self.re_dest = re.compile("^archive-(.+)@nm.debian.org$")
+        self.destdir = destdir
         self.infd = infd
         self._db = None
 
@@ -46,7 +38,14 @@ class Dispatcher(object):
     @property
     def db(self):
         if self._db is None:
-            self._db = connect()
+            try:
+                import psycopg2
+                self._db = psycopg2.connect("dbname=nm user=nm")
+            except:
+                import sqlite3
+                self._db = sqlite3.connect("db-used-for-development.sqlite")
+                global Q
+                Q = lambda s: s.replace("%s", "?")
         return self._db
 
     def log_lookup(self, msg):
@@ -76,13 +75,13 @@ class Dispatcher(object):
         self.msg["NM-Archive-Failsafe-Reason"] = reason
         self.msg["NM-Archive-Lookup-History"] = ": ".join(self.lookup_attempts)
 
-        with open(os.path.join(DESTDIR, "failsafe.mbox"), "a") as out:
+        with open(os.path.join(self.destdir, "failsafe.mbox"), "a") as out:
             print >>out, self.msg.as_string(True)
             shutil.copyfileobj(sys.stdin, self.infd)
 
     def deliver_to_archive_key(self, arc_key):
         self.msg["NM-Archive-Lookup-History"] = ": ".join(self.lookup_attempts)
-        with open(os.path.join(DESTDIR, "%s.mbox" % arc_key), "a") as out:
+        with open(os.path.join(self.destdir, "%s.mbox" % arc_key), "a") as out:
             print >>out, self.msg.as_string(True)
             shutil.copyfileobj(sys.stdin, self.infd)
 
@@ -136,78 +135,72 @@ class Dispatcher(object):
 
         return pids
 
-    def arc_keys_from_pids(self, pids, other_pids=None):
-        # If only one active process with AM from and NM to or vice-versa, use that one
+    def list_open_processes(self):
+        """
+        Return a list of (archive_key, AM preson ID, NM person ID) tuples
+        for all active processes in the database
+        """
         query = """
-        SELECT pr.archive_key
+        SELECT pr.archive_key, a.person_id, pr.person_id
           FROM process pr
           JOIN am a ON pr.manager_id = a.id
          WHERE pr.is_active = 1
         """
-        if other_pids is None:
-            instr = ", ".join(("%s",) * len(pids))
-            query += "AND (pr.person_id IN (%s) OR a.person_id IN (%s))" % (instr, instr)
-            parms = pids + pids
-        else:
-            instr1 = ", ".join(("%s",) * len(pids))
-            instr2 = ", ".join(("%s",) * len(other_pids))
-            query += """
-            AND (
-                 (pr.person_id IN (%s) AND a.person_id IN (%s))
-               OR
-                 (pr.person_id IN (%s) AND a.person_id IN (%s))
-                )
-            """ % (instr1, instr2, instr2, instr1)
-            parms = pids + other_pids + other_pids + pids
         cur = self.db.cursor()
-        cur.execute(Q(query), parms)
-        return [ak for ak, in cur]
+        cur.execute(Q(query))
+        return list(cur)
+
+    def fields_to_person_ids(self, *names):
+        """
+        Merge the contents of all the named fields in the emails, parse the
+        emails they contain and convert them to person IDs, returning the
+        result as a frozenset
+        """
+        emails = []
+        for name in names:
+            emails += self.msg.get_all(name, [])
+        emails = [x[1] for x in getaddresses(emails)]
+        return frozenset(self.emails_to_person_ids(emails))
 
     def archive_keys_from_headers(self):
         # Get all Person ID given emails in From and To and Cc addresses
-        femails = []
-        femails += self.msg.get_all('from', [])
-        femails = [x[1] for x in getaddresses(femails)]
+        fpids = self.fields_to_person_ids("from")
+        tpids = self.fields_to_person_ids("to", "resent-to", "cc", "resent-cc")
+        if not fpids and not tpids:
+            raise LookupError("No known people recognised in message headers")
 
-        temails = []
-        temails += self.msg.get_all('to', [])
-        temails += self.msg.get_all('resent-to', [])
-        temails = [x[1] for x in getaddresses(temails)]
+        # Get a list of all open processes
+        procs = self.list_open_processes()
 
-        cemails = []
-        cemails += self.msg.get_all('cc', [])
-        cemails += self.msg.get_all('resent-cc', [])
-        cemails = [x[1] for x in getaddresses(cemails)]
+        def archive_keys(procs):
+            "Return a list of archive keys from a procs-like list"
+            return [x[0] for x in procs]
 
-        if not femails and not temails and not cemails:
-            raise LookupError("No emails found in message headers")
+        # List of processes where the email is from an applicant
+        cand = [p for p in procs if p[2] in fpids]
+        if cand:
+            # If only one active process matches, we're done
+            if len(cand) == 1: return archive_keys(cand)
+            # Try to keep only those to the AM
+            filtered = [p for p in cand if p[1] in tpids]
+            return archive_keys(filtered if filtered else cand)
 
-        fpids = self.emails_to_person_ids(femails)
-        tpids = self.emails_to_person_ids(temails)
-        cpids = self.emails_to_person_ids(cemails)
+        # List of processes where the email is to an applicant
+        cand = [p for p in procs if p[2] in tpids]
+        if cand:
+            # If only one active process matches, we're done
+            if len(cand) == 1: return archive_keys(cand)
+            # Try to keep only those from the AM
+            filtered = [p for p in cand if p[1] in fpids]
+            return archive_keys(filtered if filtered else cand)
 
-        # First try to match (am=fpids and nm=tpids) or (am=tpids and nm=fpids)
-        if fpids and tpids:
-            arc_keys = self.arc_keys_from_pids(fpids, tpids)
-            if len(arc_keys) > 0:
-                # If here len(arc_keys) > 1, it can be a case of the AM mailing all
-                # their NMs, for example to say they are going on vacation. We can
-                # deliver to multiple destinations in that case.
-                return arc_keys
-            self.log_lookup("lookup by distinct nm and am gave no results")
+        # List of processes where the email is from or to an AM, but neither
+        # from nor to applicants: send to all processes for the AM
+        cand = [p for p in procs if p[1] in fpids or p[1] in tpids]
+        if cand: return archive_keys(cand)
 
-        # Then try to match anything, as long as there is only one active
-        # process with AM or NM matching one of the addresses we see
-        if not fpids and not tpids and not cpids:
-            raise LookupError("No people found in the database who match any email header")
-
-        # Here we can only return nonambiguous matches
-        arc_keys = self.arc_keys_from_pids(fpids + tpids + cpids)
-        if len(arc_keys) == 0:
-            raise LookupError("No active processes found matching the email headers")
-        if len(arc_keys) > 1:
-            raise LookupError("Too many (%d) active processes found matching the email headers" % len(arc_keys))
-        return [arc_keys[0]]
+        # If nothing matched so far, fail
+        raise LookupError("No active processes found matching the email headers")
 
     def get_arc_keys(self):
         dest_key = self.get_dest_key()
@@ -218,14 +211,44 @@ class Dispatcher(object):
 
 
 def main():
-    dispatcher = Dispatcher(sys.stdin)
-    try:
-        for arc_key in dispatcher.get_arc_keys():
-            dispatcher.deliver_to_archive_key(arc_key)
-        return 0
-    except Exception, e:
-        dispatcher.deliver_to_failsafe(exc=e)
-        return 1
+    from optparse import OptionParser
+
+    class Parser(OptionParser):
+        def __init__(self, *args, **kwargs):
+            OptionParser.__init__(self, *args, **kwargs)
+
+        def error(self, msg):
+            sys.stderr.write("%s: error: %s\n\n" % (self.get_prog_name(), msg))
+            self.print_help(sys.stderr)
+            sys.exit(2)
+
+    parser = Parser(usage="usage: %prog [options]",
+                    version="%prog "+ VERSION,
+                    description="Dispatch NM mails Cc-ed to the archive address")
+    #parser.add_option("-q", "--quiet", action="store_true", help="quiet mode: only output fatal errors")
+    #parser.add_option("-v", "--verbose", action="store_true", help="verbose mode")
+    parser.add_option("--dest", action="store", default=DEFAULT_DESTDIR, help="destination directory (default: %default)")
+    parser.add_option("--dry-run", action="store_true", help="print destinations instead of delivering mails")
+    (opts, args) = parser.parse_args()
+
+    dispatcher = Dispatcher(sys.stdin, destdir=opts.dest)
+    if opts.dry_run:
+        msgid = dispatcher.msg.get("message-id", "(no message id)")
+        try:
+            for arc_key in dispatcher.get_arc_keys():
+                print msgid, arc_key
+            return 0
+        except Exception, e:
+            print msgid, "failsafe"
+            return 1
+    else:
+        try:
+            for arc_key in dispatcher.get_arc_keys():
+                dispatcher.deliver_to_archive_key(arc_key)
+            return 0
+        except Exception, e:
+            dispatcher.deliver_to_failsafe(exc=e)
+            return 1
 
 if __name__ == "__main__":
     sys.exit(main())
