@@ -45,7 +45,7 @@ class Dispatcher(object):
                 import sqlite3
                 self._db = sqlite3.connect("db-used-for-development.sqlite")
                 global Q
-                Q = lambda s: s.replace("%s", "?")
+                Q = lambda s: s.replace("%s", "?").replace("true", "1")
         return self._db
 
     def log_lookup(self, msg):
@@ -144,7 +144,7 @@ class Dispatcher(object):
         SELECT pr.archive_key, a.person_id, pr.person_id
           FROM process pr
           JOIN am a ON pr.manager_id = a.id
-         WHERE pr.is_active = 1
+         WHERE pr.is_active = true
         """
         cur = self.db.cursor()
         cur.execute(Q(query))
