@@ -20,9 +20,14 @@
 from __future__ import absolute_import
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
 from . import const
 import datetime
 import urllib
+import os.path
+
+PROCESS_MAILBOX_DIR = getattr(settings, "PROCESS_MAILBOX_DIR", "/org/nm.debian.org/mbox/applicants/")
+
 
 # Implementation notes
 #
@@ -509,6 +514,17 @@ class Process(models.Model):
                 return p.processes.annotate(last_change=Max("log__logdate")).order_by("-last_change")[0]
             except IndexError:
                 return None
+
+    @property
+    def mailbox_file(self):
+        """
+        Return the pathname of the archival mailbox, or None if it does not
+        exist
+        """
+        fname = os.path.join(PROCESS_MAILBOX_DIR, self.archive_key) + ".mbox"
+        if os.path.exists(fname):
+            return fname
+        return None
 
     def can_be_edited(self, am=None):
         # FD and DAM can edit anything
