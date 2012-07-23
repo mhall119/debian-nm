@@ -129,6 +129,7 @@ $(function() {
         <th>AM hold days</th>
         <th>Last AM days</th>
         <th>Last AM hold days</th>
+        <th>Mbox age</th>
         {% if request.am.is_fd or request.am.is_dam %}
         <th>Last log</th>
         {% endif %}
@@ -158,6 +159,7 @@ $(function() {
             <td>{{p.total_amhold_time}}</td>
             <td>{{p.last_am_time}}</td>
             <td>{{p.last_amhold_time}}</td>
+            <td>{{p.mbox_age|default_if_none:"-"}}</td>
             {% if request.am.is_fd or request.am.is_dam %}
             <td>
                 {% if p.log_last.logtext %}

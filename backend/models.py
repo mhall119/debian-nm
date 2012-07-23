@@ -518,13 +518,21 @@ class Process(models.Model):
     @property
     def mailbox_file(self):
         """
-        Return the pathname of the archival mailbox, or None if it does not
-        exist
+        The pathname of the archival mailbox, or None if it does not exist
         """
         fname = os.path.join(PROCESS_MAILBOX_DIR, self.archive_key) + ".mbox"
         if os.path.exists(fname):
             return fname
         return None
+
+    @property
+    def mailbox_mtime(self):
+        """
+        The mtime of the archival mailbox, or None if it does not exist
+        """
+        fname = self.mailbox_file
+        if fname is None: return None
+        return datetime.datetime.fromtimestamp(os.path.getmtime(fname))
 
     @property
     def archive_email(self):
