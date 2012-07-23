@@ -293,6 +293,7 @@ def progress(request, progress):
 def stats(request):
     from django.db.models import Count, Min, Max
 
+    now = datetime.datetime.now()
     stats = dict()
 
     # Count of people by status
@@ -334,6 +335,11 @@ def stats(request):
     active_processes = []
     for p in bmodels.Process.objects.filter(is_active=True):
         p.annotate_with_duration_stats()
+        mbox_mtime = p.mailbox_mtime
+        if mbox_mtime is None:
+            p.mbox_age = None
+        else:
+            p.mbox_age = (now - mbox_mtime).days
         active_processes.append(p)
     active_processes.sort(key=lambda x:x.log_first.logdate)
     ctx["active_processes"] = active_processes
