@@ -2,8 +2,15 @@ from django.db import models
 from django.conf import settings
 import os.path
 import subprocess
+from collections import namedtuple
+from backend.utils import StreamStdoutKeepStderr
 
 KEYRINGS = getattr(settings, "KEYRINGS", "/srv/keyring.debian.org/keyrings")
+
+WithFingerprint = namedtuple("WithFingerprint", (
+    "type", "trust", "bits", "alg", "id", "created", "expiry",
+    "misc8", "ownertrust", "uid", "sigclass", "cap", "misc13",
+    "flag", "misc15"))
 
 def _check_keyring(keyring, fpr):
     keyring = os.path.join(KEYRINGS, keyring)
@@ -47,6 +54,38 @@ def _list_keyring(keyring):
         return fprs
     else:
         raise RuntimeError("gpg exited with status %d: %s" % (result, stderr.strip()))
+
+def _parse_list_keys_line(line):
+    res = []
+    for i in line.split(":"):
+        if not i:
+            res.append(None)
+        else:
+            res.append(i.decode("string_escape"))
+    for i in range(len(res), 15):
+        res.append(None)
+    return WithFingerprint(*res)
+
+
+def _list_full_keyring(keyring):
+    keyring = os.path.join(KEYRINGS, keyring)
+
+    cmd = [
+        "gpg",
+        "-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb", "--trust-model", "always",
+        "--keyring", keyring,
+        "--with-colons", "--with-fingerprint", "--list-keys",
+    ]
+    print " ".join(cmd)
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc.stdin.close()
+    lines = StreamStdoutKeepStderr(proc)
+    fprs = []
+    for line in lines:
+        yield _parse_list_keys_line(line)
+    result = proc.wait()
+    if result != 0:
+        raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
 
 
 def is_dm(fpr):

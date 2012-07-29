@@ -20,6 +20,7 @@
 import tempfile
 import os.path
 import os
+from cStringIO import StringIO
 
 class atomic_writer(object):
     """
@@ -45,3 +46,66 @@ class atomic_writer(object):
             self.outfd.delete = False
         self.outfd.close()
         return False
+
+
+def stream_output(proc):
+    """
+    Take a subprocess.Popen object and generate its output, as pairs of (tag,
+    line) couples. Tag can be O for stdout, E for stderr and R for return
+    value.
+
+    Note that the output is not line-split.
+
+    R is always the last bit that gets generated.
+    """
+    import os
+    import fcntl
+    import select
+
+    fds = [proc.stdout, proc.stderr]
+    tags = ["O", "E"]
+
+    # Set both pipes as non-blocking
+    for fd in fds:
+        fcntl.fcntl(fd, fcntl.F_SETFL, os.O_NONBLOCK)
+
+    # Multiplex stdout and stderr with different tags
+    while len(fds) > 0:
+        s = select.select(fds, (), ())
+        for fd in s[0]:
+            idx = fds.index(fd)
+            buf = fd.read()
+            if buf:
+                yield tags[idx], buf
+            else:
+                fds.pop(idx)
+                tags.pop(idx)
+    res = proc.wait()
+    yield "R", res
+
+
+class StreamStdoutKeepStderr(object):
+    """
+    Stream lines of standard output from a Popen object, keeping all of its
+    stderr inside a StringIO
+    """
+    def __init__(self, proc):
+        self.proc = proc
+        self.stderr = StringIO()
+
+    def __iter__(self):
+        last_line = None
+        for tag, buf in stream_output(self.proc):
+            if tag == "O":
+                for l in buf.splitlines(True):
+                    if last_line is not None:
+                        l = last_line + l
+                        last_line = None
+                    if l.endswith("\n"):
+                        yield l
+                    else:
+                        last_line = l
+            elif tag == "E":
+                self.stderr.write(buf)
+        if last_line is not None:
+            yield last_line
