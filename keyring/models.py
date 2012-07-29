@@ -76,7 +76,7 @@ def _list_full_keyring(keyring):
         "--keyring", keyring,
         "--with-colons", "--with-fingerprint", "--list-keys",
     ]
-    print " ".join(cmd)
+    #print " ".join(cmd)
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     proc.stdin.close()
     lines = StreamStdoutKeepStderr(proc)
