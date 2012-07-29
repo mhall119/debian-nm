@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 import os.path
 import subprocess
+import re
 from collections import namedtuple
 from backend.utils import StreamStdoutKeepStderr
 
@@ -11,6 +12,8 @@ WithFingerprint = namedtuple("WithFingerprint", (
     "type", "trust", "bits", "alg", "id", "created", "expiry",
     "misc8", "ownertrust", "uid", "sigclass", "cap", "misc13",
     "flag", "misc15"))
+
+Uid = namedtuple("Uid", ("name", "email", "comment"))
 
 def _check_keyring(keyring, fpr):
     keyring = os.path.join(KEYRINGS, keyring)
@@ -87,7 +90,27 @@ def _list_full_keyring(keyring):
     if result != 0:
         raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
 
+def uid_info(keyring):
+    re_uid = re.compile(r"^(?P<name>.+?)\s*(?:\((?P<comment>.+)\))?\s*(?:<(?P<email>.+)>)?$")
 
+    fpr = None
+    for l in _list_full_keyring(keyring):
+        if l.type == "pub":
+            fpr = None
+        elif l.type == "fpr":
+            # TODO: lookup person
+            fpr = l.uid
+        elif l.type == "uid":
+            # filter out revoked/expired
+            if 'r' in l.trust or 'e' in l.trust:
+                continue
+            # Parse uid
+            mo = re_uid.match(l.uid)
+            u = Uid(mo.group("name"), mo.group("email"), mo.group("comment"))
+            if not mo:
+                print "FAIL", l.uid
+            else:
+                print fpr, u.name
 def is_dm(fpr):
     return _check_keyring("debian-maintainers.gpg", fpr)
 
