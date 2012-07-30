@@ -5,6 +5,9 @@ import subprocess
 import re
 from collections import namedtuple
 from backend.utils import StreamStdoutKeepStderr
+import logging
+
+log = logging.getLogger(__name__)
 
 KEYRINGS = getattr(settings, "KEYRINGS", "/srv/keyring.debian.org/keyrings")
 
@@ -46,17 +49,18 @@ def _list_keyring(keyring):
         "--keyring", keyring,
         "--with-colons", "--with-fingerprint", "--list-keys",
     ]
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = proc.communicate()
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc.stdin.close()
+    lines = StreamStdoutKeepStderr(proc)
     fprs = []
-    for line in stdout.split("\n"):
+    for line in lines:
         if not line.startswith("fpr"): continue
         fprs.append(line.split(":")[9])
     result = proc.wait()
     if result == 0:
         return fprs
     else:
-        raise RuntimeError("gpg exited with status %d: %s" % (result, stderr.strip()))
+        raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
 
 def _parse_list_keys_line(line):
     res = []
@@ -64,7 +68,12 @@ def _parse_list_keys_line(line):
         if not i:
             res.append(None)
         else:
-            res.append(i.decode("string_escape"))
+            i = i.decode("string_escape")
+            try:
+                i = i.decode("utf-8")
+            except UnicodeDecodeError:
+                pass
+            res.append(i)
     for i in range(len(res), 15):
         res.append(None)
     return WithFingerprint(*res)
@@ -98,19 +107,19 @@ def uid_info(keyring):
         if l.type == "pub":
             fpr = None
         elif l.type == "fpr":
-            # TODO: lookup person
             fpr = l.uid
         elif l.type == "uid":
-            # filter out revoked/expired
+            # filter out revoked/expired uids
             if 'r' in l.trust or 'e' in l.trust:
                 continue
             # Parse uid
             mo = re_uid.match(l.uid)
             u = Uid(mo.group("name"), mo.group("email"), mo.group("comment"))
             if not mo:
-                print "FAIL", l.uid
+                log.warning("Cannot parse uid %s for key %s in keyring %s" % (l.uid, fpr, keyring))
             else:
-                print fpr, u.name
+                yield fpr, u
+
 def is_dm(fpr):
     return _check_keyring("debian-maintainers.gpg", fpr)
 
