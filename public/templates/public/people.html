@@ -55,7 +55,7 @@ $(function() {
 {% block content %}
 
 {% if status %}
-<h1>Debian New Member - Status {{status|desc_status}}</h2>
+<h1>Debian New Member - Status {{status_sdesc}}</h2>
 {% else %}
 <h1>Debian New Member - People list</h2>
 {% endif %}
@@ -63,7 +63,7 @@ $(function() {
 <div id="intro">
 {% if status %}
 This is a list of all the <b>{{people|length}}</b> people known in the
-database who have status "{{status|desc_status}}".
+database who have status "{{status_ldesc}}".
 You can sort the table by clicking/shift+clicking on headers.
 {% else %}
 This is a list of all the <b>{{people|length}}</b> people known in the
@@ -100,7 +100,7 @@ NM website is still incomplete.
 <tbody>
     {% for p in people %}
     <tr class="{{p.simple_status}}">
-        {% if not status %}
+        {% if show_status %}
         <td val="{{p.status|seq_status}}"><a href="{% url people status=p.status %}">{{p.status|desc_status}}</a></td>
         {% endif %}
         <td>{{p.status_changed|date:"Y-m-d"}}</td>

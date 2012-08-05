@@ -2,8 +2,21 @@ from django.db import models
 from django.conf import settings
 import os.path
 import subprocess
+import re
+from collections import namedtuple
+from backend.utils import StreamStdoutKeepStderr
+import logging
+
+log = logging.getLogger(__name__)
 
 KEYRINGS = getattr(settings, "KEYRINGS", "/srv/keyring.debian.org/keyrings")
+
+WithFingerprint = namedtuple("WithFingerprint", (
+    "type", "trust", "bits", "alg", "id", "created", "expiry",
+    "misc8", "ownertrust", "uid", "sigclass", "cap", "misc13",
+    "flag", "misc15"))
+
+Uid = namedtuple("Uid", ("name", "email", "comment"))
 
 def _check_keyring(keyring, fpr):
     keyring = os.path.join(KEYRINGS, keyring)
@@ -36,18 +49,76 @@ def _list_keyring(keyring):
         "--keyring", keyring,
         "--with-colons", "--with-fingerprint", "--list-keys",
     ]
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = proc.communicate()
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc.stdin.close()
+    lines = StreamStdoutKeepStderr(proc)
     fprs = []
-    for line in stdout.split("\n"):
+    for line in lines:
         if not line.startswith("fpr"): continue
         fprs.append(line.split(":")[9])
     result = proc.wait()
     if result == 0:
         return fprs
     else:
-        raise RuntimeError("gpg exited with status %d: %s" % (result, stderr.strip()))
+        raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
 
+def _parse_list_keys_line(line):
+    res = []
+    for i in line.split(":"):
+        if not i:
+            res.append(None)
+        else:
+            i = i.decode("string_escape")
+            try:
+                i = i.decode("utf-8")
+            except UnicodeDecodeError:
+                pass
+            res.append(i)
+    for i in range(len(res), 15):
+        res.append(None)
+    return WithFingerprint(*res)
+
+
+def _list_full_keyring(keyring):
+    keyring = os.path.join(KEYRINGS, keyring)
+
+    cmd = [
+        "gpg",
+        "-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb", "--trust-model", "always",
+        "--keyring", keyring,
+        "--with-colons", "--with-fingerprint", "--list-keys",
+    ]
+    #print " ".join(cmd)
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc.stdin.close()
+    lines = StreamStdoutKeepStderr(proc)
+    fprs = []
+    for line in lines:
+        yield _parse_list_keys_line(line)
+    result = proc.wait()
+    if result != 0:
+        raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
+
+def uid_info(keyring):
+    re_uid = re.compile(r"^(?P<name>.+?)\s*(?:\((?P<comment>.+)\))?\s*(?:<(?P<email>.+)>)?$")
+
+    fpr = None
+    for l in _list_full_keyring(keyring):
+        if l.type == "pub":
+            fpr = None
+        elif l.type == "fpr":
+            fpr = l.uid
+        elif l.type == "uid":
+            # filter out revoked/expired uids
+            if 'r' in l.trust or 'e' in l.trust:
+                continue
+            # Parse uid
+            mo = re_uid.match(l.uid)
+            u = Uid(mo.group("name"), mo.group("email"), mo.group("comment"))
+            if not mo:
+                log.warning("Cannot parse uid %s for key %s in keyring %s" % (l.uid, fpr, keyring))
+            else:
+                yield fpr, u
 
 def is_dm(fpr):
     return _check_keyring("debian-maintainers.gpg", fpr)

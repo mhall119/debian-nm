@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import http, template, forms
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render_to_response, redirect, render
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 import backend.models as bmodels
@@ -218,20 +218,33 @@ SIMPLIFY_STATUS = {
 
 def people(request, status=None):
     objects = bmodels.Person.objects.all().order_by("uid", "sn", "cn")
+    show_status = True
+    status_sdesc = None
+    status_ldesc = None
     if status:
-        objects = objects.filter(status=status)
+        if status == "dm_all":
+            objects = objects.filter(status__in=(const.STATUS_DM, const.STATUS_DM_GA))
+            status_sdesc = _("Debian Maintainer")
+            status_ldesc = _("Debian Maintainer (with or without guest account)")
+        else:
+            objects = objects.filter(status=status)
+            show_status = False
+            status_sdesc = const.ALL_STATUS_BYTAG[status].sdesc
+            status_ldesc = const.ALL_STATUS_BYTAG[status].sdesc
 
     people = []
     for p in objects:
         p.simple_status = SIMPLIFY_STATUS.get(p.status, None)
         people.append(p)
 
-    return render_to_response("public/people.html",
+    return render(request, "public/people.html",
                               dict(
                                   people=people,
                                   status=status,
-                              ),
-                              context_instance=template.RequestContext(request))
+                                  show_status=show_status,
+                                  status_sdesc=status_sdesc,
+                                  status_ldesc=status_ldesc,
+                              ))
 
 def person(request, key):
     from django.db.models import Min, Max
