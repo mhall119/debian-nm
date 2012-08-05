@@ -226,6 +226,10 @@ def people(request, status=None):
             objects = objects.filter(status__in=(const.STATUS_DM, const.STATUS_DM_GA))
             status_sdesc = _("Debian Maintainer")
             status_ldesc = _("Debian Maintainer (with or without guest account)")
+        elif status == "dd_all":
+            objects = objects.filter(status__in=(const.STATUS_DD_U, const.STATUS_DD_NU))
+            status_sdesc = _("Debian Developer")
+            status_ldesc = _("Debian Developer (uploading or not)")
         else:
             objects = objects.filter(status=status)
             show_status = False
