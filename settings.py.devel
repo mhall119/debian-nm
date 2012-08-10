@@ -1,7 +1,7 @@
 # Django settings for nm project.
 
 from django.conf import global_settings
-import os.path
+import os.path, datetime
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -203,3 +203,5 @@ EMAIL_PRIVATE_ANNOUNCES = "enrico@enricozini.org"
 EMAIL_PERSONAL_DIVERT = ["enrico@enricozini.org"]
 
 PROCESS_MAILBOX_DIR = os.path.abspath("./test-mboxes")
+
+DM_IMPORT_DATE = datetime.datetime(2012, 3, 14)

@@ -2,7 +2,7 @@
  * Running this code on your own machine
 
 # Dependencies
-apt-get install python-django python-ldap
+apt-get install python-django python-ldap python-psycopg2
 
 # Configuration
 ln -s settings.py.devel settings.py

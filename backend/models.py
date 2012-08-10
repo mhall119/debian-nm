@@ -27,6 +27,7 @@ import urllib
 import os.path
 
 PROCESS_MAILBOX_DIR = getattr(settings, "PROCESS_MAILBOX_DIR", "/org/nm.debian.org/mbox/applicants/")
+DM_IMPORT_DATE = getattr(settings, "DM_IMPORT_DATE", None)
 
 
 # Implementation notes
@@ -156,6 +157,10 @@ class Person(models.Model):
             return self.am
         except AM.DoesNotExist:
             return None
+
+    @property
+    def changed_before_data_import(self):
+        return DM_IMPORT_DATE is not None and self.status in (const.STATUS_DM, const.STATUS_DM_GA) and self.status_changed <= DM_IMPORT_DATE
 
     def can_be_edited(self, am=None):
         # If the person is already in LDAP, then we cannot edit their info
