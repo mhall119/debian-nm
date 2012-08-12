@@ -205,3 +205,6 @@ EMAIL_PERSONAL_DIVERT = ["enrico@enricozini.org"]
 PROCESS_MAILBOX_DIR = os.path.abspath("./test-mboxes")
 
 DM_IMPORT_DATE = datetime.datetime(2012, 3, 14)
+
+# The password for this account is available from: master.debian.org:/home/debian/misc/rt-password
+RT_LOGIN_INFO = {'user': "debian", 'pass': "the_guest_password"}
