@@ -212,7 +212,7 @@ def parse_changelog(fprs, since=None):
                     fpr = fprs.lookup(key2)
                     if fpr is None:
                         print "! %s replaced key %s with %s but could not find %s in keyrings %s" % (p.lookup_key, key1, key2, key2, rturl(rt))
-                    print "./manage.py change_key %s %s # rt # %s" % (p.lookup_key, fpr, rturl(rt))
+                    print "./manage.py change_key %s %s # %s" % (p.lookup_key, fpr, rturl(rt))
                 continue
             print "unparsed", repr(oneline)[:100]
 
