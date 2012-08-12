@@ -154,7 +154,7 @@ def parse_changelog(fprs, since=None):
                 key, rt = mo.group("key", "rt")
                 p = person_for_key_id(key)
                 if p is None:
-                    print "! New DM %s %s" % (key, rturl(rt))
+                    print "./manage.py dm_from_rt %s # %s" % (rt, rturl(rt))
                 elif p.status in (const.STATUS_DM, const.STATUS_DM_GA):
                     print "# %s goes from %s to DM (already known in the database) %s" % (p.lookup_key, p.status, rturl(rt))
                 else:
