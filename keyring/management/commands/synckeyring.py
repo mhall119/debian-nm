@@ -136,6 +136,9 @@ def parse_changelog(fprs, since=None):
     re_replace = re.compile(r"^\s*\*\s+Replace(?: key)? 0x(?P<key1>[0-9A-F]+) with 0x(?P<key2>[0-9A-F]+) \([^)]+\)\s+\(RT #(?P<rt>\d+)")
     re_import = re.compile(r"^\s*\*\s+Import changes sent to keyring.debian.org HKP interface:")
 
+    def rturl(num):
+        return "https://rt.debian.org/" + num
+
     fname = os.path.join(kmodels.KEYRINGS, "../changelog")
     with open(fname) as fd:
         changes = changelog.Changelog(file=fd)
@@ -151,49 +154,49 @@ def parse_changelog(fprs, since=None):
                 key, rt = mo.group("key", "rt")
                 p = person_for_key_id(key)
                 if p is None:
-                    print "! New DM %s https://rt.debian.org/Ticket/Display.html?id=%s" % (key, rt)
+                    print "! New DM %s %s" % (key, rturl(rt))
                 elif p.status in (const.STATUS_DM, const.STATUS_DM_GA):
-                    print "# %s goes from %s to DM (already known in the database) #%s" % (p.lookup_key, p.status, rt)
+                    print "# %s goes from %s to DM (already known in the database) %s" % (p.lookup_key, p.status, rturl(rt))
                 else:
                     if p.status == const.STATUS_MM_GA:
                         new_status = const.STATUS_DM_GA
                     else:
                         new_status = const.STATUS_DM
-                    print "./manage.py change_status %s %s --date='%s' --message='imported from keyring changelog, RT #%s'" % (
-                        p.lookup_key, new_status, d.strftime("%Y-%m-%d %H:%M:%S"), rt)
+                    print "./manage.py change_status %s %s --date='%s' --message='imported from keyring changelog, RT #%s' # %s" % (
+                        p.lookup_key, new_status, d.strftime("%Y-%m-%d %H:%M:%S"), rt, rturl(rt))
                 continue
             mo = re_new_dd.match(oneline)
             if mo:
                 key, rt = mo.group("key", "rt")
                 p = person_for_key_id(key)
                 if p is None:
-                    print "! New DD %s #%s (no account before??)" % (key, rt)
+                    print "! New DD %s %s (no account before??)" % (key, rturl(rt))
                 elif p.status == const.STATUS_DD_U:
-                    print "# %s goes from %s to DD (already known in the database) #%s" % (p.lookup_key, p.status, rt)
+                    print "# %s goes from %s to DD (already known in the database) %s" % (p.lookup_key, p.status, rturl(rt))
                 else:
-                    print "./manage.py change_status %s %s --date='%s' --message='imported from keyring changelog, RT #%s'" % (
-                        p.lookup_key, const.STATUS_DD_U, d.strftime("%Y-%m-%d %H:%M:%S"), rt)
+                    print "./manage.py change_status %s %s --date='%s' --message='imported from keyring changelog, RT #%s' # %s" % (
+                        p.lookup_key, const.STATUS_DD_U, d.strftime("%Y-%m-%d %H:%M:%S"), rt, rturl(rt))
                 continue
             mo = re_new_em.match(oneline)
             if mo:
                 key, rt = mo.group("key", "rt")
                 p = person_for_key_id(key)
                 if p is None:
-                    print "! New Emeritus DD %s #%s (no account before??)" % (key, rt)
+                    print "! New Emeritus DD %s %s (no account before??)" % (key, rturl(rt))
                 elif p.status == const.STATUS_EMERITUS_DD:
-                    print "# %s goes from %s to emeritus DD (already known in the database) #%s" % (p.lookup_key, p.status, rt)
+                    print "# %s goes from %s to emeritus DD (already known in the database) %s" % (p.lookup_key, p.status, rturl(rt))
                 else:
-                    print "./manage.py change_status %s %s --date='%s' --message='imported from keyring changelog, RT #%s'" % (
-                        p.lookup_key, const.STATUS_EMERITUS_DD, d.strftime("%Y-%m-%d %H:%M:%S"), rt)
+                    print "./manage.py change_status %s %s --date='%s' --message='imported from keyring changelog, RT %s' # %s" % (
+                        p.lookup_key, const.STATUS_EMERITUS_DD, d.strftime("%Y-%m-%d %H:%M:%S"), rt, rturl(rt))
                 continue
             mo = re_new_rem.match(oneline)
             if mo:
                 key, rt = mo.group("key", "rt")
                 p = person_for_key_id(key)
                 if p is None:
-                    print "! New removed key %s #%s (no account before??)" % (key, rt)
+                    print "! New removed key %s %s (no account before??)" % (key, rturl(rt))
                 else:
-                    print "! %s key %s moved to removed keyring (#%s)" % (p.lookup_key, key, rt)
+                    print "! %s key %s moved to removed keyring %s" % (p.lookup_key, key, rturl(rt))
                 continue
             mo = re_replace.match(oneline)
             if mo:
@@ -202,14 +205,14 @@ def parse_changelog(fprs, since=None):
                 if p is None:
                     p = person_for_key_id(key2)
                     if p is None:
-                        print "! Replaced %s with %s (none of which are in the database!) #%s" % (key1, key2, rt)
+                        print "! Replaced %s with %s (none of which are in the database!) %s" % (key1, key2, rturl(rt))
                     else:
-                        print "# Replaced %s with %s (already done in the database) #%s" % (key1, key2, rt)
+                        print "# Replaced %s with %s (already done in the database) %s" % (key1, key2, rturl(rt))
                 else:
                     fpr = fprs.lookup(key2)
                     if fpr is None:
-                        print "! %s replaced key %s with %s but could not find %s in keyrings #%s" % (p.lookup_key, key1, key2, key2, rt)
-                    print "./manage.py change_key %s %s # rt #%s" % (p.lookup_key, fpr, rt)
+                        print "! %s replaced key %s with %s but could not find %s in keyrings %s" % (p.lookup_key, key1, key2, key2, rturl(rt))
+                    print "./manage.py change_key %s %s # rt # %s" % (p.lookup_key, fpr, rturl(rt))
                 continue
             print "unparsed", repr(oneline)[:100]
 
