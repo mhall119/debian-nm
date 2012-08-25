@@ -11,7 +11,7 @@
     {% endblock %}
 
     {% block head_resources %}
-      <link type="text/css" rel="stylesheet" media="all" href="{{ MEDIA_URL }}css/debian.css">
+      <link type="text/css" rel="stylesheet" media="all" href="{{ STATIC_URL }}css/debian.css">
     {% endblock %}
   {% endblock %}
 </head>
@@ -28,7 +28,7 @@ Skip navigation for text only browsers
 	<!--
 	Do not change the link or logo
 	-->
-	<a href="http://www.debian.org/" title="Debian Home"><img src= "{{ MEDIA_URL }}css/Pics/openlogo-50.png"
+	<a href="http://www.debian.org/" title="Debian Home"><img src= "{{ STATIC_URL }}css/Pics/openlogo-50.png"
 		alt="Debian" width="50" height= "61"></a>
   </div><!-- end logo -->
 

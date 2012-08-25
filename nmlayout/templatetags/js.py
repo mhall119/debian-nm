@@ -19,7 +19,7 @@ from django import template
 from django.conf import settings
 from backend import const
 
-MEDIA_URL = getattr(settings, "MEDIA_URL", "/static/")
+STATIC_URL = getattr(settings, "STATIC_URL", "/static/")
 
 register = template.Library()
 
@@ -66,7 +66,7 @@ def jsinclude(modlist):
         # Add files
         for fn in info.get("files", []):
             if fn in seen: continue
-            modules.append('<script src="%sjs/%s"></script>' % (MEDIA_URL, fn))
+            modules.append('<script src="%sjs/%s"></script>' % (STATIC_URL, fn))
             seen.add(fn)
 
     # Fill in the module list
