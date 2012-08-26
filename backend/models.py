@@ -491,9 +491,9 @@ class Process(models.Model):
             if self.person.processes.filter(is_active=True).count() == 1:
                 return self.person.email
             else:
-                return self.id
+                return str(self.id)
         else:
-            return self.id
+            return str(self.id)
 
     @classmethod
     def lookup(cls, key):
