@@ -39,8 +39,8 @@ $(function() {
     var macros = [
 {% if process.applying_for == STATUS_MM_GA or process.applying_for == STATUS_DM_GA %}
     {
-        dam: true,
-        label: "DAM approve",
+        admin: true,
+        label: "Approve",
         prog_if: [ PROGRESS_APP_NEW ],
         prog_to: PROGRESS_DAM_OK,
         hook: function() { dam_mail.show(); },
