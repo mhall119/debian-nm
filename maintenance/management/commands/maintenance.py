@@ -197,47 +197,47 @@ class Checker(object):
             p.save()
             log.info("%s (guest account only) imported from LDAP", self._link(p))
 
-    @transaction.commit_on_success
-    def compute_display_names_from_keyring(self, **kw):
-        """
-        Update Person.display_name with data from keyrings
-        """
-        # Current display names
-        info = dict()
-        for p in bmodels.Person.objects.all():
-            if not p.fpr: continue
-            info[p.fpr] = dict(
-                cur=p.fullname,
-                pri=None, # Primary uid
-                deb=None, # Debian uid
-            )
-        log.info("%d entries with fingerprints", len(info))
+    #@transaction.commit_on_success
+    #def compute_display_names_from_keyring(self, **kw):
+    #    """
+    #    Update Person.display_name with data from keyrings
+    #    """
+    #    # Current display names
+    #    info = dict()
+    #    for p in bmodels.Person.objects.all():
+    #        if not p.fpr: continue
+    #        info[p.fpr] = dict(
+    #            cur=p.fullname,
+    #            pri=None, # Primary uid
+    #            deb=None, # Debian uid
+    #        )
+    #    log.info("%d entries with fingerprints", len(info))
 
-        cur_fpr = None
-        cur_info = None
-        for keyring in "debian-keyring.gpg", "debian-maintainers.gpg", "debian-nonupload.gpg", "emeritus-keyring.gpg", "removed-keys.gpg":
-            count = 0
-            for fpr, u in kmodels.uid_info(keyring):
-                if fpr != cur_fpr:
-                    cur_info = info.get(fpr, None)
-                    cur_fpr = fpr
-                    if cur_info is not None:
-                        # Save primary uid
-                        cur_info["pri"] = u.name
+    #    cur_fpr = None
+    #    cur_info = None
+    #    for keyring in "debian-keyring.gpg", "debian-maintainers.gpg", "debian-nonupload.gpg", "emeritus-keyring.gpg", "removed-keys.gpg":
+    #        count = 0
+    #        for fpr, u in kmodels.uid_info(keyring):
+    #            if fpr != cur_fpr:
+    #                cur_info = info.get(fpr, None)
+    #                cur_fpr = fpr
+    #                if cur_info is not None:
+    #                    # Save primary uid
+    #                    cur_info["pri"] = u.name
 
-                if cur_info is not None and u.email is not None and u.email.endswith("@debian.org"):
-                    cur_info["deb"] = u.name
-                count += 1
-            log.info("%s: %d uids checked...", keyring, count)
+    #            if cur_info is not None and u.email is not None and u.email.endswith("@debian.org"):
+    #                cur_info["deb"] = u.name
+    #            count += 1
+    #        log.info("%s: %d uids checked...", keyring, count)
 
-        for fpr, i in info.iteritems():
-            if not i["pri"] and not i["deb"]: continue
-            if i["pri"]:
-                cand = i["pri"]
-            else:
-                cand = i["deb"]
-            if i["cur"] != cand:
-                log.info("%s: %s %r != %r", keyring, fpr, i["cur"], cand)
+    #    for fpr, i in info.iteritems():
+    #        if not i["pri"] and not i["deb"]: continue
+    #        if i["pri"]:
+    #            cand = i["pri"]
+    #        else:
+    #            cand = i["deb"]
+    #        if i["cur"] != cand:
+    #            log.info("%s: %s %r != %r", keyring, fpr, i["cur"], cand)
 
     def check_one_process_per_person(self, **kw):
         """
