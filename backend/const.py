@@ -58,7 +58,7 @@ ALL_PROGRESS = (
     Progress("PROGRESS_DAM_HOLD",  "dam_hold",  "DAM hold",    "DAM hold"),
     Progress("PROGRESS_DAM_OK",    "dam_ok",    "DAM ok",      "DAM approved"),
     Progress("PROGRESS_DONE",      "done",      "Done",        "Completed"),
-    Progress("PROGRESS_CANCELLED", "cancelled", "Canceled",    "Canceled"),
+    Progress("PROGRESS_CANCELLED", "cancelled", "Cancelled",    "Cancelled"),
 )
 ALL_PROGRESS_DESCS = dict((x.tag, x.ldesc) for x in ALL_PROGRESS)
 ALL_PROGRESS_BYTAG = dict((x.tag, x) for x in ALL_PROGRESS)
