@@ -29,6 +29,7 @@ urlpatterns = patterns('public.views',
     url(r'^process/(?P<key>[^/]+)$', 'process', name="public_process"),
     url(r'^progress/(?P<progress>\w+)$', 'progress', name="public_progress"),
     url(r'^stats/$', 'stats', name="public_stats"),
+    url(r'^stats/latest$', 'stats_latest', name="public_stats_latest"),
     url(r'^findperson/$', 'findperson', name="public_findperson"),
 
     # Compatibility
