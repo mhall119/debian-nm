@@ -394,3 +394,49 @@ def findperson(request):
                                   form=form,
                               ),
                               context_instance=template.RequestContext(request))
+
+def stats_latest(request):
+    from django.db.models import Count, Min, Max
+
+    days = int(request.GET.get("days", "7"))
+    threshold = datetime.date.today() - datetime.timedelta(days=days)
+
+    raw_counts = dict((x.tag, 0) for x in const.ALL_PROGRESS)
+    for p in bmodels.Process.objects.values("progress").annotate(count=Count("id")).filter(is_active=True):
+        raw_counts[p["progress"]] = p["count"]
+
+    irc_topic = "New %d+%d ok %d | AM: %d+%d | FD: %d+%d | DAM: %d+%d ok %d" % (
+            raw_counts[const.PROGRESS_APP_NEW]
+             + raw_counts[const.PROGRESS_APP_RCVD]
+             + raw_counts[const.PROGRESS_ADV_RCVD],
+            raw_counts[const.PROGRESS_APP_HOLD],
+            raw_counts[const.PROGRESS_APP_OK],
+            raw_counts[const.PROGRESS_AM_RCVD]
+             + raw_counts[const.PROGRESS_AM],
+            raw_counts[const.PROGRESS_AM_HOLD],
+            raw_counts[const.PROGRESS_AM_OK],
+            raw_counts[const.PROGRESS_FD_HOLD],
+            raw_counts[const.PROGRESS_FD_OK],
+            raw_counts[const.PROGRESS_DAM_HOLD],
+            raw_counts[const.PROGRESS_DAM_OK],
+    )
+
+    events = []
+    for p in bmodels.Person.objects.filter(status_changed__gte=threshold):
+        events.append(dict(
+            status_changed_dt=p.status_changed.strftime("%Y-%m-%d %H:%M:%S"),
+            status_changed_ts=p.status_changed.strftime("%s"),
+            uid=p.uid,
+            fn=p.fullname,
+            status=p.status,
+        ))
+
+    res = http.HttpResponse(mimetype="application/json")
+    res["Content-Disposition"] = "attachment; filename=stats.json"
+    json.dump(dict(
+        raw_counts=raw_counts,
+        irc_topic=irc_topic,
+        events=events,
+    ), res, indent=1)
+    return res
+
