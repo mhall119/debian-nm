@@ -1,0 +1,76 @@
+{% extends "public/base.html" %}
+{% load nm %}
+
+{% block breadcrumbs %}{{block.super}} / <a href="{% url public_stats %}">stats</a> / <a href="{% url public_stats_latest %}">latest</a> {% endblock %}
+
+{% block content %}
+
+<h1>Debian New Member - Current status and recent events</h2>
+
+<h2>Queues</h2>
+
+<table>
+    <tr>
+        <th>Step</th>
+        <th>Count</th>
+        <th>Held</th>
+    </tr>
+<tbody>
+    <tr>
+        <td>Started a process</td>
+        <td>{{counts.new}}</td>
+        <td>{{counts.new_hold}}</td>
+    </tr>
+    <tr>
+        <td>Waiting for a free AM</td>
+        <td>{{counts.new_ok}}</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td>Interacting with an AM</td>
+        <td>{{counts.am}}</td>
+        <td>{{counts.am_hold}}</td>
+    </tr>
+    <tr>
+        <td>AM approved, waiting for FD check</td>
+        <td>{{counts.fd}}</td>
+        <td>{{counts.fd_hold}}</td>
+    </tr>
+    <tr>
+        <td>FD approved, waiting for DAM check</td>
+        <td>{{counts.dam}}</td>
+        <td>{{counts.dam_hold}}</td>
+    </tr>
+    <tr>
+        <td>DAM approved, waiting <a href="http://keyring.debian.org/">keyring-maint</a> and <a href="http://dsa.debian.org/">DSA</a></td>
+        <td>{{counts.dam_ok}}</td>
+        <td></td>
+    </tr>
+</tbody>
+</table>
+
+<h2>Latest events</h2>
+
+<table>
+<thead>
+    <tr>
+        <th>Date</th>
+        <th>Name</th>
+        <th>Uid</th>
+        <th>New status</th>
+    </tr>
+</thead>
+<tbody>
+    {% for p in events %}
+    <tr>
+        <td>{{p.status_changed|date:"Y-m-d"}}</td>
+        <td><a href="{{p.get_absolute_url}}">{{p.fullname}}</a></td>
+        <td><a href="{{p.get_absolute_url}}">{{p.uid}}</a></td>
+        <td>{{p.status|desc_status}}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+{% endblock %}
+
