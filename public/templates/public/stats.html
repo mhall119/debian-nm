@@ -67,6 +67,7 @@ $(function() {
 {% block breadcrumbs %}{{block.super}} / <a href="{% url public_stats %}">stats</a>{% endblock %}
 
 {% block relatedpages %}
+<a href="{% url public_stats_latest %}">latest events</a>
 <a href="http://molly.corsac.net/~corsac/debian/nm/">historical graphs</a>
 {{block.super}}
 {% endblock %}
