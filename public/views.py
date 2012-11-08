@@ -439,6 +439,7 @@ def stats_latest(request):
             uid=p.uid,
             fn=p.fullname,
             status=p.status,
+            key=p.lookup_key,
         ) for p in ctx["events"]]
         res = http.HttpResponse(mimetype="application/json")
         res["Content-Disposition"] = "attachment; filename=stats.json"
