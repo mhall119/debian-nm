@@ -421,8 +421,30 @@ def stats_latest(request):
     irc_topic = "New %(new)d+%(new_hold)d ok %(new_ok)d | AM: %(am)d+%(am_hold)d | FD: %(fd)d+%(fd_hold)d | DAM: %(dam)d+%(dam_hold)d ok %(dam_ok)d" % counts
 
     events = []
+
+    # Collect status change events
     for p in bmodels.Person.objects.filter(status_changed__gte=threshold).order_by("-status_changed"):
-        events.append(p)
+        events.append(dict(
+            type="status",
+            time=p.status_changed,
+            person=p,
+        ))
+
+    # Collect progress change events
+    for pr in bmodels.Process.objects.filter(is_active=True):
+        old_progress = None
+        for l in pr.log.order_by("logdate"):
+            if l.progress != old_progress:
+                if l.logdate.date() >= threshold:
+                    events.append(dict(
+                        type="progress",
+                        time=l.logdate,
+                        person=pr.person,
+                        log=l,
+                    ))
+                old_progress = l.progress
+
+    events.sort(key=lambda x:x["time"])
 
     ctx = dict(
         counts=counts,
@@ -433,14 +455,27 @@ def stats_latest(request):
 
     # If JSON is requested, dump them right away
     if 'json' in request.GET:
-        ctx["events"] = [dict(
-            status_changed_dt=p.status_changed.strftime("%Y-%m-%d %H:%M:%S"),
-            status_changed_ts=p.status_changed.strftime("%s"),
-            uid=p.uid,
-            fn=p.fullname,
-            status=p.status,
-            key=p.lookup_key,
-        ) for p in ctx["events"]]
+        json_evs = []
+        for e in ctx["events"]:
+            ne = dict(
+                status_changed_dt=e["time"].strftime("%Y-%m-%d %H:%M:%S"),
+                status_changed_ts=e["time"].strftime("%s"),
+                uid=e["person"].uid,
+                fn=e["person"].fullname,
+                key=e["person"].lookup_key,
+                type=e["type"],
+            )
+            if e["type"] == "status":
+                ne.update(
+                    status=e["person"].status,
+                )
+            elif e["type"] == "progress":
+                ne.update(
+                    process_key=e["log"].process.lookup_key,
+                    progress=e["log"].progress,
+                )
+            json_evs.append(ne)
+        ctx["events"] = json_evs
         res = http.HttpResponse(mimetype="application/json")
         res["Content-Disposition"] = "attachment; filename=stats.json"
         json.dump(ctx, res, indent=1)

@@ -57,16 +57,28 @@
         <th>Date</th>
         <th>Name</th>
         <th>Uid</th>
-        <th>New status</th>
+        <th>Event</th>
     </tr>
 </thead>
 <tbody>
-    {% for p in events %}
+    {% for e in events %}
     <tr>
-        <td>{{p.status_changed|date:"Y-m-d"}}</td>
-        <td><a href="{{p.get_absolute_url}}">{{p.fullname}}</a></td>
-        <td><a href="{{p.get_absolute_url}}">{{p.uid}}</a></td>
-        <td>{{p.status|desc_status}}</td>
+        <td>{{e.time|date:"Y-m-d"}}</td>
+        <td><a href="{{e.person.get_absolute_url}}">{{e.person.fullname}}</a></td>
+        <td>
+            {% if e.type == "status" %}
+            <a href="{{e.person.get_absolute_url}}">{{e.person.uid}}</a>
+            {% else %}
+            <a href="{{e.log.process.get_absolute_url}}">{{e.person.uid}}</a>
+            {% endif %}
+        </td>
+        <td>
+            {% if e.type == "status" %}
+            Status changed to {{e.person.status|desc_status}}
+            {% else %}
+            Progress changed to {{e.log.progress|desc_progress}}
+            {% endif %}
+        </td>
     </tr>
     {% endfor %}
 </tbody>
