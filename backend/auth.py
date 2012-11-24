@@ -86,9 +86,13 @@ class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
         username = self.clean_username(remote_user)
 
         # Get the Person for this username: Person is authoritative over User
-        try:
-            person = bmodels.Person.objects.get(uid=username)
-        except bmodels.Person.DoesNotExist:
+        if username.endswith("@debian.org"):
+            debname = username[:-11]
+            try:
+                person = bmodels.Person.objects.get(uid=debname)
+            except bmodels.Person.DoesNotExist:
+                return None
+        else:
             return None
 
         # Note that this could be accomplished in one try-except clause, but
