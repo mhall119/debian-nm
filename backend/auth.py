@@ -48,7 +48,11 @@ class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddlewa
         # getting passed in the headers, then the correct user is already
         # persisted in the session and we don't need to continue.
         if request.user.is_authenticated():
-            print >>sys.stderr, "ISAUTH", request.user.username, self.clean_username(username, request)
+            print >>sys.stderr, "ISAUTH", request.user.username
+            print >>sys.stderr, "WTF"
+            print >>sys.stderr, self.clean_username(username, request)
+            print >>sys.stderr, "WTF2"
+
             if request.user.username == self.clean_username(username, request):
                 return
         print >>sys.stderr, "REAUTH"
