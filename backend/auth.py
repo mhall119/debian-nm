@@ -18,9 +18,6 @@ class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddlewa
         from django.contrib import auth
         from django.core.exceptions import ImproperlyConfigured
 
-        import sys
-        print >>sys.stderr, "PROCESSREQUEST"
-
         # AuthenticationMiddleware is required so that request.user exists.
         if not hasattr(request, 'user'):
             raise ImproperlyConfigured(
@@ -42,24 +39,15 @@ class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddlewa
                 auth.logout(request)
             return
 
-        print >>sys.stderr, "PROCESSREQUEST username", username
-
         # If the user is already authenticated and that user is the user we are
         # getting passed in the headers, then the correct user is already
         # persisted in the session and we don't need to continue.
         if request.user.is_authenticated():
-            print >>sys.stderr, "ISAUTH", request.user.username
-            print >>sys.stderr, "WTF"
-            print >>sys.stderr, self.clean_username(username, request)
-            print >>sys.stderr, "WTF2"
-
             if request.user.username == self.clean_username(username, request):
                 return
-        print >>sys.stderr, "REAUTH"
         # We are seeing this user for the first time in this session, attempt
         # to authenticate the user.
         user = auth.authenticate(remote_user=username)
-        print >>sys.stderr, "AUTHENTICATE", user
         if user:
             # User is valid.  Set request.user and persist user in the session
             # by logging the user in.
@@ -75,10 +63,7 @@ class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
         """
         Map usernames from DACS to usernames in our auth database
         """
-        import sys
-        print >>sys.stderr, "CLEANUSERNAME", username
         parts = username.split(":")
-        print >>sys.stderr, "PARTS", parts
         # TODO: pick domain according to DACS info
         return "%s@debian.org" % parts[3]
 
