@@ -12,7 +12,7 @@ class FakeRemoteUser(object):
         #print "SET REMOTE_USER TO ", request.META["REMOTE_USER"]
 
 class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddleware):
-    header = 'DACS_USERNAME'
+    header = 'REMOTE_USER'
 
     def process_request(self, request):
         from django.contrib import auth
@@ -34,9 +34,14 @@ class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddlewa
             # AuthenticationMiddleware).
 
             # Actually, make really sure we are logged out!
+            # See django bug #17869
             if request.user.is_authenticated():
                 auth.logout(request)
             return
+
+        # Map the DACS user string to usernames on our database
+        username = self.dacs_to_nm(username)
+
         # If the user is already authenticated and that user is the user we are
         # getting passed in the headers, then the correct user is already
         # persisted in the session and we don't need to continue.
@@ -51,6 +56,13 @@ class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddlewa
             # by logging the user in.
             request.user = user
             auth.login(request, user)
+
+    def dacs_to_nm(self, name):
+        """
+        Map usernames from DACS to usernames in our auth database
+        """
+        parts = name.split(":")
+        return name[3]
 
 class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
     """
