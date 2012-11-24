@@ -75,9 +75,12 @@ class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
         """
         Map usernames from DACS to usernames in our auth database
         """
+        import sys
+        print >>sys.stderr, "CLEANUSERNAME", username
         parts = username.split(":")
+        print >>sys.stderr, "PARTS", parts
         # TODO: pick domain according to DACS info
-        return "%s@debian.org" % username[3]
+        return "%s@debian.org" % parts[3]
 
     # Copied from RemoteUserBackend and tweaked to validate against Person
     def authenticate(self, remote_user):
