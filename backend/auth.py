@@ -18,6 +18,9 @@ class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddlewa
         from django.contrib import auth
         from django.core.exceptions import ImproperlyConfigured
 
+        import sys
+        print >>sys.stderr, "PROCESSREQUEST"
+
         # AuthenticationMiddleware is required so that request.user exists.
         if not hasattr(request, 'user'):
             raise ImproperlyConfigured(
@@ -39,10 +42,13 @@ class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddlewa
                 auth.logout(request)
             return
 
+        print >>sys.stderr, "PROCESSREQUEST username", username
+
         # If the user is already authenticated and that user is the user we are
         # getting passed in the headers, then the correct user is already
         # persisted in the session and we don't need to continue.
         if request.user.is_authenticated():
+            print >>sys.stderr, "ISAUTH", request.user.username, self.clean_username(username, request)
             if request.user.username == self.clean_username(username, request):
                 return
         # We are seeing this user for the first time in this session, attempt
