@@ -34,6 +34,7 @@ class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddlewa
             # AuthenticationMiddleware).
 
             # Actually, make really sure we are logged out!
+            # See django bug #17869
             if request.user.is_authenticated():
                 auth.logout(request)
             return
