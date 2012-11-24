@@ -71,7 +71,7 @@ class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
     RemoteUserBackend customised to create User objects from Person
     """
 
-    def clean_username(self, username, request):
+    def clean_username(self, username):
         """
         Map usernames from DACS to usernames in our auth database
         """
