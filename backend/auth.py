@@ -39,9 +39,6 @@ class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddlewa
                 auth.logout(request)
             return
 
-        # Map the DACS user string to usernames on our database
-        username = self.dacs_to_nm(username)
-
         # If the user is already authenticated and that user is the user we are
         # getting passed in the headers, then the correct user is already
         # persisted in the session and we don't need to continue.
