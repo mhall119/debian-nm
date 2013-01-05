@@ -310,7 +310,7 @@ class MinechangelogsForm(forms.Form):
     query = forms.CharField(
         required=True,
         label=_("Query"),
-        help_text=_("Enter one keyword per line. Changelog entries to be shown must match at least one keyword. You often need to tweak the keywords to improve the quality of results"),
+        help_text=_("Enter one keyword per line. Changelog entries to be shown must match at least one keyword. You often need to tweak the keywords to improve the quality of results. Note that keyword matching is case-sensitive."),
         widget=forms.Textarea(attrs=dict(rows=5, cols=40))
     )
     download = forms.BooleanField(
