@@ -78,6 +78,7 @@ class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         optparse.make_option("--quiet", action="store_true", default=None, help="Disable progress reporting"),
         optparse.make_option("--list", action="store_true", default=None, help="List available groups"),
+        optparse.make_option("--procmail", action="store_true", default=None, help="List as a procmail forward file"),
     )
 
     def handle(self, *args, **opts):
@@ -107,5 +108,11 @@ class Command(BaseCommand):
             result.update(method())
 
         # Sort and print what we got
-        for email in sorted(result):
-            print email
+        if opts["procmail"]:
+            print "# Automatically generated - do not edit"
+            for email in sorted(result):
+                print ":0c"
+                print "!", email
+        else:
+            for email in sorted(result):
+                print email
