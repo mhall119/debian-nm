@@ -9,7 +9,7 @@ from email.parser import HeaderParser
 from email.utils import getaddresses
 
 VERSION="0.1"
-DEFAULT_DESTDIR = "/org/nm.debian.org/mbox/applicants"
+DEFAULT_DESTDIR = "/srv/nm.debian.org/mbox/applicants"
 
 class AddressError(Exception):
     pass
