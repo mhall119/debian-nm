@@ -55,7 +55,7 @@ class Dispatcher(object):
         if self._db is None:
             try:
                 import psycopg2
-                self._db = psycopg2.connect("dbname=nm user=nm")
+                self._db = psycopg2.connect("service=nm user=nm")
             except:
                 import sqlite3
                 self._db = sqlite3.connect("db-used-for-development.sqlite")
