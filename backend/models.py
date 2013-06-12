@@ -26,7 +26,7 @@ import datetime
 import urllib
 import os.path
 
-PROCESS_MAILBOX_DIR = getattr(settings, "PROCESS_MAILBOX_DIR", "/org/nm.debian.org/mbox/applicants/")
+PROCESS_MAILBOX_DIR = getattr(settings, "PROCESS_MAILBOX_DIR", "/srv/nm.debian.org/mbox/applicants/")
 DM_IMPORT_DATE = getattr(settings, "DM_IMPORT_DATE", None)
 
 
@@ -111,8 +111,8 @@ class Person(models.Model):
     # @sgran> thanks
     #  enrico> For people like Wookey, do you prefer we use only cn or only sn?
     #          "sn" is used currently, and "cn" has a dash, but rather than
-    #          cargo-culting that in the new NM 
-    # double check it with you 
+    #          cargo-culting that in the new NM
+    # double check it with you
     # @sgran> cn would be more usual
     # @sgran> cn is the "whole name" and you can split it up into givenName + sn if you like
     #  phil> Except that in Debian LDAP it isn't.
