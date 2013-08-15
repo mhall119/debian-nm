@@ -202,8 +202,8 @@ LOGGING = {
 BACKUP_DIR="."
 KEYRINGS = "/home/enrico/dev/deb/keyring.debian.org/keyrings"
 LDAP_SERVER = "ldap://db.debian.org"
-MINECHANGELOGS_CACHEDIR = "./data/mc_cache"
-MINECHANGELOGS_INDEXDIR = "./data/mc_index"
+MINECHANGELOGS_CACHEDIR = os.path.join(DATA_DIR, "mc_cache")
+MINECHANGELOGS_INDEXDIR = os.path.join(DATA_DIR, "mc_index")
 
 EMAIL_PUBLIC_ANNOUNCES = "enrico@enricozini.org"
 EMAIL_PRIVATE_ANNOUNCES = "enrico@enricozini.org"
