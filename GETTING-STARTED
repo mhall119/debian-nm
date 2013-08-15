@@ -24,6 +24,9 @@ email databases to anyone.
 If you are a Front Desk member or a DAM, you can use
 https://nm.debian.org/am/db-export?full for a full database export.
 
+# Sync keyrings (if needed)
+rsync -az --progress keyring.debian.org::keyrings/keyrings/ .
+
 # Run database maintenance
 ./manage.py maintenance
 
