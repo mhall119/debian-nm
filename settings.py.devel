@@ -120,7 +120,7 @@ AUTHENTICATION_BACKENDS = (
 
 AUTH_PROFILE_MODULE = 'backend.Person'
 
-TEST_USERNAME = "enrico"
+TEST_USERNAME = "enrico:enrico:enrico:enrico"
 
 ROOT_URLCONF = 'urls'
 
