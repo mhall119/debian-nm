@@ -5,9 +5,9 @@
 apt-get install python-django python-ldap python-psycopg2 python-xapian python-debian
 
 # Configuration
+mkdir data # required by default settings
 ln -s settings.py.devel settings.py
 edit settings.py as needed
-NB: by default, database is created to `data` subdirectory, you need to create this!
 
 # First setup
 ./manage.py syncdb
