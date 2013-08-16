@@ -2,7 +2,7 @@
     Should be done, see <https://github.com/ypcs/nm2>.
  2. <safanaj> when advocating a DM as DD, default upload rights to true
  3. <olasd> in the weekly report, show names of the people who became DD/DM/got guest
-    accounts/* [kibi]
+    accounts/* (notify kibi@debian.org)
  4. <rybak> implement a one-click "send activity-poll" function
      - mail sent and Cc-ed to the proper archive address
      - set status to "activity poll sent"
@@ -11,7 +11,7 @@
     and later even allow any DD to edit/update their own bio.
     This saves a few steps, and could automatically send the presentation
     email to d-newmaint at AM approval time.
-    (notify Serafeim Zanikolas)
+    (notify sez@d.o)
  6. Add support for south database migrations
  7. <santiago> Change the From: address to <login>@debian.org when sending advocacy emails
     jwilk> (How) can I change e-mail address from which nm.d.o sends my advocacy mails?
@@ -19,3 +19,37 @@
     jwilk> @d.o works for me, but it wasn't here:
            https://lists.debian.org/debian-newmaint/2012/06/msg00030.html
     enrico> jwilk: ouch, that is a mistake
+
+ - show the contents of mailbox archives in the web interface
+   read only, very simple minded will do
+
+ - In https://nm.debian.org/am/ammain
+   make a visual distinction between shortcuts and buttons that have an
+   immediate action
+
+ - Add an email notification to the applicant when they get in the queue to get
+   an AM assigned (status app_ok)
+ - Add an email notification to the applicant when they get approved by the AM,
+   saying what is now going to happen: FD will do consistency checks, and then
+   pass it on to DAM to decide
+ - Add an email notification to the applicant when they get approved by FD,
+   saying that now it's up to DAM to have a look and do the final approval.
+
+ - In https://nm.debian.org/am/ammain some shortcuts generate email templates.
+   Those buttons are very overloaded now; the interface could get simpler if we
+   add a dedicated set of functions to generate the templates. Those templates
+   could also be generated anytime.
+    - Case in question: DAM clicks OK before copypasting the template
+
+ - Allow advocates to edit personal information of people in active processes
+   advocated by them
+
+ - When impersonating other people, log entries should be prefixed by a tag
+   like [enrico as ganneff], so that work is credited to the right person
+
+ - Unit tests!
+   I (enrico) still have not become proficient with unit testing complex
+   websites.
+
+ - stats: graph with number of processes in state 'adv_rcvd', 'app_ok', 'am',
+   'am_hold', 'am_ok', 'fd_ok' over time
