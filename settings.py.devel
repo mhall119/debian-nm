@@ -200,7 +200,8 @@ LOGGING = {
 
 # BACKUP_DIR = "/srv/nm.debian.org/backup"
 BACKUP_DIR="."
-KEYRINGS = "/home/enrico/dev/deb/keyring.debian.org/keyrings"
+#KEYRINGS = "/home/enrico/dev/deb/keyring.debian.org/keyrings"
+KEYRINGS = os.path.join(DATA_DIR, "keyrings")
 LDAP_SERVER = "ldap://db.debian.org"
 MINECHANGELOGS_CACHEDIR = os.path.join(DATA_DIR, "mc_cache")
 MINECHANGELOGS_INDEXDIR = os.path.join(DATA_DIR, "mc_index")
