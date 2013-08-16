@@ -128,7 +128,7 @@ AUTH_PROFILE_MODULE = 'backend.Person'
 #	causes IndexError at backend/auth.py NMUserBackend:clean_username
 #	(expects TEST_USERNAME to be in format
 #	"something:something:something:username"
-TEST_USERNAME = "enrico"
+TEST_USERNAME = "enrico:enrico:enrico:enrico"
 
 ROOT_URLCONF = 'urls'
 

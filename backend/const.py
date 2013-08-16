@@ -24,6 +24,7 @@ g = globals()
 
 # Status of a person in Debian
 ALL_STATUS = (
+    # TODO: could become DC
     Status("STATUS_MM",          "mm",     "None",           "None"),
     Status("STATUS_MM_GA",       "mm_ga",  "None, account",  "None, with guest account"),
     Status("STATUS_DM",          "dm",     "DM",             "Debian Maintainer"),
@@ -48,6 +49,7 @@ ALL_PROGRESS = (
     Progress("PROGRESS_APP_RCVD",  "app_rcvd",  "Validated",   "Applicant replied to initial mail"),
     Progress("PROGRESS_APP_HOLD",  "app_hold",  "App hold",    "On hold before entering the queue"),
     Progress("PROGRESS_ADV_RCVD",  "adv_rcvd",  "Adv ok",      "Received enough advocacies"),
+    Progress("PROGRESS_POLL_SENT", "poll_sent", "Poll sent",   "Activity poll sent"),
     Progress("PROGRESS_APP_OK",    "app_ok",    "App ok",      "Advocacies have been approved"),
     Progress("PROGRESS_AM_RCVD",   "am_rcvd",   "AM assigned", "Waiting for AM to confirm"),
     Progress("PROGRESS_AM",        "am",        "AM",          "Interacting with an AM"),
