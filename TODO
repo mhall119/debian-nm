@@ -1,0 +1,20 @@
+ 1. <ypcs> make it work locally
+ 2. <safanaj> when advocating a DM as DD, default upload rights to true
+ 3. <olasd> in the weekly report, show names of the people who became DD/DM/got guest
+    accounts/* [kibi]
+ 4. <rybak> implement a one-click "send activity-poll" function
+     - mail sent and Cc-ed to the proper archive address
+     - set status to "activity poll sent"
+    http://anonscm.debian.org/viewvc/nm/trunk/doc/front-desk/templates/
+ 5. Allow the short bio to be entered as part of personal information,
+    and later even allow any DD to edit/update their own bio.
+    This saves a few steps, and could automatically send the presentation
+    email to d-newmaint at AM approval time.
+    (notify Serafeim Zanikolas)
+ 6. Add support for south database migrations
+ 7. <santiago> Change the From: address to <login>@debian.org when sending advocacy emails
+    jwilk> (How) can I change e-mail address from which nm.d.o sends my advocacy mails?
+    enrico> jwilk: is the @d.o not correct?
+    jwilk> @d.o works for me, but it wasn't here:
+           https://lists.debian.org/debian-newmaint/2012/06/msg00030.html
+    enrico> jwilk: ouch, that is a mistake
