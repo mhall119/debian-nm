@@ -488,7 +488,7 @@ def advocate_as_dd(request, key):
                                               request.person.fullname))
             return redirect('public_process', key=proc.lookup_key)
     else:
-        initial = dict()
+        initial = dict(uploading=is_dm)
         if proc:
             uploading=(proc.applying_for == const.STATUS_DD_U)
         form = AdvocateDDForm(initial=initial)
