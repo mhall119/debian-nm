@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+"""
+Dispatch an email to the right mailbox
+"""
+
 import sys
 import re
 import shutil

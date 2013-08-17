@@ -548,6 +548,12 @@ class Process(models.Model):
         return "archive-%s@nm.debian.org" % key
 
     def can_be_edited(self, am=None):
+        """
+        Can this process be updated?
+
+        If am is not None, also check that the process can be updated by the
+        given AM; else, it is the same as is_active.
+        """
         # FD and DAM can edit anything
         if am is not None and (am.is_fd or am.is_dam):
             return True
@@ -693,27 +699,6 @@ class Process(models.Model):
         self.save()
         self.person.save()
 
-    #def get_log(self, desc=False, max=None):
-    #    res = orm.object_session(self) \
-    #            .query(Log) \
-    #            .filter_by(account_id=self.account_id, applying_for=self.applying_for)
-    #    if desc:
-    #        res = res.order_by(Log.logdate.desc())
-    #    else:
-    #        res = res.order_by(Log.logdate)
-    #    if max:
-    #        res = res.limit(max)
-    #    return res.all()
-
-    #def make_log_entry(self, editor, text):
-    #    """
-    #    Create a log entry for the current process
-    #    """
-    #    return Log(account=self.account,
-    #              applying_for=self.applying_for,
-    #              logtype=self.progress,
-    #              changed_by=editor,
-    #              logtext=text)
 
 class Log(models.Model):
     """
