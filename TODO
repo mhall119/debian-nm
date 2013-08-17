@@ -51,3 +51,7 @@
 
  - stats: graph with number of processes in state 'adv_rcvd', 'app_ok', 'am',
    'am_hold', 'am_ok', 'fd_ok' over time
+
+ - In https://nm.debian.org/am/nm-am-match/ hide or prominently mark potential
+   AM suggestions that are already advocate for the given applicant and should
+   not be assigned to this applicant
