@@ -22,12 +22,5 @@ from django.views.generic import TemplateView, RedirectView
 urlpatterns = patterns('api.views',
     url(r'^$', TemplateView.as_view(template_name="api/doc.html"), name="api_doc"),
     url(r'^people$', 'people', name="api_people"),
-#    url(r'^managers$', 'managers', name="managers"),
-#    url(r'^people(?:/(?P<status>\w+))?$', 'people', name="people"),
-#    url(r'^person/(?P<key>[^/]+)$', 'person', name="person"),
-#    url(r'^process/(?P<key>[^/]+)$', 'process', name="public_process"),
-#    url(r'^progress/(?P<progress>\w+)$', 'progress', name="public_progress"),
-#    url(r'^stats/$', 'stats', name="public_stats"),
-#    url(r'^findperson/$', 'findperson', name="public_findperson"),
 )
 
