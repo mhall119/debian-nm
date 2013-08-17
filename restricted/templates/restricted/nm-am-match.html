@@ -258,7 +258,7 @@ $(function() {
 </script>
 {% endblock %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">ammain</a> / nm-am-match{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url 'restricted_ammain' %}">ammain</a> / nm-am-match{% endblock %}
 
 {% block content %}
 
@@ -275,8 +275,8 @@ $(function() {
 <tbody>
 {% for a in ams %}
 <tr>
-    <td><a href="{% url restricted_amprofile uid=a.person.uid %}">{{a.person.fullname}} &lt;{{a.person.uid}}@debian.org&gt;</a></td>
-    <td><a href="{% url restricted_amprofile uid=a.person.uid %}">{{a.person.uid}}</a></td>
+    <td><a href="{% url 'restricted_amprofile' uid=a.person.uid %}">{{a.person.fullname}} &lt;{{a.person.uid}}@debian.org&gt;</a></td>
+    <td><a href="{% url 'restricted_amprofile' uid=a.person.uid %}">{{a.person.uid}}</a></td>
     <td>{{a.stats_free}}/{{a.slots}}</td>
 </tr>
 {% endfor %}

@@ -1,7 +1,7 @@
 {% extends "restricted/base.html" %}
 {% load nm %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{{person.get_absolute_url}}">{{person.uid}}</a> / <a href="{% url restricted_amprofile uid=person.uid %}">am settings</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{{person.get_absolute_url}}">{{person.uid}}</a> / <a href="{% url 'restricted_amprofile' uid=person.uid %}">am settings</a>{% endblock %}
 
 {% block content %}
 
@@ -22,7 +22,7 @@
 
 <h2>Change AM details</h2>
 
-<form action="{% url restricted_amprofile uid=person.uid %}" method="post">{% csrf_token %}
+<form action="{% url 'restricted_amprofile' uid=person.uid %}" method="post">{% csrf_token %}
 <table class="personinfo">
     {% for field in form %}
     <tr>

@@ -184,10 +184,10 @@ TODO: assign AM, field with uid and macros to fill it with a list of free ones
 <a href="{{person.get_ddpo_url}}">DDPO</a>
 <a href="{{person.get_portfolio_url}}">Portfolio</a>
 {% if request.person %}
-<a href="{% url restricted_minechangelogs key=person.lookup_key %}">changelogs</a>
+<a href="{% url 'restricted_minechangelogs' key=person.lookup_key %}">changelogs</a>
 {% endif %}
 {% if request.person.is_admin %}
-<a href="{% url admin:backend_process_change process.id %}">admin</a>
+<a href="{% url 'admin:backend_process_change' process.id %}">admin</a>
 {% endif %}
 {% endblock %}
 
@@ -245,7 +245,7 @@ See: <a href="http://lists.debian.org/debian-project/2010/09/msg00026.html">hand
         <td>
             <tt><a href="mailto:{{process.archive_email}}">{{process.archive_email}}</a></tt>
             {% if process.mailbox_file %}
-            <a href="{% url download_mail_archive key=process.lookup_key %}">(download mail archive)</a>
+            <a href="{% url 'download_mail_archive' key=process.lookup_key %}">(download mail archive)</a>
             {% else %}
             (no mail archive yet)
             {% endif %}
@@ -253,7 +253,7 @@ See: <a href="http://lists.debian.org/debian-project/2010/09/msg00026.html">hand
     {% endif %}
 </table>
 {% if can_edit %}
-<a href="{% url restricted_person key=person.lookup_key %}">Edit personal information</a>
+<a href="{% url 'restricted_person' key=person.lookup_key %}">Edit personal information</a>
 {% endif %}
 
 {% if can_edit %}
@@ -329,7 +329,7 @@ missing parts and send it.
     {% for l in log %}
     <tr>
         {% if request.am.is_admin %}
-        <td><a href="{% url admin:backend_log_change l.id %}">edit</a></td>
+        <td><a href="{% url 'admin:backend_log_change' l.id %}">edit</a></td>
         {% endif %}
         <td>{{l.logdate|date:"Y-m-d"}}</td>
         <td>
