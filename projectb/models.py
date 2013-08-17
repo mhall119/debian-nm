@@ -1,3 +1,9 @@
+"""
+Functions used to access the dak database used by ftp-master.
+
+We mainly use it to make a list of DMs
+"""
+
 from django.db import models
 from django.db import connections
 from django.conf import settings

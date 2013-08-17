@@ -1,3 +1,7 @@
+"""
+Code used to list entries in keyrings
+"""
+
 from django.db import models
 from django.conf import settings
 import os.path

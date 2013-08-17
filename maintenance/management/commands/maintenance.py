@@ -253,9 +253,8 @@ class Checker(object):
 
     def check_am_must_have_uid(self, **kw):
         """
-        Check that one does not have more than one open process at the current time
+        Check that AMs have a Debian login
         """
-        from django.db.models import Count
         for am in bmodels.AM.objects.filter(person__uid=None):
             log.warning("AM %d (person %d %s) has no uid", am.id, am.person.id, am.person.email)
 

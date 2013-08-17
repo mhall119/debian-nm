@@ -487,9 +487,11 @@ class Process(models.Model):
 
         Currently, this is the email if the process is active, else the id.
         """
+        # If the process is active, and we only have one process, use the
+        # person's lookup key. In all other cases, use the process ID
         if self.is_active:
             if self.person.processes.filter(is_active=True).count() == 1:
-                return self.person.email
+                return self.person.lookup_key
             else:
                 return str(self.id)
         else:
@@ -497,20 +499,22 @@ class Process(models.Model):
 
     @classmethod
     def lookup(cls, key):
+        # Key can either be a Process ID or a person's lookup key
         if key.isdigit():
             try:
                 return cls.objects.get(id=int(key))
             except cls.DoesNotExist:
                 return None
         else:
-            try:
-                if "@" not in key:
-                    p = Person.objects.get(uid=key)
-                else:
-                    p = Person.objects.get(email=key)
-            except Person.DoesNotExist:
+            # If a person's lookup key is used, and there is only one active
+            # process, return that one. Else, return the most recent process.
+            p = Person.lookup(key)
+            if p is None:
                 return None
 
+            # If we reach here, either we have one process, or a new process
+            # has been added # changed since the URL was generated. We have an
+            # ambiguous situation, which we handle blissfully arbitrarily
             res = p.active_processes
             if res: return res[0]
 
@@ -548,6 +552,12 @@ class Process(models.Model):
         return "archive-%s@nm.debian.org" % key
 
     def can_be_edited(self, am=None):
+        """
+        Can this process be updated?
+
+        If am is not None, also check that the process can be updated by the
+        given AM; else, it is the same as is_active.
+        """
         # FD and DAM can edit anything
         if am is not None and (am.is_fd or am.is_dam):
             return True
@@ -693,27 +703,6 @@ class Process(models.Model):
         self.save()
         self.person.save()
 
-    #def get_log(self, desc=False, max=None):
-    #    res = orm.object_session(self) \
-    #            .query(Log) \
-    #            .filter_by(account_id=self.account_id, applying_for=self.applying_for)
-    #    if desc:
-    #        res = res.order_by(Log.logdate.desc())
-    #    else:
-    #        res = res.order_by(Log.logdate)
-    #    if max:
-    #        res = res.limit(max)
-    #    return res.all()
-
-    #def make_log_entry(self, editor, text):
-    #    """
-    #    Create a log entry for the current process
-    #    """
-    #    return Log(account=self.account,
-    #              applying_for=self.applying_for,
-    #              logtype=self.progress,
-    #              changed_by=editor,
-    #              logtext=text)
 
 class Log(models.Model):
     """

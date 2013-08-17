@@ -1,3 +1,7 @@
+"""
+Code used to access Debian's LDAP
+"""
+
 from django.db import models
 from django.conf import settings
 import ldap
