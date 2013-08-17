@@ -17,10 +17,10 @@
 
 from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
-from django.views.generic.simple import direct_to_template, redirect_to
+from django.views.generic import TemplateView, RedirectView
 
 urlpatterns = patterns('api.views',
-    url(r'^$', direct_to_template, {'template': "api/doc.html"}, name="api_doc"),
+    url(r'^$', TemplateView.as_view(template_name="api/doc.html"), name="api_doc"),
     url(r'^people$', 'people', name="api_people"),
 #    url(r'^managers$', 'managers', name="managers"),
 #    url(r'^people(?:/(?P<status>\w+))?$', 'people', name="people"),

@@ -17,10 +17,10 @@
 
 from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
-from django.views.generic.simple import direct_to_template, redirect_to
+from django.views.generic import TemplateView, RedirectView
 
 urlpatterns = patterns('restricted.views',
-    url(r'^$', direct_to_template, {'template': 'restricted/index.html'}, name="restricted_index"),
+    url(r'^$', TemplateView.as_view(template_name='restricted/index.html'), name="restricted_index"),
     # AM Personal page
     url(r'^ammain$', 'ammain', name="restricted_ammain"),
     # AM preferences editor

@@ -16,17 +16,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls.defaults import patterns, include, url, handler500, handler404
-from django.views.generic.simple import direct_to_template, redirect_to
+from django.views.generic import TemplateView
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^robots.txt$', direct_to_template, {'template': 'robots.txt', "mimetype": "text/plain"}, name="root_robots_txt"),
-    url(r'^$', direct_to_template, {'template': 'index.html'}, name="home"),
-    url(r'^license/$', direct_to_template, {'template': 'license.html'}, name="root_license"),
-    url(r'^faq/$', direct_to_template, {'template': 'faq.html'}, name="root_faq"),
+    url(r'^robots.txt$', TemplateView.as_view(template_name='robots.txt', content_type="text/plain"), name="root_robots_txt"),
+    url(r'^$', TemplateView.as_view(template_name='index.html'), name="home"),
+    url(r'^license/$', TemplateView.as_view(template_name='license.html'), name="root_license"),
+    url(r'^faq/$', TemplateView.as_view(template_name='faq.html'), name="root_faq"),
     url(r'^public/', include("public.urls")),
     url(r'^am/', include("restricted.urls")),
     url(r'^api/', include("api.urls")),
