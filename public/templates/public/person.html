@@ -29,7 +29,7 @@
             <td>{{p.applying_for|desc_status}} ({{p.is_active|yesno:"in progress,done"}})</td>
             <td>
                 {% if p.is_active %}
-                <a href="{% url public_progress progress=p.progress %}">{{p.progress|desc_progress}}</a>
+                <a href="{% url 'public_progress' progress=p.progress %}">{{p.progress|desc_progress}}</a>
                 {% else %}
                 {{p.progress|desc_progress}}
                 {% endif %}
@@ -52,27 +52,27 @@
 </table>
 {% endmacro %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url people %}">people</a> / {{person.uid|default:person.fullname}}{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url 'people' %}">people</a> / {{person.uid|default:person.fullname}}{% endblock %}
 
 {% block relatedpages %}
 <a href="{{person.get_ddpo_url}}">DDPO</a>
 <a href="{{person.get_portfolio_url}}">Portfolio</a>
 {% if request.person %}
-<a href="{% url restricted_minechangelogs key=person.lookup_key %}">changelogs</a>
+<a href="{% url 'restricted_minechangelogs' key=person.lookup_key %}">changelogs</a>
 {% endif %}
 {% if request.am.is_admin %}
-<a href="{% url admin:backend_person_change person.id  %}">admin</a>
+<a href="{% url 'admin:backend_person_change' person.id  %}">admin</a>
 {% if can_be_am %}
-<a href="{% url admin:backend_am_add %}?person={{person.id}}">make am</a>
+<a href="{% url 'admin:backend_am_add' %}?person={{person.id}}">make am</a>
 {% endif %}
-{% if can_start_mm_ga_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_MM_GA %}">request guest account</a>{% endif %}
-{% if can_start_dm_ga_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_DM_GA %}">request guest account</a>{% endif %}
-{% if can_start_dm_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_DM %}">request DM</a>{% endif %}
-{% if can_start_dd_u_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_DD_U %}">join NM (upl.)</a>{% endif %}
-{% if can_start_dd_nu_process %}<a href="{% url restricted_newprocess key=person.lookup_key applying_for=STATUS_DD_NU %}">join NM (nonupl.)</a>{% endif %}
+{% if can_start_mm_ga_process %}<a href="{% url 'restricted_newprocess' key=person.lookup_key applying_for=STATUS_MM_GA %}">request guest account</a>{% endif %}
+{% if can_start_dm_ga_process %}<a href="{% url 'restricted_newprocess' key=person.lookup_key applying_for=STATUS_DM_GA %}">request guest account</a>{% endif %}
+{% if can_start_dm_process %}<a href="{% url 'restricted_newprocess' key=person.lookup_key applying_for=STATUS_DM %}">request DM</a>{% endif %}
+{% if can_start_dd_u_process %}<a href="{% url 'restricted_newprocess' key=person.lookup_key applying_for=STATUS_DD_U %}">join NM (upl.)</a>{% endif %}
+{% if can_start_dd_nu_process %}<a href="{% url 'restricted_newprocess' key=person.lookup_key applying_for=STATUS_DD_NU %}">join NM (nonupl.)</a>{% endif %}
 {% endif %}
-{% if can_advocate_as_dd %}<a href="{% url advocate_as_dd key=person.lookup_key %}">advocate for DD</a>{% endif %}
-{% if request.am.is_admin and request.person != person %}<a href="{% url impersonate key=person.lookup_key %}?url={{request.build_absolute_uri}}">impersonate</a>{% endif %}
+{% if can_advocate_as_dd %}<a href="{% url 'advocate_as_dd' key=person.lookup_key %}">advocate for DD</a>{% endif %}
+{% if request.am.is_admin and request.person != person %}<a href="{% url 'impersonate' key=person.lookup_key %}?url={{request.build_absolute_uri}}">impersonate</a>{% endif %}
 {{block.super}}
 {% endblock %}
 
@@ -98,10 +98,10 @@
             {% if am.is_am_ctte %}am ctte,{% endif %}
             {{person.am.processed.count}} applicants processed
             {% if request.am == am or request.am.is_admin %}
-            <a href="{% url restricted_amprofile uid=am.person.uid %}">[preferences]</a>
+            <a href="{% url 'restricted_amprofile' uid=am.person.uid %}">[preferences]</a>
             {% endif %}
             {% if request.am.is_admin %}
-            <a href="{% url admin:backend_am_change am.id %}">[admin]</a>
+            <a href="{% url 'admin:backend_am_change' am.id %}">[admin]</a>
             {% endif %}
         </td>
     </tr>
@@ -109,7 +109,7 @@
 </table>
 
 {% if person|editable_by:request.am %}
-<a href="{% url restricted_person key=person.lookup_key %}">edit</a>
+<a href="{% url 'restricted_person' key=person.lookup_key %}">edit</a>
 {% endif %}
 
 <h2>Personal history</h2>

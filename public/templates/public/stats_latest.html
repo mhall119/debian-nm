@@ -1,7 +1,7 @@
 {% extends "public/base.html" %}
 {% load nm %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url public_stats %}">stats</a> / <a href="{% url public_stats_latest %}">latest</a> {% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url 'public_stats' %}">stats</a> / <a href="{% url 'public_stats_latest' %}">latest</a> {% endblock %}
 
 {% block content %}
 

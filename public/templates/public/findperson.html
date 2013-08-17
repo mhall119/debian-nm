@@ -51,7 +51,7 @@ $(function() {
             return;
         }
 
-        $.getJSON("{% url api_people %}?" + query, function(data, textStatus, jqXHR) {
+        $.getJSON("{% url 'api_people' %}?" + query, function(data, textStatus, jqXHR) {
             tbody.empty();
             $.each(data.r, function(idx, val) {
                 var st = ALL_STATUS[val.status];
@@ -148,10 +148,10 @@ $(function() {
 </script>
 {% endblock %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url people %}">people</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url 'people' %}">people</a>{% endblock %}
 
 {% block relatedpages %}
-<a href="{% url people %}">all people</a>
+<a href="{% url 'people' %}">all people</a>
 {{block.super}}
 {% endblock %}
 
@@ -168,7 +168,7 @@ create a new Person record.
 {% endif %}
 </div>
 
-<form id="search_form" action="{% url public_findperson %}" method="post">{% csrf_token %}
+<form id="search_form" action="{% url 'public_findperson' %}" method="post">{% csrf_token %}
 <table class="personinfo">
     {% for field in form %}
     <tr>
@@ -199,7 +199,7 @@ create a new Person record.
     {% for p in people %}
     <tr class="{{p.simple_status}}">
         {% if not status %}
-        <td val="{{p.status|seq_status}}"><a href="{% url people status=p.status %}">{{p.status|desc_status}}</a></td>
+        <td val="{{p.status|seq_status}}"><a href="{% url 'people' status=p.status %}">{{p.status|desc_status}}</a></td>
         {% endif %}
         <td>{{p.status_changed|date:"Y-m-d"}}</td>
         <td><a href="{{ p.get_absolute_url }}">{{p.uid|default:"None chosen yet"}}</a></td>

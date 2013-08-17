@@ -1,6 +1,6 @@
 {% extends "public/base.html" %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url public_newnm %}">newnm</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url 'public_newnm' %}">newnm</a>{% endblock %}
 
 {% block content %}
 
@@ -9,7 +9,7 @@
 <h2>If you are a DD, or have a guest account on Debian machines</h2>
 
 <p>In this case you have an entry in the site database:
-<a href="{% url public_findperson %}">look it up</a>, and send a link to your
+<a href="{% url 'public_findperson' %}">look it up</a>, and send a link to your
 advocate(s). They can then:
 <ol>
 	<li>login;</li>
@@ -56,7 +56,7 @@ My information is:
               Middle name: _________ (if applicable)
                 Last name: _________ (if applicable)
             Email address: _________
-       Preferred username: _________ (check <a href="{% url public_findperson %}">here</a> for duplicates)
+       Preferred username: _________ (check <a href="{% url 'public_findperson' %}">here</a> for duplicates)
   OpenPGP key fingerprint: _________
 
 I have been doing this and that with this and that person for so much time and

@@ -105,7 +105,7 @@ $(function() {
 {% endif %}
 {% endmacro %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url processes %}">processes</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url 'processes' %}">processes</a>{% endblock %}
 
 {% block content %}
 
@@ -120,7 +120,7 @@ $(function() {
 This is a list of all <a href="#open">open</a> and <a href="#done">recently closed</a> processes.
 If you have applied then you should find yourself here somewhere. If you have
 passed all checks and been approved as a Debian developer more than 6 months
-ago, you will be listed on the <a href="{% url people %}">people</a> page
+ago, you will be listed on the <a href="{% url 'people' %}">people</a> page
 instead.
 </div>
 

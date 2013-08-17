@@ -9,25 +9,25 @@
 General site features, available to all:
 
 <ul>
-    <li><a href="{% url people %}">List of all known people</a></li>
-    <li><a href="{% url managers %}">List of Application Managers</a></li>
-    <li><a href="{% url processes %}">List of open or recent processes</a></li>
-    <li><a href="{% url public_stats %}">Site statistics</a></li>
-    <li><a href="{% url public_newnm %}">Join the NM process</a>
+    <li><a href="{% url 'people' %}">List of all known people</a></li>
+    <li><a href="{% url 'managers' %}">List of Application Managers</a></li>
+    <li><a href="{% url 'processes' %}">List of open or recent processes</a></li>
+    <li><a href="{% url 'public_stats' %}">Site statistics</a></li>
+    <li><a href="{% url 'public_newnm' %}">Join the NM process</a>
 </ul>
 
 Site features available to anyone with a web password:
 
 <ul>
-    <li><a href="{% url restricted_minechangelogs %}">minechangelogs front-end</a></li>
+    <li><a href="{% url 'restricted_minechangelogs' %}">minechangelogs front-end</a></li>
 </ul>
 
 If you are an Application Manager, you can look at:
 
 <ul>
-    <li><a href="{% url restricted_ammain %}">AM main page</a></li>
-    <li><a href="{% url restricted_amprofile %}">AM personal settings</a></li>
-    <li><a href="{% url restricted_db_export %}">Database export you can use to setup a development site</a></li>
+    <li><a href="{% url 'restricted_ammain' %}">AM main page</a></li>
+    <li><a href="{% url 'restricted_amprofile' %}">AM personal settings</a></li>
+    <li><a href="{% url 'restricted_db_export' %}">Database export you can use to setup a development site</a></li>
 </ul>
 
 Other TODO list items:

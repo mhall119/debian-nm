@@ -13,7 +13,7 @@
   <link type="text/css" rel="stylesheet" media="all" href="{{ STATIC_URL }}css/nm.css">
 {% endblock %}
 
-{% block section %}<a href="{% url home %}">NM</a>{% endblock %}
+{% block section %}<a href="{% url 'home' %}">NM</a>{% endblock %}
 
 {% block searchbox %}
 {% comment %}No search feature in NM site yet{% endcomment %}
@@ -21,31 +21,31 @@
 
 {% block navbar %}
   <li><a href="http://www.debian.org/devel/join/newmaint">NM Corner</a></li>
-  <li><a href="{% url public_findperson %}">People</a></li>
-  <li><a href="{% url managers %}">Managers</a></li>
-  <li><a href="{% url processes %}">Applicants</a></li>
+  <li><a href="{% url 'public_findperson' %}">People</a></li>
+  <li><a href="{% url 'managers' %}">Managers</a></li>
+  <li><a href="{% url 'processes' %}">Applicants</a></li>
   <li><a href="http://wiki.debian.org/Keysigning">Keysigning</a></li>
-  <li><a href="{% url root_faq %}">Site FAQ</a></li>
+  <li><a href="{% url 'root_faq' %}">Site FAQ</a></li>
 {% endblock %}
 
-{% block breadcrumbs %}{% if request.session.impersonate %}<a href="{% url impersonate %}?url={{request.build_absolute_uri}}">[{{request.user}} as {{request.person.lookup_key}}]</a> {% endif %}<a href="{% url home %}">nm</a>{% endblock %}
+{% block breadcrumbs %}{% if request.session.impersonate %}<a href="{% url 'impersonate' %}?url={{request.build_absolute_uri}}">[{{request.user}} as {{request.person.lookup_key}}]</a> {% endif %}<a href="{% url 'home' %}">nm</a>{% endblock %}
 
 {% block relatedpages %}
 {% if user.is_anonymous %}
-<a href="{% url login_redirect %}?url={{request.build_absolute_uri}}">login</a>
+<a href="{% url 'login_redirect' %}?url={{request.build_absolute_uri}}">login</a>
 {% else %}
 {% if request.person.is_am %}
-<a href="{% url restricted_ammain %}">{{request.person.lookup_key}}</a>
+<a href="{% url 'restricted_ammain' %}">{{request.person.lookup_key}}</a>
 {% else %}
-<a href="{% url person key=request.person.lookup_key %}">{{request.person.lookup_key}}</a>
+<a href="{% url 'person' key=request.person.lookup_key %}">{{request.person.lookup_key}}</a>
 {% endif %}
 <a href="https://sso.debian.org/cgi-bin/dacs/dacs_signout?SIGNOUT_HANDLER={{request.build_absolute_uri}}">logout</a>
 {% endif %}
 {% comment %}
-    <a href="{% url search_packages %}">Search</a>
-    <a href="{% url report_todo %}">TODO list</a>
-    <a href="{% url editor_index %}">Editor</a>
-    <a href="{% url statistics %}">Statistics</a>
+    <a href="{% url 'search_packages' %}">Search</a>
+    <a href="{% url 'report_todo' %}">TODO list</a>
+    <a href="{% url 'editor_index' %}">Editor</a>
+    <a href="{% url 'statistics' %}">Statistics</a>
 {% endcomment %}
 {% endblock %}
 
@@ -54,7 +54,7 @@
 {% endblock %}
 
 {% block footer %}
-<p>Copyright © 2012 Enrico Zini &lt;enrico@debian.org&gt;. See <a href="{% url root_license %}">license terms</a>.
+<p>Copyright © 2012 Enrico Zini &lt;enrico@debian.org&gt;. See <a href="{% url 'root_license' %}">license terms</a>.
 Source code is <a href="http://anonscm.debian.org/gitweb/?p=nm/nm2.git;a=summary">available</a>.
 Please report bugs against the <a href="http://bugs.debian.org/nm.debian.org">nm.debian.org</a> pseudo-package.
 </p>

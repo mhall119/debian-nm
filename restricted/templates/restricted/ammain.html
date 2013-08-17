@@ -79,12 +79,12 @@ $(function() {
 {% endif %}
 {% endmacro %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url restricted_ammain %}">ammain</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url 'restricted_ammain' %}">ammain</a>{% endblock %}
 
 {% block relatedpages %}
 <a href="{{ request.person.get_absolute_url }}">personal page</a>
 {% if am.is_fd or am.is_dam %}
-<a href="{% url admin:backend_person_add %}">new person</a>
+<a href="{% url 'admin:backend_person_add' %}">new person</a>
 {% endif %}
 {{block.super}}
 {% endblock %}
@@ -108,7 +108,7 @@ $(function() {
 <p>The following managers have free slots (#free/#slots):
 <ul class="horizontal">
     {% for a in am_available %}
-    <li><a href="{% url restricted_amprofile uid=a.person.uid %}">{{a.person.uid}}</a>
+    <li><a href="{% url 'restricted_amprofile' uid=a.person.uid %}">{{a.person.uid}}</a>
         ({{a.stats_free}}/{{a.slots}})</li>
     {% endfor %}
 </ul>
@@ -119,7 +119,7 @@ yet, or their advocacies are incomplete.</p>
 {% usemacro process_table prog_app_new "" %}
 
 <p>The following applicants are waiting for an Application Manager to be
-assigned (first one is oldest). <a href="{% url restricted_nm_am_match %}">Compute best matches</a>.</p>
+assigned (first one is oldest). <a href="{% url 'restricted_nm_am_match' %}">Compute best matches</a>.</p>
 {% usemacro process_table prog_app_ok "" %}
 
 <p>Applicants currently not ready to be assigned to an AM (ordered by hold date):</p>

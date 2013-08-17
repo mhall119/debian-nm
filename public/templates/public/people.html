@@ -51,7 +51,7 @@ $(function() {
 </script>
 {% endblock %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url people %}">people</a>{% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url 'people' %}">people</a>{% endblock %}
 
 {% block content %}
 
@@ -102,7 +102,7 @@ NM website is still incomplete.
     {% for p in people %}
     <tr class="{{p.simple_status}}">
         {% if show_status %}
-        <td val="{{p.status|seq_status}}"><a href="{% url people status=p.status %}">{{p.status|desc_status}}</a></td>
+        <td val="{{p.status|seq_status}}"><a href="{% url 'people' status=p.status %}">{{p.status|desc_status}}</a></td>
         {% endif %}
         <td>{{p.status_changed|none_if_epoch|date:"Y-m-d"|default:"(unknown)"}}</td>
         <td><a href="{{ p.get_absolute_url }}">{{p.uid|default:"None chosen yet"}}</a></td>
