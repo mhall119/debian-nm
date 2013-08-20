@@ -40,6 +40,7 @@ def ammain(request):
             const.PROGRESS_APP_NEW: "prog_app_new",
             const.PROGRESS_APP_RCVD: "prog_app_new",
             const.PROGRESS_ADV_RCVD: "prog_app_new",
+            const.PROGRESS_POLL_SENT: "prog_app_new",
             const.PROGRESS_APP_OK: "prog_app_ok",
             const.PROGRESS_AM_RCVD: "prog_am_rcvd",
             const.PROGRESS_AM_OK: "prog_am_ok",
