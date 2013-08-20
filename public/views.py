@@ -186,6 +186,7 @@ def process(request, key):
         const.PROGRESS_APP_NEW,
         const.PROGRESS_APP_RCVD,
         const.PROGRESS_ADV_RCVD,
+        const.PROGRESS_POLL_SENT,
         const.PROGRESS_APP_OK,
         const.PROGRESS_AM_RCVD,
         const.PROGRESS_AM,
