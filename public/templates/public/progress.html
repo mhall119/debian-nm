@@ -1,7 +1,7 @@
 {% extends "public/base.html" %}
 {% load nm %}
 
-{% block breadcrumbs %}{{block.super}} / <a href="{% url people %}">people</a> / {{progress|desc_progress}} {% endblock %}
+{% block breadcrumbs %}{{block.super}} / <a href="{% url 'people' %}">people</a> / {{progress|desc_progress}} {% endblock %}
 
 {% block content %}
 
