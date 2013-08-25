@@ -135,6 +135,8 @@ class Person(models.Model):
     mn = models.CharField("middle name", max_length=250, null=True, blank=True)
     sn = models.CharField("last name", max_length=250, null=True, blank=True)
     email = models.EmailField("email address", null=False, unique=True)
+    bio = TextNullField("short biography", blank=True, null=True,
+                        help_text="Please enter here a short biographical information")
     # This is null for people who still have not picked one
     uid = CharNullField("Debian account name", max_length=32, null=True, unique=True, blank=True)
     # OpenPGP fingerprint, NULL until one has been provided
