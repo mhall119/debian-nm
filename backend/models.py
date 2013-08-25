@@ -25,6 +25,8 @@ from . import const
 import datetime
 import urllib
 import os.path
+from south.modelsinspector import add_introspection_rules
+
 
 PROCESS_MAILBOX_DIR = getattr(settings, "PROCESS_MAILBOX_DIR", "/srv/nm.debian.org/mbox/applicants/")
 DM_IMPORT_DATE = getattr(settings, "DM_IMPORT_DATE", None)
@@ -89,6 +91,12 @@ class TextNullField(models.TextField):
        else:
            # otherwise, just pass the value
            return value
+
+
+## for south migrations of customs fields,
+## no kwargs in constructors allow us to cite only the names
+add_introspection_rules(
+    [], ["^backend\.models\.CharNullField", "^backend\.models\.TextNullField"])
 
 
 class Person(models.Model):
@@ -844,4 +852,3 @@ def export_db(full=False):
                 last_progress = l.progress
 
         yield ep
-

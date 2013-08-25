@@ -161,6 +161,7 @@ INSTALLED_APPS = (
     'projectb',
     'minechangelogs',
     'api',
+    'south',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
