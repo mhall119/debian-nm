@@ -1,4 +1,3 @@
- 1. <ypcs> make it work locally. Done, see <https://github.com/ypcs/nm2>.
  3. <olasd> in the weekly report, show names of the people who became DD/DM/got guest
     accounts/* (notify kibi@debian.org)
  4. <rybak> implement a one-click "send activity-poll" function
