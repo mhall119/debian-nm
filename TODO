@@ -5,18 +5,19 @@
      - mail sent and Cc-ed to the proper archive address
      - set status to "activity poll sent"
     http://anonscm.debian.org/viewvc/nm/trunk/doc/front-desk/templates/
- 5. Allow the short bio to be entered as part of personal information,
-    and later even allow any DD to edit/update their own bio.
-    This saves a few steps, and could automatically send the presentation
-    email to d-newmaint at AM approval time.
-    (notify sez@d.o)
- 6. Add support for south database migrations
  7. <santiago> Change the From: address to <login>@debian.org when sending advocacy emails
     jwilk> (How) can I change e-mail address from which nm.d.o sends my advocacy mails?
     enrico> jwilk: is the @d.o not correct?
     jwilk> @d.o works for me, but it wasn't here:
            https://lists.debian.org/debian-newmaint/2012/06/msg00030.html
     enrico> jwilk: ouch, that is a mistake
+
+ - Show the short bio in https://nm.debian.org/public/person/…
+ - When an AM approves the applicant, mail debian-newmaint@lists.debian.org
+   like we used to do in the good old times (e.g.
+   https://lists.debian.org/debian-newmaint/2009/04/msg00026.html )
+   just with the full name, short bio and requested account name.
+   (notify sez@d.o)
 
  - show the contents of mailbox archives in the web interface
    read only, very simple minded will do
