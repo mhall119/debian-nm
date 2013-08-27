@@ -2,17 +2,33 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.core.mail import send_mail
 import email.utils
+from . import const
 
 EMAIL_PUBLIC_ANNOUNCES = getattr(settings, "EMAIL_PUBLIC_ANNOUNCES", "debian-newmaint@lists.debian.org")
 EMAIL_PRIVATE_ANNOUNCES = getattr(settings, "EMAIL_PRIVATE_ANNOUNCES", "nm@debian.org")
 EMAIL_PERSONAL_DIVERT = getattr(settings, "EMAIL_PERSONAL_DIVERT", None)
 
+def get_email_address(request):
+    """
+    If person is DD, returns his/her <login>@debian.org address. Otherwise,
+    returns the personal email address.
+    """
+
+    dd_statuses = (const.STATUS_DD_U, const.STATUS_DD_NU)
+    if request.person.status in dd_statuses:
+        email_address = request.person.uid + "@debian.org"
+    else:
+        email_address = request.person.email
+    return email_address
+
 def announce_public(request, subject, text):
-    fromaddr = email.utils.formataddr((request.person.fullname + " via nm", request.person.email))
+    sender_addr = get_email_address(request)
+    fromaddr = email.utils.formataddr((request.person.fullname + " via nm", sender_addr))
     send_mail(subject, text, fromaddr, [EMAIL_PUBLIC_ANNOUNCES])
 
 def announce_private(request, subject, text):
-    fromaddr = email.utils.formataddr((request.person.fullname + " via nm", request.person.email))
+    sender_addr = get_email_address(request)
+    fromaddr = email.utils.formataddr((request.person.fullname + " via nm", sender_addr))
     send_mail(subject, text, fromaddr, [EMAIL_PRIVATE_ANNOUNCES])
 
 def personal_email(request, recipients, subject, text):
