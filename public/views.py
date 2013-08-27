@@ -103,9 +103,7 @@ def make_statusupdateform(editor):
     return StatusUpdateForm
 
 def process(request, key):
-    process = bmodels.Process.lookup(key)
-    if process is None:
-        return http.HttpResponseNotFound("Process %s not found." % key)
+    process = bmodels.Process.lookup_or_404(key)
 
     ctx = dict(
         process=process,
@@ -253,9 +251,7 @@ def people(request, status=None):
 
 def person(request, key):
     from django.db.models import Min, Max
-    person = bmodels.Person.lookup(key)
-    if person is None:
-        return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
+    person = bmodels.Person.lookup_or_404(key)
 
     processes = person.processes \
             .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \

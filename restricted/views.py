@@ -20,6 +20,7 @@ from django.shortcuts import render_to_response, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
+from django.core.exceptions import PermissionDenied
 import backend.models as bmodels
 import minechangelogs.models as mmodels
 from backend import const
@@ -137,12 +138,10 @@ def amprofile(request, uid=None):
 
     if uid is None:
         person = request.person
+        am = person.am
     else:
-        try:
-            person = bmodels.Person.objects.get(uid=uid)
-        except bmodels.Person.DoesNotExist:
-            return http.HttpResponseNotFound("Person with uid %s not found" % uid)
-    am = person.am
+        am = bmodels.AM.lookup_or_404(uid)
+        person = am.person
 
     AMForm = make_am_form(am)
 
@@ -154,7 +153,7 @@ def amprofile(request, uid=None):
             if cur_am == am or cur_am.is_fd or cur_am.is_dam:
                 form.save()
             else:
-                return http.HttpResponseForbidden("Editing is restricted to the am and front desk members")
+                return PermissionDenied
             # TODO: message that it has been saved
     else:
         form = AMForm(instance=am)
@@ -192,9 +191,7 @@ def make_person_form(editor):
 
 @backend.auth.is_am
 def person(request, key):
-    person = bmodels.Person.lookup(key)
-    if person is None:
-        return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
+    person = bmodels.Person.lookup_or_404(key)
     process = person.active_processes
     # FIXME: for now, just pick the first one. To do things properly we need to
     #        be passed what process we should go back to
@@ -253,12 +250,10 @@ def newprocess(request, applying_for, key):
     """
     Create a new process
     """
-    person = bmodels.Person.lookup(key)
-    if person is None:
-        return http.HttpResponseNotFound("Person %s not found" % key)
+    person = bmodels.Person.lookup_or_404(key)
 
     if applying_for not in person.get_allowed_processes():
-        return http.HttpResponseForbidden("Person %s cannot start a %s process" % (key, applying_for))
+        raise PermissionDenied
 
     process = bmodels.Process(
         person=person,
@@ -281,11 +276,11 @@ def newprocess(request, applying_for, key):
 def db_export(request):
     # In theory, this isn't needed as it's enforced by DACS
     if request.user.is_anonymous():
-        return http.HttpResponseForbidden("You need to be logged in")
+        return PermissionDenied
 
     if "full" in request.GET:
         if not request.am or not request.am.is_admin:
-            return http.HttpResponseForbidden("You need to be FD or DAM to get a full DB export")
+            return PermissionDenied
         full = True
     else:
         full = False
@@ -327,9 +322,7 @@ def minechangelogs(request, key=None):
     info["last_indexed"] = datetime.datetime.fromtimestamp(info["last_indexed"])
 
     if key:
-        person = bmodels.Person.lookup(key)
-        if person is None:
-            return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
+        person = bmodels.Person.lookup_or_404(key)
     else:
         person = None
 
@@ -386,9 +379,7 @@ def impersonate(request, key=None):
     if key is None:
         del request.session["impersonate"]
     elif request.person.is_admin:
-        person = bmodels.Person.lookup(key)
-        if person is None:
-            return http.HttpResponseNotFound("Person %s not found" % key)
+        person = bmodels.Person.lookup_or_404(key)
         request.session["impersonate"] = person.lookup_key
 
     url = request.GET.get("url", None)
@@ -406,12 +397,10 @@ class AdvocateDDForm(forms.Form):
 def advocate_as_dd(request, key):
     from django.db.models import Min, Max
 
-    person = bmodels.Person.lookup(key)
-    if person is None:
-        return http.HttpResponseNotFound("Person with uid or email %s not found" % key)
+    person = bmodels.Person.lookup_or_404(key)
 
     if not request.person.can_advocate_as_dd(person):
-        return http.HttpResponseForbidden("Cannot advocate %s" % key)
+        return PermissionDenied
 
     dd_statuses = (const.STATUS_DD_U, const.STATUS_DD_NU)
     dm_statuses = (const.STATUS_DM, const.STATUS_DM_GA)
@@ -510,11 +499,9 @@ def nm_am_match(request):
         import textwrap
         # Perform assignment if requested
         am_key = request.POST.get("am", None)
-        am = bmodels.AM.lookup(am_key)
-        if am is None: return http.HttpResponseNotFound("AM %s not found" % am_key)
+        am = bmodels.AM.lookup_or_404(am_key)
         nm_key = request.POST.get("nm", None)
-        nm = bmodels.Process.lookup(nm_key)
-        if nm is None: return http.HttpResponseNotFound("NM %s not found" % nm_key)
+        nm = bmodels.Process.lookup_or_404(nm_key)
         nm.manager = am
         nm.progress = const.PROGRESS_AM_RCVD
         nm.save()
@@ -604,16 +591,15 @@ def nm_am_match(request):
                               context_instance=template.RequestContext(request))
 
 def mail_archive(request, key):
-    process = bmodels.Process.lookup(key)
-    if process is None:
-        return http.HttpResponseNotFound("Process %s not found." % key)
+    process = bmodels.Process.lookup_or_404(key)
 
     if not process.can_be_edited(request.am):
-        return http.HttpResponseForbidden("Cannot download mailbox for %s" % key)
+        return PermissionDenied
 
     fname = process.mailbox_file
     if fname is None:
-        return http.HttpResponseNotFound("No mailbox for process %s." % key)
+        from django.http import Http404
+        return Http404
 
     user_fname = "%s.mbox" % (process.person.uid or process.person.email)
 

@@ -314,6 +314,13 @@ class Person(models.Model):
         except cls.DoesNotExist:
             return None
 
+    @classmethod
+    def lookup_or_404(cls, key):
+        from django.http import Http404
+        res = cls.lookup(key)
+        if res is not None:
+            return res
+        raise Http404
 
 class AM(models.Model):
     """
@@ -430,6 +437,13 @@ class AM(models.Model):
         if p is None: return None
         return p.am_or_none
 
+    @classmethod
+    def lookup_or_404(cls, key):
+        from django.http import Http404
+        res = cls.lookup(key)
+        if res is not None:
+            return res
+        raise Http404
 
 class Process(models.Model):
     """
@@ -533,6 +547,14 @@ class Process(models.Model):
                 return p.processes.annotate(last_change=Max("log__logdate")).order_by("-last_change")[0]
             except IndexError:
                 return None
+
+    @classmethod
+    def lookup_or_404(cls, key):
+        from django.http import Http404
+        res = cls.lookup(key)
+        if res is not None:
+            return res
+        raise Http404
 
     @property
     def mailbox_file(self):
