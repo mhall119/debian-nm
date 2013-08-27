@@ -106,6 +106,19 @@
         </td>
     </tr>
     {% endif %}
+    <tr>
+      <th>Short Biography {% if person.bio %}<a href="javascript:toggle_person_bio(); ">+</a>{% endif %}</th>
+      {% if person.bio %}
+      <!--
+      <td class="personbio" id="expandedbio">
+	<textarea cols="50" rows="20" readonly="readonly">{{person.bio}}</textarea>
+	<a href="javascript:toggle_person_bio(); ">collapse</a>
+      </td>
+      -->
+      <td class="personbio" id="expandedbio">{{person.bio}}<br /><a href="javascript:toggle_person_bio(); ">collapse</a></td>
+      <td class="personbio" id="collapsedbio">{{person.bio|truncatechars:30}}</td>
+      {% else %}<td />{% endif %}
+    </tr>
 </table>
 
 {% if person|editable_by:request.am %}
@@ -133,4 +146,3 @@
 {% endif %}
 
 {% endblock %}
-

@@ -16,3 +16,14 @@ $(function() {
         });
     });
 });
+
+function toggle_person_bio () {
+    var personbios = $("td.personbio");
+    var th_bio_a = personbios.parent('tr').children('th').children('a');
+    if (th_bio_a.text() == "+") { th_bio_a.text("-"); } else { th_bio_a.text("+"); }
+    personbios.toggle()
+};
+
+$(function () {
+    $("td.personbio#collapsedbio").mouseover(function (ev) { toggle_person_bio(); });
+});

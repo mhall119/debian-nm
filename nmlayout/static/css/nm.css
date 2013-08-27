@@ -16,6 +16,12 @@ table.personinfo th {
     vertical-align: top;
 }
 
+/* expanded version of short bio is initially hidden */
+table.personinfo td.personbio#expandedbio {
+    white-space: pre-line;
+    display: none;
+}
+
 /* JQuery tablesorter common layout */
 table.tablesorter th {
     cursor: pointer
