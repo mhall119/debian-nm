@@ -107,33 +107,27 @@
         </td>
     </tr>
     {% endif %}
-    {% if person.bio or person|editable_by:request.am %}
-    <tr>
-      <th>Short Biography</th>
-      <!--
-      <td class="personbio" id="expandedbio">
-	<textarea cols="50" rows="20" readonly="readonly">{{person.bio}}</textarea>
-	<a href="javascript:toggle_person_bio(); ">collapse</a>
-      </td>
-      -->
-      <td class="personbio">
-      {% if person.bio %}
-        <div class="expanded">
-          {{person.bio|markdown:"safe"}}
-        </div>
-        <div class="collapsed">
-          {{person.bio|truncatechars:128}} <span class="expander">(expand)</span>
-        </div>
-      {% else %}
-        (missing)
-      {% endif %}
-      </td>
-    </tr>
-    {% endif %}
 </table>
 
 {% if person|editable_by:request.am %}
 <a href="{% url 'restricted_person' key=person.lookup_key %}">edit</a>
+{% endif %}
+
+{% if person.bio or person|editable_by:request.am %}
+<h2>Short Biography</h2>
+
+<div class="personbio">
+{% if person.bio %}
+  <div class="expanded">
+    {{person.bio|markdown:"safe"}}
+  </div>
+  <div class="collapsed">
+    {{person.bio|truncatechars:128}} <span class="expander">(expand)</span>
+  </div>
+{% else %}
+  (missing)
+{% endif %}
+</td>
 {% endif %}
 
 <h2>Personal history</h2>

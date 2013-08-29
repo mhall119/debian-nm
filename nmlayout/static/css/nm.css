@@ -7,14 +7,14 @@
 
 @import url("debian.css");
 
-td.personbio {
+div.personbio {
     cursor: pointer
 }
 
-td.personbio .expanded {
+div.personbio .expanded {
     display: none;
 }
-td.personbio .collapsed:hover .expander {
+div.personbio .collapsed:hover .expander {
     color: #0035c7;
 }
 

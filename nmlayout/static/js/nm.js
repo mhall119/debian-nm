@@ -18,7 +18,7 @@ $(function() {
 });
 
 $(function () {
-    $("td.personbio").click(function (ev) {
+    $("div.personbio").click(function (ev) {
         var el = $(this);
 	el.find(".collapsed").toggle();
 	el.find(".expanded").toggle();
