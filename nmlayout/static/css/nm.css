@@ -7,13 +7,15 @@
 
 @import url("debian.css");
 
-table.personinfo th {
-    /* Copied to match td, since the th is to the left of td in this table */
-    border: none;
-    background-image: url('Pics/greydot.png');
-    background-position: bottom left;
-    background-repeat: repeat-x;
-    vertical-align: top;
+td.personbio {
+    cursor: pointer
+}
+
+td.personbio .expanded {
+    display: none;
+}
+td.personbio .collapsed:hover .expander {
+    color: #0035c7;
 }
 
 /* expanded version of short bio is initially hidden */
