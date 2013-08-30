@@ -49,8 +49,5 @@ fields:
 
 
 ## Development
-Development targets Django 1.2, as it is the version available on Debian
-servers. Luckily django provides excellent backwards compatibility, so the only
-thing you have to pay attention to is the version of the Django documentation
-that you are reading. Check the version boxes in the bottom right of Diango
-documentation pages.
+Development targets Django 1.5, although the codebase has been created with
+Django 1.2 and it still shows in some places. Feel free to cleanup.
