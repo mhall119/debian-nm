@@ -1,0 +1,11 @@
+{% load nm %}
+
+Hello {{ person.fullname }},
+ your application to become a {{ process.applying_for|desc_status }}
+ was assigned to {{ process.manager.person.fullname }}.
+
+blah blah ... You will contacted ?? ... blah blah
+
+Best regards,
+
+Debian Front Desk Team
