@@ -4,7 +4,8 @@ Debian NM Front Desk web application
 ## Running this code on your own machine
 ### Dependencies
     
-    apt-get install python-django python-ldap python-psycopg2 python-xapian python-debian
+    apt-get install python-django python-ldap python-psycopg2 python-xapian \
+     python-debian python-django-south python-markdown
 
 ### Configuration
 
