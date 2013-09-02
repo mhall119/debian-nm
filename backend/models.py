@@ -234,7 +234,7 @@ class Person(models.Model):
         Return uid@debian.org if the person is a DD, else return the email
         field.
         """
-        if self.status in (const.const.STATUS_DD_U, const.STATUS_DD_NU):
+        if self.status in (const.STATUS_DD_U, const.STATUS_DD_NU):
             return "%s@debian.org" % self.uid
         else:
             return self.email

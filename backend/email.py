@@ -52,26 +52,26 @@ def parse_recipient_list(s):
     and return a list like ["Foo <a@b.c>", "bar@example.com"]
     """
     res = []
-    for name, email in email.utils.getaddresses([s]):
-        res.append(email.utils.formataddr(name, email))
+    for name, addr in email.utils.getaddresses([s]):
+        res.append(email.utils.formataddr((name, addr)))
     return res
 
-def send_notification(template_name, log, log_prev=None):
+def send_notification(template_name, log_next, log_prev=None):
     """
     Render a notification email template for a transition from log_prev to log,
     then send the resulting email.
     """
     try:
         ctx = {
-            "process": log.process,
-            "log": log,
+            "process": log_next.process,
+            "log": log_next,
             "log_prev": log_prev,
         }
         text = render_to_string(template_name, ctx).strip()
         m = email.message_from_string(text)
         msg = EmailMessage()
-        msg.from_email = m.get("From", log.changed_by.preferred_email)
-        msg.to = m.get("To", EMAIL_PRIVATE_ANNOUNCES)
+        msg.from_email = m.get("From", log_next.changed_by.preferred_email)
+        msg.to = parse_recipient_list(m.get("To", EMAIL_PRIVATE_ANNOUNCES))
         if "Cc" in m: msg.cc = parse_recipient_list(m.get("Cc"))
         if "Bcc" in m: msg.bcc = parse_recipient_list(m.get("Bcc"))
         msg.subject = m.get("Subject", "Notification from nm.debian.org")
@@ -79,12 +79,12 @@ def send_notification(template_name, log, log_prev=None):
         msg.send()
         log.debug("sent mail from %s to %s cc %s bcc %s subject %s",
                 msg.from_email,
-                msg.to.join(", "),
-                msg.cc.join(", "),
-                msg.bcc.join(", "),
+                ", ".join(msg.to),
+                ", ".join(msg.cc),
+                ", ".join(msg.bcc),
                 msg.subject)
     except:
         # TODO: remove raise once it works
         raise
-        log.debug("mailed to sent mail for log %s", log)
+        log.debug("mailed to sent mail for log %s", log_next)
 

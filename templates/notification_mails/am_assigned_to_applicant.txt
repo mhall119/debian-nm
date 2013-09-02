@@ -12,6 +12,7 @@ I have just assigned you a new NM applicant: {{process.person.fullname|safe}}, w
 {% if process.mailbox_file %}
 The mailbox with everything so far can be downloaded at:
 {% url 'download_mail_archive' key=process.lookup_key %}
+{% endif %}
 
 Note that you have not acknowledged the assignment yet, and could still refuse
 it, for example if you do not have time at the moment.
