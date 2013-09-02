@@ -769,6 +769,7 @@ class Log(models.Model):
     progress = models.CharField(max_length=20, null=False,
                                 choices=[(x.tag, x.ldesc) for x in const.ALL_PROGRESS])
 
+    is_public = models.BooleanField(default=False, null=False)
     logdate = models.DateTimeField(null=False, default=datetime.datetime.utcnow)
     logtext = TextNullField(null=True, blank=True)
 

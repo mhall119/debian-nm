@@ -100,6 +100,10 @@ def make_statusupdateform(editor):
             label=_("Log text"),
             widget=forms.Textarea(attrs=dict(rows=5, cols=80))
         )
+        log_is_public = forms.BooleanField(
+            required=False,
+            label=_("Log is public")
+        )
     return StatusUpdateForm
 
 def process(request, key):
@@ -131,7 +135,8 @@ def process(request, key):
                         changed_by=request.person,
                         process=process,
                         progress=process.progress,
-                        logtext=form.cleaned_data["logtext"]
+                        logtext=form.cleaned_data["logtext"],
+                        is_public=form.cleaned_data["log_is_public"]
                     )
                     log.save()
                     form = StatusUpdateForm(initial=dict(progress=process.progress))
