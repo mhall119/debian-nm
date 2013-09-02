@@ -18,7 +18,7 @@ class SimpleFixture(object):
         self.fd_am = bmodels.AM(person=self.fd, slots=1, is_am=True, is_fd=True, is_dam=True)
         self.fd_am.save()
 
-        self.am = bmodels.Person(cn="Jade", sn="Doe", email="jane@debian.org", uid="jane", status=bconst.STATUS_DD_U)
+        self.am = bmodels.Person(cn="Jane", sn="Doe", email="jane@janedoe.org", uid="jane", status=bconst.STATUS_DD_U)
         self.am.save()
 
         self.am_am = bmodels.AM(person=self.am, slots=1, is_am=True)
@@ -112,11 +112,13 @@ class NotificationTest(TransactionTestCase):
         self.p.process_dd.progress = bconst.PROGRESS_AM_RCVD
         self.p.process_dd.save()
 
-        l1 = bmodels.Log.for_process(self.p.process_dd)
-        l1.changed_by = self.p.fd
-        l1.logtext = "assigned_am"
-        l1.save()
+        l2 = bmodels.Log.for_process(self.p.process_dd)
+        l2.changed_by = self.p.fd
+        l2.logtext = "assigned_am"
+        l2.save()
 
         from django.core import mail
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ['me@example.com'])
+        self.assertEqual(mail.outbox[0].from_email, ['Enrico Zini <enrico@debian.org>'])
+        self.assertEqual(mail.outbox[0].to, ['Jane Doe <jane@debian.org>'])
+        self.assertEqual(mail.outbox[0].cc, ['archive-doctor=example.com@nm.debian.org'])
