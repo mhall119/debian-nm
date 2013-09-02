@@ -21,7 +21,7 @@ Please visit [1] to acknowledge the assignment and, later,
 to track the progress of the application. Please email
 nm@debian.org if you wish to decline the assignment.
 
-[1] {% url 'public_process', key=nm.lookup_key %}
+[1] {% url 'public_process' key=nm.lookup_key %}
 
 Have a good AMing, and if you need anything please mail nm@debian.org.
 
