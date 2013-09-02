@@ -67,7 +67,7 @@ def send_notification(template_name, log, log_prev=None):
             "log": log,
             "log_prev": log_prev,
         }
-        text = render_to_string("notification_mails/%s.txt" % template_name, ctx).strip()
+        text = render_to_string(template_name, ctx).strip()
         m = email.message_from_string(text)
         msg = EmailMessage()
         msg.from_email = m.get("From", log.changed_by.preferred_email)
