@@ -1,100 +1,20 @@
+{% comment %}
+Template context parameters:
+ person: the Person that got accepted.
+ process: the Process that the AM has approved.
+{% endcomment %}
 {% load nm %}
 
 Hello,
 
-Report for new developer applicant:
+I recommend to accept {{person|safe}} as a new {{process.applying_for|desc_status|safe}}.
+The account name is {{person.uid}}.
 
-   {{ person }}
+ * Applicant background
 
-1. Identification & Background
-------------------------------
-
-<<< Keyring elaboration >>> templatetags or just injected via context ??
-{% comment %}
-{% gpg --list-sigs person.fpr output ?? %}
-
-# Key ID: 0x710f68e2, signed by at least Carlo Segre.
-# Keycheck results:
-
-#    Syncing Debian Keyrings with rsync from keyring.debian.org
-#    Receiving and checking key
-#    gpg: requesting key 710F68E2 from hkp server subkeys.pgp.net
-#    pub   1024D/710F68E2 2003-06-26
-#          Key fingerprint = B67A CB32 C21F C4FE 6EDE  C081 75E1 C1E9 710F 68E2
-#    uid                  Brian Pellin <bpellin@gmail.com>
-#    sig!3        710F68E2 2007-08-02  Brian Pellin <bpellin@gmail.com>
-#    sig!3        710F68E2 2007-08-02  Brian Pellin <bpellin@gmail.com>
-#    sig!3        710F68E2 2008-03-12  Brian Pellin <bpellin@gmail.com>
-#    sig!         93701EEF 2008-07-20  Carlo Segre (Debian Developer) <segre@debian.org>
-#    uid                  Brian Pellin <bpellin@pellin.net>
-#    sig!3        710F68E2 2008-03-12  Brian Pellin <bpellin@gmail.com>
-#    sig!3        710F68E2 2003-06-26  Brian Pellin <bpellin@gmail.com>
-#    sig!3        710F68E2 2003-06-26  Brian Pellin <bpellin@gmail.com>
-#    sig!3        710F68E2 2003-07-30  Brian Pellin <bpellin@gmail.com>
-#    sig!         93701EEF 2008-07-20  Carlo Segre (Debian Developer) <segre@debian.org>
-#    uid                  Brian Pellin <bpellin@mcs.anl.gov>
-#    sig!3        710F68E2 2004-07-20  Brian Pellin <bpellin@gmail.com>
-#    sig!         93701EEF 2008-07-20  Carlo Segre (Debian Developer) <segre@debian.org>
-#    uid       [ revoked] Brian Pellin <bpellin@ntsource.com>
-#    sig!3        710F68E2 2003-07-30  Brian Pellin <bpellin@gmail.com>
-#    rev!         710F68E2 2008-07-20  Brian Pellin <bpellin@gmail.com>
-#    sig!         93701EEF 2008-07-20  Carlo Segre (Debian Developer) <segre@debian.org>
-#    uid       [ revoked] Brian Pellin (Razorline Systems, Inc.) <bpellin@razorline-systems.com>
-#    sig!3        710F68E2 2003-11-16  Brian Pellin <bpellin@gmail.com>
-#    rev!         710F68E2 2007-08-02  Brian Pellin <bpellin@gmail.com>
-#    rev!         710F68E2 2007-08-02  Brian Pellin <bpellin@gmail.com>
-#    rev!         710F68E2 2008-07-20  Brian Pellin <bpellin@gmail.com>
-#    sig!         93701EEF 2008-07-20  Carlo Segre (Debian Developer) <segre@debian.org>
-#    sub   2048g/C8EADD97 2003-06-26
-#    sig!         710F68E2 2003-06-26  Brian Pellin <bpellin@gmail.com>
-#    sub   4096g/E6D6D1FF 2003-11-16
-#    sig!         710F68E2 2003-11-16  Brian Pellin <bpellin@gmail.com>
-
-#    Let's test if its a version 4 or greater key
-#    Key is ok
-#    Check for key expire stuff
-#    Key has no expiration date set, nothing to check.
-
-{% end gpg --list-sigs persin.fpr output ?? %}
-{% endcomment %}
-
-
-Applicant background:
-
-   {{ person.bio }}
-
-2. Philosophy and Procedures
------------------------------
-?? {% for log in process.log.all %}
-{{log}}
-
-{% endfor %}
-
-{% comment %}
-# Brian has a good understanding of Debians Philosophy and Procedures.
-# He answered my Questions about Social Contract, DFSG, BTS etc. in a good
-# way.
-{% endcomment %}
-
-3. Tasks and Skills
--------------------
-
-Here ???
-{% comment %}
-# Brian is the maintainer of pdsh and genders, on which he is doing a good
-# job.
-
-# He answered my questions regarding T&S without problems.
-{% endcomment %}
-
-4. Recommendation
------------------
-
-I recommend to accept him as a {{ process.applying_for|desc_status }}.
-Account: {{ person.uid }}
-Forward-Email: {{ person.email }}
+{{person.bio|safe}}
 
 
 Regards,
 
-{{ process.manager.person.cn }}
+{{process.manager.person.cn|safe}}

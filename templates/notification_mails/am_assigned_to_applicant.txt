@@ -1,11 +1,28 @@
+{% comment %}
+Template context parameters:
+ nm: the Process we are talking about
+ author: the current value of request.person (FIXME: not available in signal handlers)
+{% endcomment %}
 {% load nm %}
 
-Hello {{ person.fullname }},
- your application to become a {{ process.applying_for|desc_status }}
- was assigned to {{ process.manager.person.fullname }}.
+Hello,
 
-blah blah ... You will contacted ?? ... blah blah
+I have just assigned you a new NM applicant: {{nm.person|safe}}, who is
+{{nm.person.status|desc_status|safe}} and is applying to be {{nm.applying_for|desc_status|safe}}.
 
-Best regards,
+{% if nm.mailbox_file %}
+The mailbox with everything so far can be downloaded at:
+{% url 'download_mail_archive' key=nm.lookup_key %}
 
-Debian Front Desk Team
+Note that you have not acknowledged the assignment yet, and could still refuse
+it, for example if you do not have time at the moment.
+
+Please visit [1] to acknowledge the assignment and, later,
+to track the progress of the application. Please email
+nm@debian.org if you wish to decline the assignment.
+
+[1] {% url 'public_process', key=nm.lookup_key %}
+
+Have a good AMing, and if you need anything please mail nm@debian.org.
+
+{{author|safe}} (for Front Desk)
