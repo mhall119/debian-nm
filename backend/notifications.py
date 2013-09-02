@@ -34,31 +34,6 @@ def maybe_notify_applicant_on_progress(log, previous_log):
     to_progress = log.progress
 
     ################################################################
-    # * When an AM approves the applicant, mail debian-newmaint
-
-    # This happens only when Process.progress goes from one of (am_rcvd,
-    #                                                            am, am_hold) to am_ok.
-
-    # Use case: the AM can decide to approve an applicant whatever previous
-    # progress they were in.
-
-    # The email shouldn't however be triggered if, for example, FD just
-    # unholds an application but hasn't finished with their review: that
-    # would be a (fd_hold -> am_ok) change.
-    ################################################################
-
-    if from_progress in (const.PROGRESS_AM_RCVD,
-                         const.PROGRESS_AM,
-                         const.PROGRESS_AM_HOLD):
-
-        if to_progress == const.PROGRESS_AM_OK:
-            # mail debian-newmaint AM approved Applicant
-            # with https://lists.debian.org/debian-newmaint/2009/04/msg00026.html
-            send_notification("notification_mails/public_am_approved_applicant.txt",
-                              log, previous_log)
-            return
-
-    ################################################################
     # * When they get in the queue to get an AM assigned
 
     #   This happens when Process.progress goes from [anything except app_ok]
@@ -83,8 +58,49 @@ def maybe_notify_applicant_on_progress(log, previous_log):
         if to_progress == const.PROGRESS_APP_OK:
             # mail applicant in the queue to get an AM assigned
             send_notification(
+                "notification_mails/applicant_waiting_for_am.txt",
+                log, previous_log)
+            return
+
+    ################################################################
+    # * When an AM is assigned to an applicant
+
+    #   This happens when Process.progress goes from app_ok to am_rcvd
+    ################################################################
+
+    if from_progress == const.PROGRESS_APP_OK:
+        if to_progress == const.PROGRESS_AM_RCVD:
+            # mail applicant in the queue to get an AM assigned
+            send_notification(
                 "notification_mails/am_assigned_to_applicant.txt",
                 log, previous_log)
+            return
+
+
+
+    ################################################################
+    # * When an AM approves the applicant, mail debian-newmaint
+
+    # This happens only when Process.progress goes from one of (am_rcvd,
+    #                                                            am, am_hold) to am_ok.
+
+    # Use case: the AM can decide to approve an applicant whatever previous
+    # progress they were in.
+
+    # The email shouldn't however be triggered if, for example, FD just
+    # unholds an application but hasn't finished with their review: that
+    # would be a (fd_hold -> am_ok) change.
+    ################################################################
+
+    if from_progress in (const.PROGRESS_AM_RCVD,
+                         const.PROGRESS_AM,
+                         const.PROGRESS_AM_HOLD):
+
+        if to_progress == const.PROGRESS_AM_OK:
+            # mail debian-newmaint AM approved Applicant
+            # with https://lists.debian.org/debian-newmaint/2009/04/msg00026.html
+            send_notification("notification_mails/am_approved_applicant.txt",
+                              log, previous_log)
             return
 
     ################################################################

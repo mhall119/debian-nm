@@ -1,0 +1,21 @@
+{% load nm %}
+From: {{log.changed_by|formataddr|safe}}
+To: {{process.person|formataddr|safe}}
+Cc: {{process.archive_email|safe}}
+Subject: Ready for DAM review
+
+Hello {{process.person.fullname|safe}},
+
+All your advocacies are ok and you are now waiting to get a new Application
+Manager assigned. This does not usually take more than a few days, unless there
+are no AMs available.
+
+You will receive an email as soon as a member of Front Desk performs the
+assignment, and you will be contacted by the AM shortly afterwards.
+
+For any problems, feel free to contact Front Desk at nm@debian.org.
+
+
+Regards,
+
+{{log.changed_by.fullname|safe}} (as Front Desk)

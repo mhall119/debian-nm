@@ -1,11 +1,21 @@
 {% load nm %}
+From: {{log.changed_by|formataddr|safe}}
+To: {{process.person|formataddr|safe}}
+Cc: nm@debian.org, {{process.archive_email|safe}}
+Subject: Ready for DAM review
 
-Hello {{ person.fullname }},
- your application to become a {{ process.applying_for|desc_status }}
- was approved by Debian Front Desk Team.
+Hello {{process.person.fullname|safe}},
 
-blah blah ... You will contacted ?? ... blah blah
+I checked your {{process.person.applying_for|desc_status|safe}} application
+for issues like missing emails or weak GPG keys and all seems fine.
 
-Best regards,
+I have passed your application on to Debian Account Managers, who will reread
+everything we have collected so far and make the final approval.
 
-Debian Front Desk Team
+This may take up to a month, depending on how busy are the DAMs. You will
+receive an email after DAMs is done.
+
+
+Regards,
+
+{{log.changed_by.fullname|safe}} (as Front Desk)

@@ -101,9 +101,32 @@ class LogTest(TransactionTestCase):
 class NotificationTest(TransactionTestCase):
     def setUp(self):
         self.p = SimpleFixture()
-        self.p.make_process_dd(bconst.PROGRESS_APP_OK)
+
+    def test_notify_am_queue(self):
+        self.p.make_process_dd(bconst.PROGRESS_ADV_RCVD)
+
+        l1 = bmodels.Log.for_process(self.p.process_dd)
+        l1.changed_by = self.p.fd
+        l1.logtext = "got advocates"
+        l1.save()
+
+        self.p.process_dd.progress = bconst.PROGRESS_APP_OK
+        self.p.process_dd.save()
+
+        l2 = bmodels.Log.for_process(self.p.process_dd)
+        l2.changed_by = self.p.fd
+        l2.logtext = "ready to get an AM"
+        l2.save()
+
+        from django.core import mail
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].from_email, 'Enrico Zini <enrico@debian.org>')
+        self.assertEqual(mail.outbox[0].to, ['John Smith <doctor@example.com>'])
+        self.assertEqual(mail.outbox[0].cc, ['archive-doctor=example.com@nm.debian.org'])
 
     def test_notify_assigned(self):
+        self.p.make_process_dd(bconst.PROGRESS_APP_OK)
+
         l1 = bmodels.Log.for_process(self.p.process_dd)
         l1.changed_by = self.p.fd
         l1.logtext = "ready to get an AM"
@@ -119,6 +142,50 @@ class NotificationTest(TransactionTestCase):
 
         from django.core import mail
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].from_email, ['Enrico Zini <enrico@debian.org>'])
+        self.assertEqual(mail.outbox[0].from_email, 'Enrico Zini <enrico@debian.org>')
         self.assertEqual(mail.outbox[0].to, ['Jane Doe <jane@debian.org>'])
         self.assertEqual(mail.outbox[0].cc, ['archive-doctor=example.com@nm.debian.org'])
+
+    def test_notify_am_approved(self):
+        self.p.make_process_dd(bconst.PROGRESS_AM)
+
+        l1 = bmodels.Log.for_process(self.p.process_dd)
+        l1.changed_by = self.p.am
+        l1.logtext = "all is good so far"
+        l1.save()
+
+        self.p.process_dd.progress = bconst.PROGRESS_AM_OK
+        self.p.process_dd.save()
+
+        l2 = bmodels.Log.for_process(self.p.process_dd)
+        l2.changed_by = self.p.am
+        l2.logtext = "what a fantastic applicant!"
+        l2.save()
+
+        from django.core import mail
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].from_email, 'Jane Doe <jane@debian.org>')
+        self.assertEqual(mail.outbox[0].to, ['debian-newmaint@lists.debian.org'])
+        self.assertEqual(mail.outbox[0].cc, ['John Smith <doctor@example.com>', 'nm@debian.org', 'archive-doctor=example.com@nm.debian.org'])
+
+    def test_notify_fd_approved(self):
+        self.p.make_process_dd(bconst.PROGRESS_AM_OK)
+
+        l1 = bmodels.Log.for_process(self.p.process_dd)
+        l1.changed_by = self.p.am
+        l1.logtext = "what a fantastic applicant!"
+        l1.save()
+
+        self.p.process_dd.progress = bconst.PROGRESS_FD_OK
+        self.p.process_dd.save()
+
+        l2 = bmodels.Log.for_process(self.p.process_dd)
+        l2.changed_by = self.p.fd
+        l2.logtext = "all good, ready for DAM"
+        l2.save()
+
+        from django.core import mail
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].from_email, 'Enrico Zini <enrico@debian.org>')
+        self.assertEqual(mail.outbox[0].to, ['John Smith <doctor@example.com>'])
+        self.assertEqual(mail.outbox[0].cc, ['nm@debian.org', 'archive-doctor=example.com@nm.debian.org'])
