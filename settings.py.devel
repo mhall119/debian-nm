@@ -33,6 +33,7 @@ DATABASES = {
         # ssh ries.debian.org -L15433:127.0.0.1:5433
         'PORT': '15433',                 # Port forwarded
         #'PORT': '5433',                  # Local
+        'TEST_MIRROR': 'default',
     },
 }
 

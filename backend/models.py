@@ -850,6 +850,21 @@ class Log(models.Model):
     def __unicode__(self):
         return u"%s: %s" % (self.logdate, self.logtext)
 
+    @property
+    def previous(self):
+        """
+        Return the previous log entry for this process.
+
+        This fails once every many years when the IDs wrap around, in which
+        case it may say that there are no previous log entries. It is ok if you
+        use it to send a mail notification, just do not use this method to
+        control a nuclear power plant.
+        """
+        try:
+            return Log.objects.filter(id__lt=self.id, process=self.process).order_by("-id")[0]
+        except IndexError:
+            return None
+
     @classmethod
     def for_process(cls, proc, **kw):
         kw.setdefault("process", proc)
