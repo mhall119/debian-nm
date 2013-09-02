@@ -2,7 +2,7 @@
 From: {{log.changed_by|formataddr|safe}}
 To: {{process.person|formataddr|safe}}
 Cc: {{process.archive_email|safe}}
-Subject: Ready for DAM review
+Subject: Waiting for an Application Manager
 
 Hello {{process.person.fullname|safe}},
 

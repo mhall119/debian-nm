@@ -6,14 +6,14 @@ Subject: Ready for DAM review
 
 Hello {{process.person.fullname|safe}},
 
-I checked your {{process.person.applying_for|desc_status|safe}} application
+I checked your '{{process.applying_for|desc_status|safe}}' application
 for issues like missing emails or weak GPG keys and all seems fine.
 
 I have passed your application on to Debian Account Managers, who will reread
 everything we have collected so far and make the final approval.
 
 This may take up to a month, depending on how busy are the DAMs. You will
-receive an email after DAMs is done.
+receive an email after this is done.
 
 
 Regards,

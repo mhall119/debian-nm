@@ -2,16 +2,16 @@
 From: {{log.changed_by|formataddr|safe}}
 To: debian-newmaint@lists.debian.org
 Cc: {{process.person|formataddr|safe}}, nm@debian.org, {{process.archive_email|safe}}
-Subject: Report for {{process.person.applying_for|desc_status|safe}} applicant {{process.person.fullname|safe}}
+Subject: Report for '{{process.applying_for|desc_status|safe}}' applicant {{process.person.fullname|safe}}
 
 Hello,
 
 I recommend to accept {{process.person.fullname|safe}} as a new {{process.applying_for|desc_status|safe}}.
-The account name is {{person.uid}}.
+The account name is {{process.person.uid}}.
 
  * Applicant background
 
-{{person.bio|safe}}
+{{process.person.bio|safe}}
 
 
 Regards,

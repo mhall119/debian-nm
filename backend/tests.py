@@ -10,6 +10,15 @@ import backend.models as bmodels
 import backend.const as bconst
 import datetime
 
+def dump_message(msg):
+    import sys
+    print >>sys.stderr, "FROM", msg.from_email
+    print >>sys.stderr, "TO", msg.to
+    print >>sys.stderr, "CC", msg.cc
+    print >>sys.stderr, "BCC", msg.bcc
+    print >>sys.stderr, "SUBJ", msg.subject
+    print >>sys.stderr, "BODY", msg.body
+
 class SimpleFixture(object):
     def __init__(self):
         self.fd = bmodels.Person(cn="Enrico", sn="Zini", email="enrico@debian.org", uid="enrico", status=bconst.STATUS_DD_U)
@@ -24,7 +33,7 @@ class SimpleFixture(object):
         self.am_am = bmodels.AM(person=self.am, slots=1, is_am=True)
         self.am_am.save()
 
-        self.nm = bmodels.Person(cn="John", sn="Smith", email="doctor@example.com", status=bconst.STATUS_MM)
+        self.nm = bmodels.Person(cn="John", sn="Smith", email="doctor@example.com", status=bconst.STATUS_MM, bio="I meet people, I do things.")
         self.nm.save()
 
     def make_process_dm(self, progress=bconst.PROGRESS_DONE):
