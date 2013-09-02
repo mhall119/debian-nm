@@ -212,6 +212,8 @@ MINECHANGELOGS_INDEXDIR = os.path.join(DATA_DIR, "mc_index")
 EMAIL_PUBLIC_ANNOUNCES = "enrico@enricozini.org"
 EMAIL_PRIVATE_ANNOUNCES = "enrico@enricozini.org"
 EMAIL_PERSONAL_DIVERT = ["enrico@enricozini.org"]
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = '/tmp/nm_notification_mails'
 
 PROCESS_MAILBOX_DIR = os.path.abspath("./test-mboxes")
 

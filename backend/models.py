@@ -229,6 +229,17 @@ class Person(models.Model):
             else:
                 return "%s %s %s" % (self.cn, self.mn, self.sn)
 
+    @property
+    def preferred_email(self):
+        """
+        Return uid@debian.org if the person is a DD, else return the email
+        field.
+        """
+        if self.status in (const.const.STATUS_DD_U, const.STATUS_DD_NU):
+            return "%s@debian.org" % self.uid
+        else:
+            return self.email
+
     def __unicode__(self):
         return u"%s <%s>" % (self.fullname, self.email)
 

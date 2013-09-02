@@ -75,6 +75,16 @@ def fingerprint(value, autoescape=None):
     return mark_safe("<span class='fpr'>%s</span>" % esc(formatted))
 fingerprint.needs_autoescape = True
 
+@register.filter
+def formataddr(person):
+    """
+    Return a formatted address like "Foo <foo@example.org>" for a Person
+    """
+    import email.utils
+    name = person.fullname
+    addr = person.preferred_email
+    return email.utils.formataddr((name, addr))
+
 @register.simple_tag
 def nm_js_support():
     res = []

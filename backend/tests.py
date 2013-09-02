@@ -96,3 +96,27 @@ class LogTest(TransactionTestCase):
 
         self.assertEquals(log_dd3.previous, log_dd2)
         self.assertEquals(log_dd3.previous.previous, log_dd1)
+
+
+class NotificationTest(TransactionTestCase):
+    def setUp(self):
+        self.p = SimpleFixture()
+        self.p.make_process_dd(bconst.PROGRESS_APP_OK)
+
+    def test_notify_assigned(self):
+        l1 = bmodels.Log.for_process(self.p.process_dd)
+        l1.changed_by = self.p.fd
+        l1.logtext = "ready to get an AM"
+        l1.save()
+
+        self.p.process_dd.progress = bconst.PROGRESS_AM_RCVD
+        self.p.process_dd.save()
+
+        l1 = bmodels.Log.for_process(self.p.process_dd)
+        l1.changed_by = self.p.fd
+        l1.logtext = "assigned_am"
+        l1.save()
+
+        from django.core import mail
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['me@example.com'])

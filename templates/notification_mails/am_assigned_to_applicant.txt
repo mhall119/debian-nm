@@ -1,18 +1,17 @@
-{% comment %}
-Template context parameters:
- nm: the Process we are talking about
- author: the current value of request.person (FIXME: not available in signal handlers)
-{% endcomment %}
 {% load nm %}
+From: {{log.changed_by|formataddr|safe}}
+To: {{process.manager.person|formataddr|safe}}
+Cc: {{process.archive_email|safe}}
+Subject: New {{process.person.applying_for|desc_status|safe}} applicant {{process.person.fullname|safe}}
 
 Hello,
 
-I have just assigned you a new NM applicant: {{nm.person|safe}}, who is
-{{nm.person.status|desc_status|safe}} and is applying to be {{nm.applying_for|desc_status|safe}}.
+I have just assigned you a new NM applicant: {{process.person.fullname|safe}}, who is
+{{process.person.status|desc_status|safe}} and is applying to be {{process.person.applying_for|desc_status|safe}}.
 
-{% if nm.mailbox_file %}
+{% if process.mailbox_file %}
 The mailbox with everything so far can be downloaded at:
-{% url 'download_mail_archive' key=nm.lookup_key %}
+{% url 'download_mail_archive' key=process.lookup_key %}
 
 Note that you have not acknowledged the assignment yet, and could still refuse
 it, for example if you do not have time at the moment.
@@ -21,8 +20,8 @@ Please visit [1] to acknowledge the assignment and, later,
 to track the progress of the application. Please email
 nm@debian.org if you wish to decline the assignment.
 
-[1] {% url 'public_process' key=nm.lookup_key %}
+[1] {% url 'public_process' key=process.lookup_key %}
 
 Have a good AMing, and if you need anything please mail nm@debian.org.
 
-{{author|safe}} (for Front Desk)
+{{log.changed_by.fullname|safe}} (for Front Desk)
