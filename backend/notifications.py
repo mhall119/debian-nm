@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import absolute_import
-from django.conf import settings
-from django.template.loader import render_to_string
 from . import const
 from .email import send_notification
 
