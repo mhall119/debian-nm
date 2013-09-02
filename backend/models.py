@@ -22,13 +22,12 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 from . import const
-from backend.notifications import maybe_notify_applicant_on_process
-import threading
+from backend.notifications import maybe_notify_applicant_on_progress
 import datetime
 import urllib
 import os.path
 from south.modelsinspector import add_introspection_rules
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import post_save
 
 
 PROCESS_MAILBOX_DIR = getattr(settings, "PROCESS_MAILBOX_DIR", "/srv/nm.debian.org/mbox/applicants/")
@@ -495,17 +494,6 @@ class Process(models.Model):
     archive_key = models.CharField("mailbox archive key", max_length=128, null=False, unique=True)
 
 
-    def __init__(self, *args, **kwargs):
-        super(Process, self).__init__(*args, **kwargs)
-        # l = getLogger('notification-dbg')
-        # l.debug("__init__'d: %s at %s", self, object.__repr__(self))
-        # l.debug("__init__'d with: args=%s - kwargs=%s", args, kwargs)
-        if self.pk:
-            # Existing process, cache actual progress to allow delayed
-            # evaluation for notifications
-            self._last_saved_progress = self.progress
-
-
     def save(self, *args, **kw):
         if not self.archive_key:
             ts = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
@@ -765,80 +753,6 @@ class Process(models.Model):
         self.person.save()
 
 
-def pre_save_process(sender, **kw):
-    # l = getLogger('notification-dbg')
-    # l.debug("pre kw: %s", kw)
-    proc = kw.get('instance', None)
-    if sender is not Process or not proc or kw.get('raw', False):  ## about force_insert ??
-        return
-    if not hasattr(proc, '_last_saved_progress'):
-        if getattr(proc, 'pk', None):
-            ## really strange, we have to query db to get last progress status
-            # l.warning("Query to get saved progress ... %s", proc.pk)
-            ### To prevent insane programmer behaivor (es: Process(pk=1).save())
-            ### to break all, catch DoesNotExist during query
-            try:
-                old_progress = getattr(
-                    Process.objects.get(pk=proc.pk), 'progress', None)
-            except Process.DoesNotExist:
-                setattr(proc, '_last_saved_progress', None)
-            else:
-                setattr(proc, '_last_saved_progress', old_progress)
-        else:
-            ## this is a new record, will be created=True in post_save
-            ## we need only to ensure '_last_saved_progress' attr presence
-            setattr(proc, '_last_saved_progress', None)
-    # l.debug("pre last progress %s", getattr(proc, '_last_saved_progress'))
-    assert(hasattr(proc, '_last_saved_progress'))
-
-
-def post_save_process(sender, **kw):
-    # kw parameters are:
-    # * sender (Model connected)
-    # * instance (recorde saved)
-    # * created (bool)
-    # * raw (over transaction, used in fixtures)
-    # * using (which database saved into)
-    # * update_fields (names field for partial update)
-    # What of above parameters have to be evaluated for notification ???
-
-    # l = getLogger('notification-dbg')
-    # l.debug("post kw: %s", kw)
-    proc = kw.get('instance', None)
-    if sender is not Process or not proc or kw.get('raw', False):
-        return
-    if 'created' not in kw:
-        # this is a django BUG
-        return
-    if kw.get('update_fields', None) and 'progress' not in kw.get('update_fields'):
-        ## this update don't concern progress status, nothing to do
-        return
-    if not kw.get('created'):
-        # checks for progress transition
-        # pre_save ensure '_last_saved_progress' presence
-        if proc._last_saved_progress == proc.progress:
-            return
-
-        ### evaluate the progress transition to notify applicant
-        ### maybe `using' can change evaluation ? we should pass it also ?
-        ### remember we are during Process.save() method execution, we
-        ### detach a thread to unblock Process.save() during send_mail
-        # l.debug("in post save th[%s] spawn thread notifier", threading.current_thread())
-        maybe_mail_sender = threading.Thread(
-            target=maybe_notify_applicant_on_process,
-            args=[proc, proc._last_saved_progress])
-        maybe_mail_sender.setDaemon(True)
-        maybe_mail_sender.start()
-        # maybe_notify_applicant_on_process(
-        #     proc, proc._last_saved_progress)
-
-    ## next progress transition start from here for this instance
-    setattr(proc, '_last_saved_progress', proc.progress)
-
-pre_save.connect(pre_save_process, sender=Process, dispatch_uid="Process_pre_save_signal")
-post_save.connect(post_save_process, sender=Process, dispatch_uid="Process_post_save_signal")
-
-
 class Log(models.Model):
     """
     A log entry about anything that happened during a process
@@ -881,6 +795,26 @@ class Log(models.Model):
         kw.setdefault("process", proc)
         kw.setdefault("progress", proc.progress)
         return cls(**kw)
+
+
+def post_save_log(sender, **kw):
+    log = kw.get('instance', None)
+    if sender is not Log or not log or kw.get('raw', False):
+        return
+    if 'created' not in kw:
+        # this is a django BUG
+        return
+    if kw.get('created'):
+        # checks for progress transition
+        previous_log = log.previous
+        if previous_log is None or previous_log.progress == log.progress:
+            return
+
+        ### evaluate the progress transition to notify applicant
+        ### remember we are during Process.save() method execution
+        maybe_notify_applicant_on_progress(log, previous_log)
+
+post_save.connect(post_save_log, sender=Log, dispatch_uid="Log_post_save_signal")
 
 
 MOCK_FD_COMMENTS = [

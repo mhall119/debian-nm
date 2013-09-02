@@ -19,33 +19,19 @@
 from __future__ import absolute_import
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.core.mail import send_mail
-import email.utils
-
 from . import const
+from .email import send_notification
 
-EMAIL_PUBLIC_ANNOUNCES = getattr(settings, "EMAIL_PUBLIC_ANNOUNCES", "debian-newmaint@lists.debian.org")
-FROM_EMAIL_FOR_ANNOUNCES = getattr(settings, "EMAIL_PRIVATE_ANNOUNCES", "nm@debian.org")
-
-def maybe_notify_applicant_on_process(on_process, from_progress):
+def maybe_notify_applicant_on_progress(log, previous_log):
     """
     Notify applicant via e-mail about progress of this process, if it is interesting.
     """
-    from django.utils.log import getLogger
-    import threading
-    l = getLogger('notification-dbg')
-    l.debug("[Notifier th[%s]] %s has process progress from %s to %s",
-           threading.current_thread(), on_process.person, from_progress, on_process.progress)
-
-    if not bool(from_progress):
-        ## this is strange, do nothing
+    if previous_log is None:
+        ## this is strange no previous log, do nothing
         return
 
-    l.debug("[Notifier] begin evaluation")
-
-    person = on_process.person
-    to_progress = on_process.progress
-    fromaddr = email.utils.formataddr(("Debian Project New Member system", FROM_EMAIL_FOR_ANNOUNCES))
+    from_progress = previous_log.progress
+    to_progress = log.progress
 
     ################################################################
     # * When an AM approves the applicant, mail debian-newmaint
@@ -68,20 +54,8 @@ def maybe_notify_applicant_on_process(on_process, from_progress):
         if to_progress == const.PROGRESS_AM_OK:
             # mail debian-newmaint AM approved Applicant
             # with https://lists.debian.org/debian-newmaint/2009/04/msg00026.html
-            text = render_to_string(
-                "notification_mails/public_am_approved_applicant.txt",
-                dict(person=person, process=on_process))
-            subject = u"Report for applicant %s" % unicode(person)
-            send_mail(subject, text, fromaddr, [EMAIL_PUBLIC_ANNOUNCES])
-            # Also mail Applicant explaining the next step
-            text = render_to_string(
-                "notification_mails/am_approved_applicant.txt",
-                dict(person=person, process=on_process))
-            subject = "Application approved by %s (your AM)" % \
-                      unicode(on_process.manager.person.fullname)
-            send_mail(subject, text, fromaddr, [person.email])
-            l.debug("[Notifier] mail sent for %s -> %s",
-                    from_progress, to_progress)
+            send_notification("notification_mails/public_am_approved_applicant.txt",
+                              log, previous_log)
             return
 
     ################################################################
@@ -108,13 +82,9 @@ def maybe_notify_applicant_on_process(on_process, from_progress):
 
         if to_progress == const.PROGRESS_APP_OK:
             # mail applicant in the queue to get an AM assigned
-            text = render_to_string(
+            send_notification(
                 "notification_mails/am_assigned_to_applicant.txt",
-                dict(person=person, process=on_process))
-            subject = u"Application Manager assigned"
-            send_mail(subject, text, fromaddr, [person.email])
-            l.debug("[Notifier] mail sent for %s -> %s",
-                    from_progress, to_progress)
+                log, previous_log)
             return
 
     ################################################################
@@ -128,14 +98,6 @@ def maybe_notify_applicant_on_process(on_process, from_progress):
 
         if to_progress == const.PROGRESS_FD_OK:
             # mail applicant in the queue to get an AM assigned
-            text = render_to_string(
-                "notification_mails/fd_approved_applicant.txt",
-                dict(person=person, process=on_process))
-            subject = u"Application Manager assigned"
-            send_mail(subject, text, fromaddr, [person.email])
-            l.debug("[Notifier] mail sent for %s -> %s",
-                    from_progress, to_progress)
+            send_notification("notification_mails/fd_approved_applicant.txt",
+                              log, previous_log)
             return
-
-    l.debug("[Notifier] No mail sent Why ?? %s -> %s",
-            from_progress, to_progress)
