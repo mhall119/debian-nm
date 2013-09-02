@@ -30,22 +30,7 @@ If you are an Application Manager, you can look at:
     <li><a href="{% url 'restricted_db_export' %}">Database export you can use to setup a development site</a></li>
 </ul>
 
-Other TODO list items:
-
-<ul>
-    <li>icons for statuses (DM, DD, ...), progresses and NM roles (AM, FD, DAM)</li>
-    <li>keycheck front-end</li>
-    <li>send mail on DAM approval, and maybe on other steps, too</li>
-    <li>apply for DM</li>
-    <li>apply for guest account</li>
-    <li>apply for collab-maint commit access</li>
-    <li>use <a href="https://docs.djangoproject.com/en/1.2/ref/contrib/messages/">django messages</a> to give feedback after form submissions or nontrivial redirects</li>
-    <li>we need a way (like a secret token sent via email) for people without an account on LDAP to access the complete information about themselves</li>
-    <li>when a key/account is really activated, automatically move from DAM_OK to DONE</li>
-    <li>IRC bot to update stats in the #debian-newmaint channel topic</li>
-    {% if request.am %}
-    <li>in /public/process, allow to assign an AM when the applicant is in status APP_OK</li>
-    {% endif %}
-</ul>
+If you would like to help with site development, have a look at
+<a href="https://wiki.debian.org/Teams/FrontDesk/NmSiteDevel">the TODO list</a>.
 
 {% endblock %}
