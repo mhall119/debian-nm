@@ -397,7 +397,6 @@ class AdvocateDDForm(forms.Form):
     uploading = forms.BooleanField(required=False, label=_("Upload rights"))
     logtext = forms.CharField(required=True, label=_("Advocacy message"), widget=forms.Textarea(attrs={'cols': 80, 'rows': 30}))
 
-
 def advocate_as_dd(request, key):
     from django.db.models import Min, Max
 
@@ -468,24 +467,19 @@ def advocate_as_dd(request, key):
             # Add advocate
             proc.advocates.add(request.person)
             # Log the change
-            text = "I advocate %s to become %s DD.\nAdvocacy text:\n\n%s" % (
-                person.fullname,
-                ("uploading" if proc.applying_for==const.STATUS_DD_U else "non-uploading"),
-                form.cleaned_data["logtext"])
+            text = form.cleaned_data["logtext"]
             if 'impersonate' in request.session:
                 text = "[%s as %s] %s" % (request.user, request.person.lookup_key, text)
             lt = bmodels.Log(
                 changed_by=request.person,
                 process=proc,
                 progress=proc.progress,
+                is_public=True,
                 logtext=text,
             )
             lt.save()
             # Send mail
-            backend.email.announce_public(request, "Advocacy for %s" % person.fullname,
-                                          "Hello,\n\n%s\n\n%s (via nm.debian.org)\n" % (
-                                              lt.logtext,
-                                              request.person.fullname))
+            backend.email.send_notification("notification_mails/advocacy_as_dd.txt", lt)
             return redirect('public_process', key=proc.lookup_key)
     else:
         initial = dict(uploading=is_dm)

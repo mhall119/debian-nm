@@ -1,0 +1,14 @@
+{% load nm %}
+From: {{ log.changed_by.fullname|safe }} via nm <{{ log.changed_by.preferred_email }}>
+To: debian-newmaint@lists.debian.org
+Cc: {{log.process.person|formataddr|safe}}, nm@debian.org, {{log.process.archive_email|safe}}
+Subject: Advocacy for {{ log.process.person.fullname|safe }}
+
+Hello,
+
+I advocate {{ log.process.person.fullname }} to become {{ log.process.applying_for|desc_status }}.
+Advocacy text:
+
+{{ log.logtext }}
+
+{{ log.changed_by.fullname }} (via nm.debian.org)

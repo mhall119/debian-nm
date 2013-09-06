@@ -68,7 +68,7 @@ def send_notification(template_name, log_next, log_prev=None):
             "log_prev": log_prev,
         }
         text = render_to_string(template_name, ctx).strip()
-        m = email.message_from_string(text)
+        m = email.message_from_string(text.encode('utf-8'))
         msg = EmailMessage()
         msg.from_email = m.get("From", log_next.changed_by.preferred_email)
         msg.to = parse_recipient_list(m.get("To", EMAIL_PRIVATE_ANNOUNCES))
@@ -87,4 +87,3 @@ def send_notification(template_name, log_next, log_prev=None):
         # TODO: remove raise once it works
         raise
         log.debug("mailed to sent mail for log %s", log_next)
-
