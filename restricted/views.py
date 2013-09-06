@@ -264,10 +264,14 @@ def newprocess(request, applying_for, key):
     )
     process.save()
 
+    text=""
+    if 'impersonate' in request.session:
+        text = "[%s as %s]" % (request.user, request.person.lookup_key)
     log = bmodels.Log(
         changed_by=request.person,
         process=process,
         progress=process.progress,
+        logtext=text,
     )
     log.save()
 
@@ -451,24 +455,30 @@ def advocate_as_dd(request, key):
                     is_active=True)
                 proc.save()
                 # Log the change
+                text = "Process created by %s advocating %s" % (request.person.lookup_key, person.fullname)
+                if 'impersonate' in request.session:
+                    text = "[%s as %s] %s" % (request.user, request.person.lookup_key, text)
                 lt = bmodels.Log(
                     changed_by=request.person,
                     process=proc,
                     progress=const.PROGRESS_APP_NEW,
-                    logtext="Process created by %s advocating %s" % (request.person.lookup_key, person.fullname),
+                    logtext=text,
                 )
                 lt.save()
             # Add advocate
             proc.advocates.add(request.person)
             # Log the change
+            text = "I advocate %s to become %s DD.\nAdvocacy text:\n\n%s" % (
+                person.fullname,
+                ("uploading" if proc.applying_for==const.STATUS_DD_U else "non-uploading"),
+                form.cleaned_data["logtext"])
+            if 'impersonate' in request.session:
+                text = "[%s as %s] %s" % (request.user, request.person.lookup_key, text)
             lt = bmodels.Log(
                 changed_by=request.person,
                 process=proc,
                 progress=proc.progress,
-                logtext="I advocate %s to become %s DD.\nAdvocacy text:\n\n%s" % (
-                    person.fullname,
-                    ("uploading" if proc.applying_for==const.STATUS_DD_U else "non-uploading"),
-                    form.cleaned_data["logtext"])
+                logtext=text,
             )
             lt.save()
             # Send mail
@@ -518,6 +528,8 @@ def nm_am_match(request):
         )
         l = bmodels.Log.for_process(nm, changed_by=request.person)
         l.logtext = "Assigned to %(amuid)s" % parms
+        if 'impersonate' in request.session:
+            l.logtext = "[%s as %s] %s" % (request.user, request.person.lookup_key, l.logtext)
         l.save()
         # Send mail
         lines = [

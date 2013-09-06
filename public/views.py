@@ -131,11 +131,16 @@ def process(request, key):
                         process.manager = None
                     process.progress = form.cleaned_data["progress"]
                     process.save()
+                    text = form.cleaned_data["logtext"]
+                    if 'impersonate' in request.session:
+                        text = "[%s as %s] %s" % (request.user,
+                                                  request.person.lookup_key,
+                                                  text)
                     log = bmodels.Log(
                         changed_by=request.person,
                         process=process,
                         progress=process.progress,
-                        logtext=form.cleaned_data["logtext"],
+                        logtext=text,
                         is_public=form.cleaned_data["log_is_public"]
                     )
                     log.save()
