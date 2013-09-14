@@ -659,27 +659,31 @@ class Process(models.Model):
             key = self.person.email.replace("@", "=")
         return "archive-%s@nm.debian.org" % key
 
-    def can_be_edited(self, am=None):
+    def mail_archive_readable_by(self, person):
         """
-        Can this process be updated?
+        Can \a person read this process' mail archive?
+        """
+        # If we were passed an AM object, cast it down to a person
+        person = person.person
 
-        If am is not None, also check that the process can be updated by the
-        given AM; else, it is the same as is_active.
-        """
-        # FD and DAM can edit anything
-        if am is not None and (am.is_fd or am.is_dam):
+        # FD and DAM can see everything
+        if person.is_admin:
             return True
 
-        # If the process is closed, then AMs cannot edit it
-        if not self.is_active:
-            return False
-
-        # If we do not check by AM, we're done
-        if am is None:
+        # The person can see it
+        if person == self.person:
             return True
 
-        # Otherwise the AM can edit if manager of this process
-        return self.manager == am
+        # Advocates can see it
+        if person in self.advocates:
+            return True
+
+        # The AM can see it
+        am = person.am_or_none
+        if am and self.manager == am:
+            return True
+
+        return False
 
     class DurationStats(object):
         AM_STATUSES = frozenset((const.PROGRESS_AM_HOLD, const.PROGRESS_AM))
