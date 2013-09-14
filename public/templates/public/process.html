@@ -213,7 +213,7 @@ See: <a href="http://lists.debian.org/debian-project/2010/09/msg00026.html">hand
 
 <h2>Personal information</h2>
 
-{% if can_edit %}
+{% if perms.can_edit_anything %}
 {% if process.progress == PROGRESS_AM_OK %}
 <div id="checklist">{% include "public/checklist-fd-checks.html" %}</div>
 {% endif %}
@@ -239,7 +239,7 @@ See: <a href="http://lists.debian.org/debian-project/2010/09/msg00026.html">hand
     <tr><th>Process</th><td>{{process.applying_as|desc_status}} → {{process.applying_for|desc_status}}</td></tr>
     <tr><th>Progress</th><td>{{process.progress|desc_progress}}</td></tr>
     <tr><th>Account created</th><td>{% if process.progress == PROGRESS_DONE %}yes{% else %}no{% endif %}</td></tr>
-    {% if can_edit %}
+    {% if perms.can_edit_anything %}
     <tr><th>FD comments</th><td>{{person.fd_comment}}</td></tr>
     <tr><th>Mail archive</th>
         <td>
@@ -252,11 +252,11 @@ See: <a href="http://lists.debian.org/debian-project/2010/09/msg00026.html">hand
         </td>
     {% endif %}
 </table>
-{% if can_edit %}
+{% if perms.can_edit_anything %}
 <a href="{% url 'restricted_person' key=person.lookup_key %}">Edit personal information</a>
 {% endif %}
 
-{% if can_edit %}
+{% if form %}
 
 <h2>Progress to become {{ process.applying_for|desc_status }}</h2>
 

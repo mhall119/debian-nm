@@ -108,50 +108,47 @@ def make_statusupdateform(editor):
 
 def process(request, key):
     process = bmodels.Process.lookup_or_404(key)
+    perms = process.permissions_of(request.person)
 
     ctx = dict(
         process=process,
         person=process.person,
+        perms=perms,
     )
 
     # Process form ASAP, so we compute the rest with updated values
     am = request.am
-    if am:
-        can_edit = process.is_active and (am.is_fd or am.is_dam or am == process.manager)
-        ctx["can_edit"] = can_edit
-
-        if can_edit:
-            StatusUpdateForm = make_statusupdateform(am)
-            if request.method == 'POST':
-                form = StatusUpdateForm(request.POST)
-                if form.is_valid():
-                    if form.cleaned_data["progress"] == const.PROGRESS_APP_OK \
-                       and process.progress in [const.PROGRESS_AM_HOLD, const.PROGRESS_AM, const.PROGRESS_AM_RCVD]:
-                        # Unassign from AM
-                        process.manager = None
-                    process.progress = form.cleaned_data["progress"]
-                    process.save()
-                    text = form.cleaned_data["logtext"]
-                    if 'impersonate' in request.session:
-                        text = "[%s as %s] %s" % (request.user,
-                                                  request.person.lookup_key,
-                                                  text)
-                    log = bmodels.Log(
-                        changed_by=request.person,
-                        process=process,
-                        progress=process.progress,
-                        logtext=text,
-                        is_public=form.cleaned_data["log_is_public"]
-                    )
-                    log.save()
-                    form = StatusUpdateForm(initial=dict(progress=process.progress))
-            else:
+    if am and process.manager == am and perms.can_edit_anything:
+        StatusUpdateForm = make_statusupdateform(am)
+        if request.method == 'POST':
+            form = StatusUpdateForm(request.POST)
+            if form.is_valid():
+                if form.cleaned_data["progress"] == const.PROGRESS_APP_OK \
+                    and process.progress in [const.PROGRESS_AM_HOLD, const.PROGRESS_AM, const.PROGRESS_AM_RCVD]:
+                    # Unassign from AM
+                    process.manager = None
+                process.progress = form.cleaned_data["progress"]
+                process.save()
+                text = form.cleaned_data["logtext"]
+                if 'impersonate' in request.session:
+                    text = "[%s as %s] %s" % (request.user,
+                                                request.person.lookup_key,
+                                                text)
+                log = bmodels.Log(
+                    changed_by=request.person,
+                    process=process,
+                    progress=process.progress,
+                    logtext=text,
+                    is_public=form.cleaned_data["log_is_public"]
+                )
+                log.save()
                 form = StatusUpdateForm(initial=dict(progress=process.progress))
         else:
-            form = None
-        ctx["form"] = form
+            form = StatusUpdateForm(initial=dict(progress=process.progress))
     else:
-        ctx["can_edit"] = False
+        form = None
+
+    ctx["form"] = form
 
     log = list(process.log.order_by("logdate", "progress"))
     if log:
