@@ -588,8 +588,9 @@ def nm_am_match(request):
 
 def mail_archive(request, key):
     process = bmodels.Process.lookup_or_404(key)
+    perms = process.permissions_of(request.person)
 
-    if not process.mail_archive_readable_by(request.person):
+    if not perms.can_view_email:
         return PermissionDenied
 
     fname = process.mailbox_file
