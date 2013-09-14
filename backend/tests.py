@@ -213,82 +213,94 @@ class PermissionTest(TransactionTestCase):
     def setUp(self):
         self.p = SimpleFixture()
 
-    def test_bio_editable_by(self):
-        # One can edit their own bio at any time
-        self.assertTrue(self.p.nm.bio_editable_by(self.p.nm))
+    def test_permissions(self):
+        ## A DC without a process open
 
-        # Unrelated people cannot touch each other's info
-        self.assertFalse(self.p.nm.bio_editable_by(self.p.am))
-        self.assertFalse(self.p.nm.bio_editable_by(self.p.am_am))
+        # Permissions of self
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "blm")
+        # Permissions of an unrelated DD
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "---")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.am_am)), "---")
+        # Permissions of FD
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "blm")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd_am)), "blm")
 
-        # FD can
-        self.assertTrue(self.p.nm.bio_editable_by(self.p.fd))
-        self.assertTrue(self.p.nm.bio_editable_by(self.p.fd_am))
-
-        # Create a process
+        ## Create a process
         proc = self.p.make_process_dd(progress=bconst.PROGRESS_APP_OK, advocate=self.p.adv)
 
-        # Now the AM and the advocate can also edit the bio
-        self.assertTrue(self.p.nm.bio_editable_by(self.p.nm))
-        self.assertTrue(self.p.nm.bio_editable_by(self.p.am))
-        self.assertTrue(self.p.nm.bio_editable_by(self.p.adv))
-        self.assertTrue(self.p.nm.bio_editable_by(self.p.fd))
-        # Unrelated DDs still cannot edit this bio
-        self.assertFalse(self.p.nm.bio_editable_by(self.p.dd))
+        # Permissions of self
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "blm")
+        # Permissions of an unrelated DD
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.dd)), "---")
+        # Permissions of the advocate
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.adv)), "blm")
+        # Permissions of the AM
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "blm")
+        # Permissions of FD
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "blm")
 
-        # Put the process in FD's hands
+        # Permissions of self
+        self.assertEquals(str(proc.permissions_of(self.p.nm)), "blm")
+        # Permissions of an unrelated DD
+        self.assertEquals(str(proc.permissions_of(self.p.dd)), "---")
+        # Permissions of the advocate
+        self.assertEquals(str(proc.permissions_of(self.p.adv)), "blm")
+        # Permissions of the AM
+        self.assertEquals(str(proc.permissions_of(self.p.am)), "blm")
+        # Permissions of FD
+        self.assertEquals(str(proc.permissions_of(self.p.fd)), "blm")
+
+        ## Put the process in FD's hands
         proc.progress = bconst.PROGRESS_FD_OK
         proc.save()
 
-        # People can edit the bio like before
-        self.assertTrue(self.p.nm.bio_editable_by(self.p.nm))
-        self.assertTrue(self.p.nm.bio_editable_by(self.p.am))
-        self.assertTrue(self.p.nm.bio_editable_by(self.p.adv))
-        self.assertTrue(self.p.nm.bio_editable_by(self.p.fd))
-        # Unrelated DDs still cannot edit this bio
-        self.assertFalse(self.p.nm.bio_editable_by(self.p.dd))
+        # Permissions of self
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "b-m")
+        # Permissions of an unrelated DD
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.dd)), "---")
+        # Permissions of the advocate
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.adv)), "b-m")
+        # Permissions of the AM
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "b-m")
+        # Permissions of FD
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "blm")
 
-    def test_ldap_editable_by(self):
-        # One cannot edit their own LDAP fields without an active process
-        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.nm))
-
-        # Unrelated people cannot touch each other's info
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.am))
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.am_am))
-
-        # FD can only if there is no LDAP entry yet
-        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.fd))
-        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.fd_am))
-
-        # Create a process
-        proc = self.p.make_process_dd(progress=bconst.PROGRESS_APP_OK, advocate=self.p.adv)
-
-        # Now the AM and the advocate can also edit the ldap_fields
-        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.nm))
-        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.am))
-        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.adv))
-        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.fd))
-        # Unrelated DDs still cannot edit this ldap_fields
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.dd))
-
-        # Put the process in FD's hands
-        proc.progress = bconst.PROGRESS_FD_OK
-        proc.save()
-
-        # Now only FD and DAM can edit things
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.nm))
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.am))
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.adv))
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.dd))
-        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.fd))
+        # Permissions of self
+        self.assertEquals(str(proc.permissions_of(self.p.nm)), "b-m")
+        # Permissions of an unrelated DD
+        self.assertEquals(str(proc.permissions_of(self.p.dd)), "---")
+        # Permissions of the advocate
+        self.assertEquals(str(proc.permissions_of(self.p.adv)), "b-m")
+        # Permissions of the AM
+        self.assertEquals(str(proc.permissions_of(self.p.am)), "b-m")
+        # Permissions of FD
+        self.assertEquals(str(proc.permissions_of(self.p.fd)), "blm")
 
         # Process done, person is DD
+        proc.progress = bconst.PROGRESS_DONE
+        proc.is_active = False
+        proc.save()
         self.p.nm.status = bconst.STATUS_DD_U
         self.p.nm.save()
 
-        # Now nobody can edit things
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.nm))
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.am))
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.adv))
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.dd))
-        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.fd))
+        # Permissions of self
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "b-m")
+        # Permissions of an unrelated DD
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.dd)), "---")
+        # Permissions of the advocate
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.adv)), "--m")
+        # Permissions of the AM
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "--m")
+        # Permissions of FD
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "b-m")
+
+        # Permissions of self
+        self.assertEquals(str(proc.permissions_of(self.p.nm)), "b-m")
+        # Permissions of an unrelated DD
+        self.assertEquals(str(proc.permissions_of(self.p.dd)), "---")
+        # Permissions of the advocate
+        self.assertEquals(str(proc.permissions_of(self.p.adv)), "--m")
+        # Permissions of the AM
+        self.assertEquals(str(proc.permissions_of(self.p.am)), "--m")
+        # Permissions of FD
+        self.assertEquals(str(proc.permissions_of(self.p.fd)), "b-m")

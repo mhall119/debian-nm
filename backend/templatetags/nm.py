@@ -52,7 +52,7 @@ def seq_status(value):
 
 @register.filter
 def editable_by(value, arg):
-    return value.editable_by(arg)
+    return value.permissions_of(arg).can_edit_anything
 
 def _splitfp(val):
     for i in range(10):

@@ -180,16 +180,15 @@ def person(request, key):
     person = bmodels.Person.lookup_or_404(key)
 
     # Check permissions
-    edit_bio = person.bio_editable_by(request.person)
-    edit_ldap = person.ldap_fields_editable_by(request.person)
-    if not edit_bio and not edit_ldap:
+    perms = person.permissions_of(request.person)
+    if not perms.can_edit_anything:
         raise PermissionDenied
 
     # Build the form to edit the person
     excludes = ["user", "created", "status_changed"]
-    if not edit_bio:
+    if not perms.can_edit_bio:
         excludes.append("bio")
-    if not edit_ldap:
+    if not perms.can_edit_ldap_fields:
         excludes.extend(("cn", "mn", "sn", "email", "uid", "fpr"))
     if not request.person.is_admin:
         excludes.extend(("status", "fd_comment"))
