@@ -151,6 +151,13 @@ class Person(models.Model):
     created = models.DateTimeField("Person record created", null=True, default=datetime.datetime.utcnow)
 
     @property
+    def person(self):
+        """
+        Allow to call foo.person to get a Person record, regardless if foo is a Person or an AM
+        """
+        return self
+
+    @property
     def is_am(self):
         try:
             return self.am is not None
@@ -174,26 +181,78 @@ class Person(models.Model):
     def changed_before_data_import(self):
         return DM_IMPORT_DATE is not None and self.status in (const.STATUS_DM, const.STATUS_DM_GA) and self.status_changed <= DM_IMPORT_DATE
 
-    def can_be_edited(self, am=None):
-        # If the person is already in LDAP, then we cannot edit their info
+    def bio_editable_by(self, person):
+        """
+        Check if \a person can edit this person's bio.
+        """
+        # If we were passed an AM object, cast it down to a person
+        person = person.person
+
+        # One can edit one's own bio
+        if person == self: return True
+
+        # FD and DAM can edit this bio
+        if person.is_admin:
+            return True
+
+        # Advocates and AMs of active processes can edit this bio
+        for p in self.active_processes:
+            if p.manager and p.manager.person == person:
+                return True
+            for a in p.advocates.all():
+                if a == person:
+                    return True
+
+        return False
+
+    def ldap_fields_editable_by(self, person):
+        """
+        Check if \a person can edit this person's LDAP-feeding fields
+        """
+        # If the person is already in LDAP, then nobody can edit their info,
+        # since this database then becomes a read-only mirror of LDAP
         if self.status not in (const.STATUS_MM, const.STATUS_DM):
             return False
 
-        # If we do not check by AM, we're done
-        if am is None:
+        # If we were passed an AM object, cast it down to a person
+        person = person.person
+
+        # If we still haven't fed LDAP, then FD and DAM can edit these fields
+        if person.is_admin:
             return True
 
-        # FD and DAMs can edit anything
-        if am.is_fd or am.is_dam:
-            return True
+        # If there is an active process in FD or DAM's hands, then nobody else
+        # can edit LDAP info, since they FD and DAM are doing consistency
+        # checks and preparing an RT ticket for keyring-maint and DSA
+        processes = self.active_processes
+        for p in processes:
+            if p.progress in (
+                const.PROGRESS_AM_OK,
+                const.PROGRESS_FD_HOLD,
+                const.PROGRESS_FD_OK,
+                const.PROGRESS_DAM_HOLD,
+                const.PROGRESS_DAM_OK,
+            ):
+                return False
 
-        # Otherwise the AM can edit if manager of an active process for this person
-        try:
-            Process.objects.get(manager=am, person=self, is_active=True)
-        except Process.DoesNotExist:
-            return False
+        # Earlier in the process, one can edit one's own pre-LDAP info
+        if person == self: return True
 
-        return True
+        # Earlier in the process, advocates and AMs can edit pre-LDAP info
+        for p in self.active_processes:
+            if p.manager and p.manager.person == person:
+                return True
+            for a in p.advocates.all():
+                if a == person:
+                    return True
+
+        return False
+
+    def editable_by(self, person):
+        """
+        Check if \a person can edit some attribute of this person
+        """
+        return self.bio_editable_by(person) or self.ldap_fields_editable_by(person)
 
     def can_advocate_as_dd(self, person):
         """

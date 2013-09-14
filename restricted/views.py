@@ -172,59 +172,50 @@ def amprofile(request, uid=None):
                               context_instance=template.RequestContext(request))
 
 
-def make_person_form(editor):
-    excludes = ["user", "created", "status_changed"]
+@login_required
+def person(request, key):
+    """
+    Edit a person's information
+    """
+    person = bmodels.Person.lookup_or_404(key)
 
-    if editor.is_dam:
-        pass
-    elif editor.is_fd:
-        excludes.append("status")
-    else:
-        excludes.append("status")
-        excludes.append("fd_comment")
+    # Check permissions
+    edit_bio = person.bio_editable_by(request.person)
+    edit_ldap = person.ldap_fields_editable_by(request.person)
+    if not edit_bio and not edit_ldap:
+        raise PermissionDenied
+
+    # Build the form to edit the person
+    excludes = ["user", "created", "status_changed"]
+    if not edit_bio:
+        excludes.append("bio")
+    if not edit_ldap:
+        excludes.extend(("cn", "mn", "sn", "email", "uid", "fpr"))
+    if not request.person.is_admin:
+        excludes.extend(("status", "fd_comment"))
 
     class PersonForm(forms.ModelForm):
         class Meta:
             model = bmodels.Person
             exclude = excludes
-    return PersonForm
-
-@backend.auth.is_am
-def person(request, key):
-    person = bmodels.Person.lookup_or_404(key)
-    process = person.active_processes
-    # FIXME: for now, just pick the first one. To do things properly we need to
-    #        be passed what process we should go back to
-    if process:
-        process = process[0]
-    else:
-        process = None
-
-    def next_step():
-        if process:
-            return redirect(process.get_absolute_url())
-        else:
-            return redirect(person.get_absolute_url())
-
-    if not person.can_be_edited(request.am):
-        return next_step()
-
-    PersonForm = make_person_form(request.am)
 
     form = None
     if request.method == 'POST':
         form = PersonForm(request.POST, instance=person)
         if form.is_valid():
             form.save()
+
             # TODO: message that it has been saved
-            return next_step()
+
+            # Redirect to the person view
+            return redirect(person.get_absolute_url())
+
     else:
         form = PersonForm(instance=person)
 
     return render_to_response("restricted/person.html",
                               dict(
                                   person=person,
-                                  process=process,
                                   form=form,
                               ),
                               context_instance=template.RequestContext(request))

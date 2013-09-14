@@ -27,6 +27,12 @@ class SimpleFixture(object):
         self.fd_am = bmodels.AM(person=self.fd, slots=1, is_am=True, is_fd=True, is_dam=True)
         self.fd_am.save()
 
+        self.adv = bmodels.Person(cn="Andrea", sn="Berardi", email="andrea@debian.org", uid="andrea", status=bconst.STATUS_DD_NU)
+        self.adv.save()
+
+        self.dd = bmodels.Person(cn="Lesley", sn="Leisel", email="lesley@debian.org", uid="lesley", status=bconst.STATUS_DD_U)
+        self.dd.save()
+
         self.am = bmodels.Person(cn="Jane", sn="Doe", email="jane@janedoe.org", uid="jane", status=bconst.STATUS_DD_U)
         self.am.save()
 
@@ -44,15 +50,19 @@ class SimpleFixture(object):
                                        manager=self.am_am,
                                        is_active=progress==bconst.PROGRESS_DONE)
         self.process_dm.save()
+        return self.process_dm
 
-    def make_process_dd(self, progress=bconst.PROGRESS_DONE):
+    def make_process_dd(self, progress=bconst.PROGRESS_DONE, advocate=None):
         self.process_dd = bmodels.Process(person=self.nm,
                                        applying_as=bconst.STATUS_DM,
                                        applying_for=bconst.STATUS_DD_U,
                                        progress=progress,
                                        manager=self.am_am,
-                                       is_active=progress==bconst.PROGRESS_DONE)
+                                       is_active=progress!=bconst.PROGRESS_DONE)
         self.process_dd.save()
+        if advocate is not None:
+            self.process_dd.advocates.add(advocate)
+        return self.process_dd
 
 
 class LogTest(TransactionTestCase):
@@ -198,3 +208,87 @@ class NotificationTest(TransactionTestCase):
         self.assertEqual(mail.outbox[0].from_email, 'Enrico Zini <enrico@debian.org>')
         self.assertEqual(mail.outbox[0].to, ['John Smith <doctor@example.com>'])
         self.assertEqual(mail.outbox[0].cc, ['nm@debian.org', 'archive-doctor=example.com@nm.debian.org'])
+
+class PermissionTest(TransactionTestCase):
+    def setUp(self):
+        self.p = SimpleFixture()
+
+    def test_bio_editable_by(self):
+        # One can edit their own bio at any time
+        self.assertTrue(self.p.nm.bio_editable_by(self.p.nm))
+
+        # Unrelated people cannot touch each other's info
+        self.assertFalse(self.p.nm.bio_editable_by(self.p.am))
+        self.assertFalse(self.p.nm.bio_editable_by(self.p.am_am))
+
+        # FD can
+        self.assertTrue(self.p.nm.bio_editable_by(self.p.fd))
+        self.assertTrue(self.p.nm.bio_editable_by(self.p.fd_am))
+
+        # Create a process
+        proc = self.p.make_process_dd(progress=bconst.PROGRESS_APP_OK, advocate=self.p.adv)
+
+        # Now the AM and the advocate can also edit the bio
+        self.assertTrue(self.p.nm.bio_editable_by(self.p.nm))
+        self.assertTrue(self.p.nm.bio_editable_by(self.p.am))
+        self.assertTrue(self.p.nm.bio_editable_by(self.p.adv))
+        self.assertTrue(self.p.nm.bio_editable_by(self.p.fd))
+        # Unrelated DDs still cannot edit this bio
+        self.assertFalse(self.p.nm.bio_editable_by(self.p.dd))
+
+        # Put the process in FD's hands
+        proc.progress = bconst.PROGRESS_FD_OK
+        proc.save()
+
+        # People can edit the bio like before
+        self.assertTrue(self.p.nm.bio_editable_by(self.p.nm))
+        self.assertTrue(self.p.nm.bio_editable_by(self.p.am))
+        self.assertTrue(self.p.nm.bio_editable_by(self.p.adv))
+        self.assertTrue(self.p.nm.bio_editable_by(self.p.fd))
+        # Unrelated DDs still cannot edit this bio
+        self.assertFalse(self.p.nm.bio_editable_by(self.p.dd))
+
+    def test_ldap_editable_by(self):
+        # One cannot edit their own LDAP fields without an active process
+        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.nm))
+
+        # Unrelated people cannot touch each other's info
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.am))
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.am_am))
+
+        # FD can only if there is no LDAP entry yet
+        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.fd))
+        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.fd_am))
+
+        # Create a process
+        proc = self.p.make_process_dd(progress=bconst.PROGRESS_APP_OK, advocate=self.p.adv)
+
+        # Now the AM and the advocate can also edit the ldap_fields
+        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.nm))
+        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.am))
+        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.adv))
+        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.fd))
+        # Unrelated DDs still cannot edit this ldap_fields
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.dd))
+
+        # Put the process in FD's hands
+        proc.progress = bconst.PROGRESS_FD_OK
+        proc.save()
+
+        # Now only FD and DAM can edit things
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.nm))
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.am))
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.adv))
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.dd))
+        self.assertTrue(self.p.nm.ldap_fields_editable_by(self.p.fd))
+
+        # Process done, person is DD
+        self.p.nm.status = bconst.STATUS_DD_U
+        self.p.nm.save()
+
+        # Now nobody can edit things
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.nm))
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.am))
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.adv))
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.dd))
+        self.assertFalse(self.p.nm.ldap_fields_editable_by(self.p.fd))
