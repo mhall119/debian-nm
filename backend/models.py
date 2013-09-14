@@ -132,6 +132,9 @@ class NMPermissions(object):
         processes. Else, compute general permissions over any process of \a
         person
         """
+        if user is None:
+            return cls()
+
         # If we were passed AM objects, cast them down to Person
         person = person.person
         user = user.person
