@@ -118,7 +118,7 @@ def process(request, key):
 
     # Process form ASAP, so we compute the rest with updated values
     am = request.am
-    if am and process.manager == am and perms.can_edit_anything:
+    if am and (process.manager == am or am.is_admin) and perms.can_edit_anything:
         StatusUpdateForm = make_statusupdateform(am)
         if request.method == 'POST':
             form = StatusUpdateForm(request.POST)
