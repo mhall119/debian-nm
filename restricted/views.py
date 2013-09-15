@@ -1,6 +1,6 @@
 # nm.debian.org website reports
 #
-# Copyright (C) 2012  Enrico Zini <enrico@debian.org>
+# Copyright (C) 2013  Enrico Zini <enrico@debian.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -153,7 +153,7 @@ def amprofile(request, uid=None):
             if cur_am == am or cur_am.is_fd or cur_am.is_dam:
                 form.save()
             else:
-                return PermissionDenied
+                raise PermissionDenied
             # TODO: message that it has been saved
     else:
         form = AMForm(instance=am)
@@ -270,11 +270,11 @@ def newprocess(request, applying_for, key):
 def db_export(request):
     # In theory, this isn't needed as it's enforced by DACS
     if request.user.is_anonymous():
-        return PermissionDenied
+        raise PermissionDenied
 
     if "full" in request.GET:
         if not request.am or not request.am.is_admin:
-            return PermissionDenied
+            raise PermissionDenied
         full = True
     else:
         full = False
@@ -393,7 +393,7 @@ def advocate_as_dd(request, key):
     person = bmodels.Person.lookup_or_404(key)
 
     if not request.person.can_advocate_as_dd(person):
-        return PermissionDenied
+        raise PermissionDenied
 
     dd_statuses = (const.STATUS_DD_U, const.STATUS_DD_NU)
     dm_statuses = (const.STATUS_DM, const.STATUS_DM_GA)
@@ -595,12 +595,12 @@ def mail_archive(request, key):
     perms = process.permissions_of(request.person)
 
     if not perms.can_view_email:
-        return PermissionDenied
+        raise PermissionDenied
 
     fname = process.mailbox_file
     if fname is None:
         from django.http import Http404
-        return Http404
+        raise Http404
 
     user_fname = "%s.mbox" % (process.person.uid or process.person.email)
 
