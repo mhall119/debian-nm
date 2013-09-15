@@ -235,6 +235,10 @@ See: <a href="http://lists.debian.org/debian-project/2010/09/msg00026.html">hand
     <tr><th>OpenPGP fingerprint</th><td>{{person.fpr|fingerprint}}</td></tr>
     {% if process.manager %}
     <tr><th>Manager</th><td><a href="{{process.manager.get_absolute_url}}">{{process.manager.person.uid}}</a></td></tr>
+    {% elif process.progress == PROGRESS_APP_OK %}
+      {% if perms.is_fd or perms.is_dam %}
+        <tr><th>Manager</th><td>TODO: assign</td></tr>
+      {% endif %}
     {% endif %}
     <tr><th>Process</th><td>{{process.applying_as|desc_status}} → {{process.applying_for|desc_status}}</td></tr>
     <tr><th>Progress</th><td>{{process.progress|desc_progress}}</td></tr>
