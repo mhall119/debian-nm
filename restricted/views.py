@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import http, template, forms
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render, render_to_response, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
@@ -487,67 +487,71 @@ def advocate_as_dd(request, key):
                               ),
                               context_instance=template.RequestContext(request))
 
+def _assign_am(request, nm, am):
+    import textwrap
+    nm.manager = am
+    nm.progress = const.PROGRESS_AM_RCVD
+    nm.save()
+    # Parameters for the following templates
+    parms = dict(
+        fduid=request.person.uid,
+        fdname=request.person.fullname,
+        amuid=am.person.uid,
+        amname=am.person.fullname,
+        nmname=nm.person.fullname,
+        nmcurstatus=const.ALL_STATUS_DESCS[nm.person.status],
+        nmnewstatus=const.ALL_STATUS_DESCS[nm.applying_for],
+        procurl=request.build_absolute_uri(reverse("public_process", kwargs=dict(key=nm.lookup_key))),
+    )
+    l = bmodels.Log.for_process(nm, changed_by=request.person)
+    l.logtext = "Assigned to %(amuid)s" % parms
+    if 'impersonate' in request.session:
+        l.logtext = "[%s as %s] %s" % (request.user, request.person.lookup_key, l.logtext)
+    l.save()
+    # Send mail
+    lines = [
+        "Hello," % parms,
+        "",
+    ]
+    lines.extend(textwrap.wrap(
+        "I have just assigned you a new NM applicant: %(nmname)s, who is"
+        " %(nmcurstatus)s and is applying for %(nmnewstatus)s." % parms, 72))
+    lines.append("")
+    if nm.mailbox_file:
+        lines.append("The mailbox with everything so far can be downloaded at:")
+        lines.append(request.build_absolute_uri(reverse("download_mail_archive", kwargs=dict(key=nm.lookup_key))))
+        lines.append("")
+    lines.extend(textwrap.wrap(
+        "Note that you have not acknowledged the assignment yet, and"
+        " could still refuse it, for example if you do not"
+        " have time at the moment." % parms, 72))
+    lines.append("")
+    lines.extend(textwrap.wrap(
+        "Please visit [1] to acknowledge the assignment and, later,"
+        " to track the progress of the application. Please email"
+        " nm@debian.org if you wish to decline the assignment." % parms, 72))
+    lines.append("")
+    lines.append("[1] %(procurl)s" % parms)
+    lines.append("")
+    lines.extend(textwrap.wrap(
+        "Have a good AMing, and if you need anything please mail nm@debian.org.", 72))
+    lines.append("")
+    lines.append("%(fdname)s (for Front Desk)" % parms)
+    backend.email.personal_email(request,
+                                    [am.person.uid + "@debian.org", nm.person.email],
+                                    "New NM applicant %s <%s>" % (nm.person.fullname, nm.person.email),
+                                    "\n".join(lines))
+
+
 @backend.auth.is_admin
 def nm_am_match(request):
     if request.method == "POST":
-        import textwrap
         # Perform assignment if requested
         am_key = request.POST.get("am", None)
         am = bmodels.AM.lookup_or_404(am_key)
         nm_key = request.POST.get("nm", None)
         nm = bmodels.Process.lookup_or_404(nm_key)
-        nm.manager = am
-        nm.progress = const.PROGRESS_AM_RCVD
-        nm.save()
-        # Parameters for the following templates
-        parms = dict(
-            fduid=request.person.uid,
-            fdname=request.person.fullname,
-            amuid=am.person.uid,
-            amname=am.person.fullname,
-            nmname=nm.person.fullname,
-            nmcurstatus=const.ALL_STATUS_DESCS[nm.person.status],
-            nmnewstatus=const.ALL_STATUS_DESCS[nm.applying_for],
-            procurl=request.build_absolute_uri(reverse("public_process", kwargs=dict(key=nm.lookup_key))),
-        )
-        l = bmodels.Log.for_process(nm, changed_by=request.person)
-        l.logtext = "Assigned to %(amuid)s" % parms
-        if 'impersonate' in request.session:
-            l.logtext = "[%s as %s] %s" % (request.user, request.person.lookup_key, l.logtext)
-        l.save()
-        # Send mail
-        lines = [
-            "Hello," % parms,
-            "",
-        ]
-        lines.extend(textwrap.wrap(
-            "I have just assigned you a new NM applicant: %(nmname)s, who is"
-            " %(nmcurstatus)s and is applying for %(nmnewstatus)s." % parms, 72))
-        lines.append("")
-        if nm.mailbox_file:
-            lines.append("The mailbox with everything so far can be downloaded at:")
-            lines.append(request.build_absolute_uri(reverse("download_mail_archive", kwargs=dict(key=nm.lookup_key))))
-            lines.append("")
-        lines.extend(textwrap.wrap(
-            "Note that you have not acknowledged the assignment yet, and"
-            " could still refuse it, for example if you do not"
-            " have time at the moment." % parms, 72))
-        lines.append("")
-        lines.extend(textwrap.wrap(
-            "Please visit [1] to acknowledge the assignment and, later,"
-            " to track the progress of the application. Please email"
-            " nm@debian.org if you wish to decline the assignment." % parms, 72))
-        lines.append("")
-        lines.append("[1] %(procurl)s" % parms)
-        lines.append("")
-        lines.extend(textwrap.wrap(
-            "Have a good AMing, and if you need anything please mail nm@debian.org.", 72))
-        lines.append("")
-        lines.append("%(fdname)s (for Front Desk)" % parms)
-        backend.email.personal_email(request,
-                                     [am.person.uid + "@debian.org", nm.person.email],
-                                     "New NM applicant %s <%s>" % (nm.person.fullname, nm.person.email),
-                                     "\n".join(lines))
+        _assign_am(request, nm, am)
 
     from django.db.models import Min, Max
     procs = []
@@ -615,3 +619,28 @@ def mail_archive(request, key):
     finally:
         outfd.close()
     return res
+
+def assign_am(request, key):
+    process = bmodels.Process.lookup_or_404(key)
+    perms = process.permissions_of(request.person)
+
+    if not perms.is_fd and not perms.is_dam:
+        raise PermissionDenied
+
+    if process.manager is not None:
+        raise PermissionDenied
+
+    if request.method == "POST":
+        am_key = request.POST.get("am", None)
+        am = bmodels.AM.lookup_or_404(am_key)
+        _assign_am(request, process, am)
+        return redirect(process.get_absolute_url())
+
+    # List free AMs
+    ams = bmodels.AM.list_free()
+
+    return render(request, "restricted/assign-am.html", {
+        "process": process,
+        "person": process.person,
+        "ams": ams,
+    })

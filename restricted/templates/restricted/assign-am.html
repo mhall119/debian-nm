@@ -1,0 +1,93 @@
+{% extends "restricted/base.html" %}
+{% load nm %}
+{% load js %}
+
+{% block head_resources %}
+{{block.super}}
+{% jsinclude "tables" %}
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+<style>
+th.metatitle
+{
+  text-align: center;
+  border: none;
+}
+</style>
+<script type="text/javascript">
+function main() {
+    $("table.tablesorter").tablesorter({
+        textExtraction: function(node) {
+            val = node.getAttribute("val");
+            if (val == null)
+                val = node.textContent || node.innerText;
+            return val;
+        },
+    });
+}
+$(main);
+</script>
+{% endblock %}
+
+{% block breadcrumbs %}{{block.super}}
+/ <a href="{{ process.get_absolute_url }}">{{process.lookup_key}}</a>
+/ <a href="{{request.build_absolute_uri}}">assign AM</a>
+{% endblock %}
+
+{% block content %}
+
+<h1>Assign AM to {{person.fullname}}</h1>
+
+<table class="tablesorter">
+  <thead>
+    <tr>
+      <th rowspan="2">AM</th>
+      <th rowspan="2">uid</th>
+      <th colspan="4" class="metatitle">Slots</th>
+    </tr>
+    <tr>
+      <th>Total</th>
+      <th>Active</th>
+      <th>Hold</th>
+      <th>Free</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for am in ams %}
+  <tr>
+    <td><a href="{{am.get_absolute_url}}">{{am.person.fullname}}</a></td>
+    <td>{{am.person.uid}}</td>
+    <td>{{am.slots}}</td>
+    <td>{{am.stats_active}}</td>
+    <td>{{am.stats_held}}</td>
+    <td>{{am.stats_free}}</td>
+    <td>
+      <form action="{% url 'assign_am' key=process.lookup_key %}" method="post">{% csrf_token %}
+        <input type="hidden" name="am" value="{{am.lookup_key}}">
+        <input type="submit" value="Assign">
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% comment %}
+<form action="{% url 'restricted_person' key=person.lookup_key %}" method="post">{% csrf_token %}
+<table class="personinfo">
+    {% for field in form %}
+    <tr>
+        <th>{{field.label_tag}}</th>
+        <td>{{field}} {{field.errors}}</td>
+    </tr>
+    {% endfor %}
+</table>
+    <input type="submit" value="Submit" />
+</form>
+{% endcomment %}
+
+{% endblock %}
+

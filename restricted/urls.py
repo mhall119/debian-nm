@@ -43,4 +43,6 @@ urlpatterns = patterns('restricted.views',
     url(r'^nm-am-match/$', 'nm_am_match', name="restricted_nm_am_match"),
     # Advocate a person to become DD
     url(r'^mail-archive/(?P<key>[^/]+)$', 'mail_archive', name="download_mail_archive"),
+    # Advocate a person to become DD
+    url(r'^assign-am/(?P<key>[^/]+)$', 'assign_am', name="assign_am"),
 )
