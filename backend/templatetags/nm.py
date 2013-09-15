@@ -81,7 +81,7 @@ def formataddr(person):
     Return a formatted address like "Foo <foo@example.org>" for a Person
     """
     import email.utils
-    name = person.fullname.encode('unicode_escape')
+    name = person.fullname.encode('unicode_escape') + " via nm"
     addr = person.preferred_email
     return email.utils.formataddr((name, addr))
 
