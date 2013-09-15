@@ -216,65 +216,75 @@ class PermissionTest(TransactionTestCase):
     def test_permissions(self):
         ## A DC without a process open
 
+        # Permissions of anonymous
+        self.assertEquals(str(self.p.nm.permissions_of(None)), "-------")
         # Permissions of self
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "blm")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "ble----")
         # Permissions of an unrelated DD
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "---")
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.am_am)), "---")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "-------")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.am_am)), "-------")
         # Permissions of FD
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "blm")
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd_am)), "blm")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "ble--fd")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd_am)), "ble--fd")
 
         ## Create a process
         proc = self.p.make_process_dd(progress=bconst.PROGRESS_APP_OK, advocate=self.p.adv)
 
+        # Permissions of anonymous
+        self.assertEquals(str(self.p.nm.permissions_of(None)), "-------")
         # Permissions of self
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "blm")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "ble----")
         # Permissions of an unrelated DD
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.dd)), "---")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.dd)), "-------")
         # Permissions of the advocate
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.adv)), "blm")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.adv)), "blea---")
         # Permissions of the AM
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "blm")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "ble-m--")
         # Permissions of FD
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "blm")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "ble--fd")
 
+        # Permissions of anonymous
+        self.assertEquals(str(self.p.nm.permissions_of(None)), "-------")
         # Permissions of self
-        self.assertEquals(str(proc.permissions_of(self.p.nm)), "blm")
+        self.assertEquals(str(proc.permissions_of(self.p.nm)), "ble----")
         # Permissions of an unrelated DD
-        self.assertEquals(str(proc.permissions_of(self.p.dd)), "---")
+        self.assertEquals(str(proc.permissions_of(self.p.dd)), "-------")
         # Permissions of the advocate
-        self.assertEquals(str(proc.permissions_of(self.p.adv)), "blm")
+        self.assertEquals(str(proc.permissions_of(self.p.adv)), "blea---")
         # Permissions of the AM
-        self.assertEquals(str(proc.permissions_of(self.p.am)), "blm")
+        self.assertEquals(str(proc.permissions_of(self.p.am)), "ble-m--")
         # Permissions of FD
-        self.assertEquals(str(proc.permissions_of(self.p.fd)), "blm")
+        self.assertEquals(str(proc.permissions_of(self.p.fd)), "ble--fd")
 
         ## Put the process in FD's hands
         proc.progress = bconst.PROGRESS_FD_OK
         proc.save()
 
+        # Permissions of anonymous
+        self.assertEquals(str(self.p.nm.permissions_of(None)), "-------")
         # Permissions of self
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "b-m")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "b-e----")
         # Permissions of an unrelated DD
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.dd)), "---")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.dd)), "-------")
         # Permissions of the advocate
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.adv)), "b-m")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.adv)), "b-ea---")
         # Permissions of the AM
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "b-m")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "b-e-m--")
         # Permissions of FD
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "blm")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "ble--fd")
 
+        # Permissions of anonymous
+        self.assertEquals(str(self.p.nm.permissions_of(None)), "-------")
         # Permissions of self
-        self.assertEquals(str(proc.permissions_of(self.p.nm)), "b-m")
+        self.assertEquals(str(proc.permissions_of(self.p.nm)), "b-e----")
         # Permissions of an unrelated DD
-        self.assertEquals(str(proc.permissions_of(self.p.dd)), "---")
+        self.assertEquals(str(proc.permissions_of(self.p.dd)), "-------")
         # Permissions of the advocate
-        self.assertEquals(str(proc.permissions_of(self.p.adv)), "b-m")
+        self.assertEquals(str(proc.permissions_of(self.p.adv)), "b-ea---")
         # Permissions of the AM
-        self.assertEquals(str(proc.permissions_of(self.p.am)), "b-m")
+        self.assertEquals(str(proc.permissions_of(self.p.am)), "b-e-m--")
         # Permissions of FD
-        self.assertEquals(str(proc.permissions_of(self.p.fd)), "blm")
+        self.assertEquals(str(proc.permissions_of(self.p.fd)), "ble--fd")
 
         # Process done, person is DD
         proc.progress = bconst.PROGRESS_DONE
@@ -283,24 +293,28 @@ class PermissionTest(TransactionTestCase):
         self.p.nm.status = bconst.STATUS_DD_U
         self.p.nm.save()
 
+        # Permissions of anonymous
+        self.assertEquals(str(self.p.nm.permissions_of(None)), "-------")
         # Permissions of self
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "b-m")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.nm)), "b-e----")
         # Permissions of an unrelated DD
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.dd)), "---")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.dd)), "-------")
         # Permissions of the advocate
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.adv)), "--m")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.adv)), "--ea---")
         # Permissions of the AM
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "--m")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.am)), "--e-m--")
         # Permissions of FD
-        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "b-m")
+        self.assertEquals(str(self.p.nm.permissions_of(self.p.fd)), "b-e--fd")
 
+        # Permissions of anonymous
+        self.assertEquals(str(self.p.nm.permissions_of(None)), "-------")
         # Permissions of self
-        self.assertEquals(str(proc.permissions_of(self.p.nm)), "b-m")
+        self.assertEquals(str(proc.permissions_of(self.p.nm)), "b-e----")
         # Permissions of an unrelated DD
-        self.assertEquals(str(proc.permissions_of(self.p.dd)), "---")
+        self.assertEquals(str(proc.permissions_of(self.p.dd)), "-------")
         # Permissions of the advocate
-        self.assertEquals(str(proc.permissions_of(self.p.adv)), "--m")
+        self.assertEquals(str(proc.permissions_of(self.p.adv)), "--ea---")
         # Permissions of the AM
-        self.assertEquals(str(proc.permissions_of(self.p.am)), "--m")
+        self.assertEquals(str(proc.permissions_of(self.p.am)), "--e-m--")
         # Permissions of FD
-        self.assertEquals(str(proc.permissions_of(self.p.fd)), "b-m")
+        self.assertEquals(str(proc.permissions_of(self.p.fd)), "b-e--fd")

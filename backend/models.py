@@ -104,24 +104,36 @@ class NMPermissions(object):
     """
     Store NM-specific permissions
     """
-    def __init__(self, edit_bio=False, edit_ldap=False, view_email=False):
+    def __init__(self, edit_bio=False, edit_ldap=False, view_email=False, is_advocate=False, is_am=False, is_fd=False, is_dam=False):
         # A person's bio can be edited
         self.can_edit_bio = edit_bio
         # A person's LDAP-feeding fields can be edited
         self.can_edit_ldap_fields = edit_ldap
         # A process' email archive can be viewed
         self.can_view_email = view_email
+        # The current user is an advocate for all the processes
+        self.is_advocate = is_advocate
+        # The current user is the AM for all the processes
+        self.is_am = is_am
+        # The current user is a FD member or DAM
+        self.is_fd = is_fd
+        # The current user is a DAM
+        self.is_dam = is_dam
 
     @property
     def can_edit_anything(self):
         return self.can_edit_bio or self.can_edit_ldap_fields
 
     def __str__(self):
-        return "%c%c%c" % (
+        return "".join((
             'b' if self.can_edit_bio else '-',
             'l' if self.can_edit_ldap_fields else '-',
-            'm' if self.can_view_email else '-',
-        )
+            'e' if self.can_view_email else '-',
+            'a' if self.is_advocate else '-',
+            'm' if self.is_am else '-',
+            'f' if self.is_fd else '-',
+            'd' if self.is_dam else '-',
+        ))
 
     @classmethod
     def compute(cls, person, user, processes=None):
@@ -135,6 +147,8 @@ class NMPermissions(object):
         if user is None:
             return cls()
 
+        res = cls()
+
         # If we were passed AM objects, cast them down to Person
         person = person.person
         user = user.person
@@ -147,24 +161,29 @@ class NMPermissions(object):
         # info, since this database then becomes a read-only mirror of LDAP
         has_ldap_record = person.status not in (const.STATUS_MM, const.STATUS_DM)
 
-        # FD and DAM can do everything except mess with LDAP
-        if user.is_admin:
-            return cls(
-                edit_bio=True,
-                edit_ldap=not has_ldap_record,
-                view_email=True)
+        # Check if the user a FD or DAM
+        am = user.am_or_none
+        if am is not None:
+            res.is_fd = am.is_fd
+            res.is_dam = am.is_dam
+        else:
+            res.is_fd = False
+            res.is_dam = False
 
+        # Scan processes
         # Check if user is an advocate or an AM for some process
-        is_advocate_or_am = []
-        neither_advocate_nor_am = []
+        is_advocate_of_all = None
+        is_am_of_all = None
+        # Check if there are any active processes
+        any_active = False
         # Check if there are active processes in FD or DAM hands
-        active_processes_not_in_fd_dam_hands = []
-        active_processes_in_fd_dam_hands = []
+        has_active_processes_in_fd_dam_hands = False
         for p in processes:
             # Skip processes that don't belong to this person
             if p.person != person: continue
             # Take note of active processes not in FD or DAM's hands
             if p.is_active:
+                any_active = True
                 if p.progress in (
                         const.PROGRESS_AM_OK,
                         const.PROGRESS_FD_HOLD,
@@ -174,54 +193,62 @@ class NMPermissions(object):
                         const.PROGRESS_DONE,
                         const.PROGRESS_CANCELLED,
                     ):
-                    active_processes_in_fd_dam_hands.append(p)
-                else:
-                    active_processes_not_in_fd_dam_hands.append(p)
-            found = False
+                    has_active_processes_in_fd_dam_hands = True
             # Take note of processes 'user' is an AM of
             if p.manager and p.manager.person == user:
-                is_advocate_or_am.append(p)
-                found = True
+                if is_am_of_all is None:
+                    is_am_of_all = True
+            else:
+                is_am_of_all = False
             # Take note of processes 'user' is an advocate of
-            for a in p.advocates.all():
-                if a == user:
-                    is_advocate_or_am.append(p)
-                    found = True
-            if not found:
-                neither_advocate_nor_am.append(p)
+            if user in p.advocates.all():
+                if is_advocate_of_all is None:
+                    is_advocate_of_all = True
+            else:
+                is_advocate_of_all = False
+
+        # Convert None to False
+        is_advocate_of_all = bool(is_advocate_of_all)
+        is_am_of_all = bool(is_am_of_all)
+
+        res.is_advocate = is_advocate_of_all
+        res.is_am = is_am_of_all
+
+        # FD and DAM can do everything except mess with LDAP
+        if user.is_admin:
+            res.can_edit_bio = True
+            res.can_edit_ldap_fields = not has_ldap_record
+            res.can_view_email = True
+            return res
 
         # A person can do almost everything to themselves
         if person == user:
-            return cls(
-                edit_bio=True,
-                edit_ldap=(
-                    # Except editing frozen LDAP entries
-                    not has_ldap_record
-                    # Or editing LDAP info when it is in FD or DAM's hands
-                    and not active_processes_in_fd_dam_hands
-                ),
-                view_email=True,
+            res.can_edit_bio = True
+            res.can_edit_ldap_fields = (
+                # Except editing frozen LDAP entries
+                not has_ldap_record
+                # Or editing LDAP info when it is in FD or DAM's hands
+                and not has_active_processes_in_fd_dam_hands
             )
+            res.can_view_email=True
+            return res
 
-        if is_advocate_or_am:
-            any_active = any(x.is_active for x in is_advocate_or_am)
-            return cls(
-                edit_bio=any_active,
-                edit_ldap=(
-                    # Except editing frozen LDAP entries
-                    not has_ldap_record
-                    # Or editing LDAP info when it is in FD
-                    # or DAM's hands
-                    and not active_processes_in_fd_dam_hands
-                    # And there needs to be some active process
-                    and any_active
-                ),
-                # Set to false if there is some process that user is neither
-                # advocate nor am of
-                view_email=not neither_advocate_nor_am,
+        if is_advocate_of_all or is_am_of_all:
+            res.can_edit_bio = any_active
+            res.can_edit_ldap_fields = (
+                # Except editing frozen LDAP entries
+                not has_ldap_record
+                # Or editing LDAP info when it is in FD
+                # or DAM's hands
+                and not has_active_processes_in_fd_dam_hands
+                # And there needs to be some active process
+                and any_active
             )
+            # Set to false if there is some process that user is neither
+            # advocate nor am of
+            res.can_view_email=True
 
-        return cls()
+        return res
 
 
 class Person(models.Model):
