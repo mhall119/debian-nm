@@ -84,6 +84,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # Authenticate via REMOTE_USER provided by Apache and DACS
     'django_dacs.auth.DACSRemoteUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'backend.auth.NMInfoMiddleware',

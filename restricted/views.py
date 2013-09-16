@@ -362,13 +362,6 @@ def minechangelogs(request, key=None):
                               ),
                               context_instance=template.RequestContext(request))
 
-def login_redirect(request):
-    url = request.GET.get("url", None)
-    if url is None:
-        return redirect('home')
-    else:
-        return redirect(url)
-
 def impersonate(request, key=None):
     if key is None:
         del request.session["impersonate"]

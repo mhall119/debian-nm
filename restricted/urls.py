@@ -31,8 +31,6 @@ urlpatterns = patterns('restricted.views',
     url(r'^newprocess_(?P<applying_for>[^/]+)/(?P<key>[^/]+)$', 'newprocess', name="restricted_newprocess"),
     # Show changelogs (minechangelogs)
     url(r'^minechangelogs/(?P<key>[^/]+)?$', 'minechangelogs', name="restricted_minechangelogs"),
-    # Redirect after login
-    url(r'^login-redirect$', 'login_redirect', name="login_redirect"),
     # Impersonate a user
     url(r'^impersonate/(?P<key>[^/]+)?$', 'impersonate', name="impersonate"),
     # Advocate a person to become DD
