@@ -7,35 +7,13 @@ import datetime
 PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
 DATA_DIR = os.path.join(PROJECT_DIR, 'data')
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
+    ('Debian New Member Frontdesk', 'nm@debian.org'),
 )
-
 MANAGERS = ADMINS
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': '%s/db-used-for-development.sqlite' % DATA_DIR, # Or path to database file if using sqlite3.
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
-    },
-    'projectb': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'projectb',
-        'USER': 'guest',
-        'HOST': 'localhost',
-        # ssh ries.debian.org -L15433:127.0.0.1:5433
-        'PORT': '15433',                 # Port forwarded
-        #'PORT': '5433',                  # Local
-        'TEST_MIRROR': 'default',
-    },
-}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -94,9 +72,6 @@ STATICFILES_FINDERS = (
 #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = 'tb9*%tlry)%t(7z22)nh6921(prlu58sxyjmlmh6bl+j4s12so'
-
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -109,17 +84,15 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    # Uncomment FakeRemoteUser to force a login as TEST_USERNAME for testing
-    # the site outside of Apache
-    'backend.auth.FakeRemoteUser',
-    'django.contrib.auth.middleware.RemoteUserMiddleware',
+    'django_dacs.auth.DACSRemoteUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'backend.auth.NMInfoMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (
-    # Uncomment to authenticate via REMOTE_USER supplied by Apache or by
-    # FakeRemoteUser, using backend.Person as the authoritative user database
+    # Uncomment to authenticate via REMOTE_USER supplied either by Apache or by
+    # DACS_TEST_USERNAME, and using backend.Person as the authoritative user
+    # database
     'backend.auth.NMUserBackend',
 )
 
@@ -129,7 +102,7 @@ AUTH_PROFILE_MODULE = 'backend.Person'
 #	causes IndexError at backend/auth.py NMUserBackend:clean_username
 #	(expects TEST_USERNAME to be in format
 #	"something:something:something:username"
-TEST_USERNAME = "enrico:enrico:enrico:enrico"
+DACS_TEST_USERNAME = "enrico:enrico:enrico:enrico"
 
 ROOT_URLCONF = 'urls'
 
@@ -152,6 +125,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     'django.contrib.admindocs',
     'django.contrib.markup',
+    'django_dacs',
     'keyring',
     'dsa',
     'deblayout',

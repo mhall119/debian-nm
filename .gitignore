@@ -1,6 +1,6 @@
 *.pyc
 *.swp
-settings.py
+local_settings.py
 *~
 *.sqlite
 *.gz

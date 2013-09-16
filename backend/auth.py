@@ -1,60 +1,10 @@
-import django.contrib.auth.backends
-import django.contrib.auth.middleware
 from django.contrib.auth.models import User
-from django.conf import settings
 from django import http
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import redirect
 import backend.models as bmodels
+from django_dacs.auth import DACSUserBackend
 
-class FakeRemoteUser(object):
-    def process_request(self, request):
-        request.META["REMOTE_USER"] = settings.TEST_USERNAME
-        #print "SET REMOTE_USER TO ", request.META["REMOTE_USER"]
-
-class DACSRemoteUserMiddleware(django.contrib.auth.middleware.RemoteUserMiddleware):
-    header = 'REMOTE_USER'
-
-    def process_request(self, request):
-        from django.contrib import auth
-        from django.core.exceptions import ImproperlyConfigured
-
-        # AuthenticationMiddleware is required so that request.user exists.
-        if not hasattr(request, 'user'):
-            raise ImproperlyConfigured(
-                "The Django remote user auth middleware requires the"
-                " authentication middleware to be installed.  Edit your"
-                " MIDDLEWARE_CLASSES setting to insert"
-                " 'django.contrib.auth.middleware.AuthenticationMiddleware'"
-                " before the RemoteUserMiddleware class.")
-        try:
-            username = request.META[self.header]
-        except KeyError:
-            # If specified header doesn't exist then return (leaving
-            # request.user set to AnonymousUser by the
-            # AuthenticationMiddleware).
-
-            # Actually, make really sure we are logged out!
-            # See django bug #17869
-            if request.user.is_authenticated():
-                auth.logout(request)
-            return
-
-        # If the user is already authenticated and that user is the user we are
-        # getting passed in the headers, then the correct user is already
-        # persisted in the session and we don't need to continue.
-        if request.user.is_authenticated():
-            if request.user.username == self.clean_username(username, request):
-                return
-        # We are seeing this user for the first time in this session, attempt
-        # to authenticate the user.
-        user = auth.authenticate(remote_user=username)
-        if user:
-            # User is valid.  Set request.user and persist user in the session
-            # by logging the user in.
-            request.user = user
-            auth.login(request, user)
-
-class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
+class NMUserBackend(DACSUserBackend):
     """
     RemoteUserBackend customised to create User objects from Person
     """
@@ -63,9 +13,9 @@ class NMUserBackend(django.contrib.auth.backends.RemoteUserBackend):
         """
         Map usernames from DACS to usernames in our auth database
         """
-        parts = username.split(":")
+        uid = super(NMUserBackend, self).clean_username(username)
         # TODO: pick domain according to DACS info
-        return "%s@debian.org" % parts[3]
+        return "%s@debian.org" % uid
 
     # Copied from RemoteUserBackend and tweaked to validate against Person
     def authenticate(self, remote_user):
