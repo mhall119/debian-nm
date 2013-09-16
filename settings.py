@@ -98,12 +98,6 @@ AUTHENTICATION_BACKENDS = (
 
 AUTH_PROFILE_MODULE = 'backend.Person'
 
-# FIXME	What is correct format for TEST_USERNAME? Current format ("username")
-#	causes IndexError at backend/auth.py NMUserBackend:clean_username
-#	(expects TEST_USERNAME to be in format
-#	"something:something:something:username"
-DACS_TEST_USERNAME = "enrico:enrico:enrico:enrico"
-
 ROOT_URLCONF = 'urls'
 
 TEMPLATE_DIRS = (
