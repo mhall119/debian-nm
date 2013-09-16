@@ -1,5 +1,5 @@
 {% load nm %}
-From: {{ log.changed_by.fullname|safe }} via nm <{{ log.changed_by.preferred_email }}>
+From: {{log.changed_by|formataddr:"via nm"|safe}}
 To: debian-newmaint@lists.debian.org
 Cc: {{log.process.person|formataddr|safe}}, nm@debian.org, {{log.process.archive_email|safe}}
 Subject: Advocacy for {{ log.process.person.fullname|safe }}

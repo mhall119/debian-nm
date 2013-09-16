@@ -139,7 +139,7 @@ class NotificationTest(TransactionTestCase):
 
         from django.core import mail
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].from_email, 'Enrico Zini <enrico@debian.org>')
+        self.assertEqual(mail.outbox[0].from_email, 'Enrico Zini via nm <enrico@debian.org>')
         self.assertEqual(mail.outbox[0].to, ['John Smith <doctor@example.com>'])
         self.assertEqual(mail.outbox[0].cc, ['archive-doctor=example.com@nm.debian.org'])
 
@@ -161,7 +161,7 @@ class NotificationTest(TransactionTestCase):
 
         from django.core import mail
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].from_email, 'Enrico Zini <enrico@debian.org>')
+        self.assertEqual(mail.outbox[0].from_email, 'Enrico Zini via nm <enrico@debian.org>')
         self.assertEqual(mail.outbox[0].to, ['Jane Doe <jane@debian.org>'])
         self.assertEqual(mail.outbox[0].cc, ['archive-doctor=example.com@nm.debian.org'])
 
@@ -183,7 +183,7 @@ class NotificationTest(TransactionTestCase):
 
         from django.core import mail
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].from_email, 'Jane Doe <jane@debian.org>')
+        self.assertEqual(mail.outbox[0].from_email, 'Jane Doe via nm <jane@debian.org>')
         self.assertEqual(mail.outbox[0].to, ['debian-newmaint@lists.debian.org'])
         self.assertEqual(mail.outbox[0].cc, ['John Smith <doctor@example.com>', 'nm@debian.org', 'archive-doctor=example.com@nm.debian.org'])
 
@@ -205,7 +205,7 @@ class NotificationTest(TransactionTestCase):
 
         from django.core import mail
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].from_email, 'Enrico Zini <enrico@debian.org>')
+        self.assertEqual(mail.outbox[0].from_email, 'Enrico Zini via nm <enrico@debian.org>')
         self.assertEqual(mail.outbox[0].to, ['John Smith <doctor@example.com>'])
         self.assertEqual(mail.outbox[0].cc, ['nm@debian.org', 'archive-doctor=example.com@nm.debian.org'])
 

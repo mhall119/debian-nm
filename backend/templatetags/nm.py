@@ -76,12 +76,14 @@ def fingerprint(value, autoescape=None):
 fingerprint.needs_autoescape = True
 
 @register.filter
-def formataddr(person):
+def formataddr(person, nametag=None):
     """
     Return a formatted address like "Foo <foo@example.org>" for a Person
     """
     import email.utils
-    name = person.fullname.encode('unicode_escape') + " via nm"
+    name = person.fullname.encode('unicode_escape')
+    if nametag is not None:
+        name += " " + nametag
     addr = person.preferred_email
     return email.utils.formataddr((name, addr))
 

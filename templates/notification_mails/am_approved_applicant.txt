@@ -1,5 +1,5 @@
 {% load nm %}
-From: {{log.changed_by|formataddr|safe}}
+From: {{log.changed_by|formataddr:"via nm"|safe}}
 To: debian-newmaint@lists.debian.org
 Cc: {{process.person|formataddr|safe}}, nm@debian.org, {{process.archive_email|safe}}
 Subject: Report for '{{process.applying_for|desc_status|safe}}' applicant {{process.person.fullname|safe}}

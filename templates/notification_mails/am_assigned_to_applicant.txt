@@ -1,5 +1,5 @@
 {% load nm %}
-From: {{log.changed_by|formataddr|safe}}
+From: {{log.changed_by|formataddr:"via nm"|safe}}
 To: {{process.manager.person|formataddr|safe}}
 Cc: {{process.archive_email|safe}}
 Subject: New '{{process.applying_for|desc_status|safe}}' applicant {{process.person.fullname|safe}}

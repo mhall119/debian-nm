@@ -1,5 +1,5 @@
 {% load nm %}
-From: {{log.changed_by|formataddr|safe}}
+From: {{log.changed_by|formataddr:"via nm"|safe}}
 To: {{process.person|formataddr|safe}}
 Cc: {{process.archive_email|safe}}
 Subject: Waiting for an Application Manager
