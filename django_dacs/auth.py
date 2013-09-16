@@ -4,7 +4,7 @@ from django.conf import settings
 from collections import namedtuple
 
 # Name the various bits of information DACS gives us
-DACSInfo = namedtuple('DACSInfo', ('unknown0', 'unknown1', "unknown2", "username"))
+DACSInfo = namedtuple('DACSInfo', ('unknown0', 'unknown1', "jurisdiction", "username"))
 
 TEST_REMOTE_USER = getattr(settings, "DACS_TEST_USERNAME", None)
 
