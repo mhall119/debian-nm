@@ -10,8 +10,8 @@ Debian NM Front Desk web application
 ### Configuration
 
     mkdir data # required by default settings
-    ln -s settings.py.devel settings.py
-    edit settings.py as needed
+    ln -s local_settings.py.devel local_settings.py
+    edit local_settings.py as needed
 
 ### First setup
     

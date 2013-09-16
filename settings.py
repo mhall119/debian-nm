@@ -169,22 +169,24 @@ LOGGING = {
     }
 }
 
-# BACKUP_DIR = "/srv/nm.debian.org/backup"
-BACKUP_DIR="."
-#KEYRINGS = "/home/enrico/dev/deb/keyring.debian.org/keyrings"
-KEYRINGS = os.path.join(DATA_DIR, "keyrings")
+# LDAP server to use to access Debian's official LDAP information
 LDAP_SERVER = "ldap://db.debian.org"
+
+# Location of a keyring-maint mirror
+KEYRINGS = os.path.join(DATA_DIR, "keyrings")
+
+# Work paths used by minechangelogs (indexing cache and the index itself)
 MINECHANGELOGS_CACHEDIR = os.path.join(DATA_DIR, "mc_cache")
 MINECHANGELOGS_INDEXDIR = os.path.join(DATA_DIR, "mc_index")
 
-EMAIL_PUBLIC_ANNOUNCES = "enrico@enricozini.org"
-EMAIL_PRIVATE_ANNOUNCES = "enrico@enricozini.org"
-EMAIL_PERSONAL_DIVERT = ["enrico@enricozini.org"]
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = '/tmp/nm_notification_mails'
+# Directory where site backups are stored
+BACKUP_DIR = os.path.join(DATA_DIR, "backups")
 
-PROCESS_MAILBOX_DIR = os.path.abspath("./test-mboxes")
+# Directory where applicant mailboxes are stored
+PROCESS_MAILBOX_DIR = os.path.join(DATA_DIR, "applicant-mailboxes")
 
+# Date where we imported DM information that had no timestamp.
+# DMs created on this date are infact DMs created on an unknown date
 DM_IMPORT_DATE = datetime.datetime(2012, 3, 14)
 
 # The password for this account is available from: master.debian.org:/home/debian/misc/rt-password
