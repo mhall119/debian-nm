@@ -318,3 +318,31 @@ class PermissionTest(TransactionTestCase):
         self.assertEquals(str(proc.permissions_of(self.p.am)), "--e-m--")
         # Permissions of FD
         self.assertEquals(str(proc.permissions_of(self.p.fd)), "b-e--fd")
+
+class SimpleFixtureFingerprintField(object):
+    def __init__(self):
+        bmodels.Person(cn="Marco", sn="Bardelli", email="safanaj@debian.org", uid="safanaj",
+                       status=bconst.STATUS_MM_GA,
+                       fpr="A410 5B0A 9F84 97EC AB5F  1683 8D5B 478C F7FE 4DAA").save()
+
+        bmodels.Person(cn="Invalid", sn="FPR", email="invalid@debian.org", uid="invalid_fpr",
+                       status=bconst.STATUS_MM,
+                       fpr="66B4 Invalid FPR BFAB").save()
+
+        bmodels.Person(cn="Empty", sn="FPR", email="empty@debian.org", uid="empty",
+                       status=bconst.STATUS_DD_NU,
+                       fpr="").save()
+
+class FingerprintTest(TransactionTestCase):
+    def setUp(self):
+        self.fpr = SimpleFixtureFingerprintField()
+
+    def test_fpr_field(self):
+        from django.db import connection
+        cr = connection.cursor()
+        on_db_valid_fpr = cr.execute("select fpr from person where uid = 'safanaj'").fetchone()[0]
+        self.assertEquals(on_db_valid_fpr, "A4105B0A9F8497ECAB5F16838D5B478CF7FE4DAA")
+        on_db_invalid_fpr = cr.execute("select fpr from person where uid = 'invalid_fpr'").fetchone()[0]
+        self.assertEquals(on_db_invalid_fpr, "FIXME-66B4 Invalid FPR BFAB")
+        on_db_empty_fpr = cr.execute("select fpr from person where uid = 'empty'").fetchone()[0]
+        self.assertIsNone(on_db_empty_fpr)

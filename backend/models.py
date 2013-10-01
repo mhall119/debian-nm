@@ -19,6 +19,7 @@
 
 from __future__ import absolute_import
 from django.db import models
+from django.db.models import fields as models_fields
 from django.contrib.auth.models import User
 from django.conf import settings
 from . import const
@@ -94,11 +95,45 @@ class TextNullField(models.TextField):
            # otherwise, just pass the value
            return value
 
+class FingerprintField(models.CharField):
+    description = "CharField that stores NULL but returns '', also strip spaces and upper storing"
+
+    ## not really useful, because in Person this is blank=True which not cleaned / validate
+    def to_python(self, value):
+        if value is None:
+            # if the db has a NULL, convert it into the Django-friendly '' string
+            return ""
+        else:
+            # otherwise, return just the value
+            return value
+
+    def get_db_prep_value(self, value, connection, prepared=False):
+        if value == "" or not isinstance(value, basestring):
+            # if Django tries to save '' string, send the db None (NULL)
+            return None
+        elif len(value.replace(' ', '')) == 40:
+            # otherwise, strip white spaces and upper case string.
+            # Also could we try a soft validation ??
+            return value.replace(' ', '').upper()
+        elif value.startswith("FIXME-"):
+            return value
+        else:
+            return "FIXME-{0}".format(value)
+
+    def formfield(self, **kwargs):
+        # we want bypass our parent to fix "maxlength" attribute in widget
+        # fingerprint with space are 50 chars to allow easy cut-and-paste
+        if 'max_length' not in kwargs:
+            kwargs.update({'max_length': 50})
+        return super(FingerprintField, self).formfield(**kwargs)
+
 
 ## for south migrations of customs fields,
 ## no kwargs in constructors allow us to cite only the names
 add_introspection_rules(
-    [], ["^backend\.models\.CharNullField", "^backend\.models\.TextNullField"])
+    [], ["^backend\.models\.CharNullField",
+         "^backend\.models\.TextNullField",
+         "^backend\.models\.FingerprintField"])
 
 class NMPermissions(object):
     """
@@ -292,7 +327,7 @@ class Person(models.Model):
     # This is null for people who still have not picked one
     uid = CharNullField("Debian account name", max_length=32, null=True, unique=True, blank=True)
     # OpenPGP fingerprint, NULL until one has been provided
-    fpr = CharNullField("OpenPGP key fingerprint", max_length=80, null=True, unique=True, blank=True)
+    fpr = FingerprintField("OpenPGP key fingerprint", max_length=40, null=True, unique=True, blank=True)
     status = models.CharField("current status in the project", max_length=20, null=False,
                               choices=[(x.tag, x.ldesc) for x in const.ALL_STATUS])
     status_changed = models.DateTimeField("when the status last changed", null=False, default=datetime.datetime.utcnow)
