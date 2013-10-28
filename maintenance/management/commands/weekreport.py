@@ -22,6 +22,7 @@ from django.conf import settings
 from django.db import connection, transaction
 from django.contrib.sites.models import Site
 from django.db.models import Count, Min, Max
+from collections import defaultdict
 import optparse
 import sys
 import datetime
@@ -59,6 +60,33 @@ class Reporter(object):
         self.until = until
         self.twidth = twidth
 
+    def print_proclist(self, out, procs, print_manager=True):
+        """Format and print a list of processes to `out`. If `print_manager`
+        is True, print a column with the AM login. The `procs` list needs to
+        be annotated with a `last_log` property used to display the date."""
+        print >>out
+
+        col_uid = 0
+        if print_manager:
+            for p in procs:
+                l = len(p.manager.person.uid)
+                if l > col_uid:
+                    col_uid = l
+
+        for p in procs:
+            if print_manager:
+                print >>out, \
+                    str(p.last_log.date()).rjust(12), \
+                    p.manager.person.uid.ljust(col_uid), \
+                    "%s <%s>" % (p.person.fullname, p.person.lookup_key)
+            else:
+                print >>out, \
+                    str(p.last_log.date()).rjust(12), \
+                    "%s <%s>" % (p.person.fullname, p.person.lookup_key)
+        print >>out
+
+
+
     def subject(self):
         if (self.until - self.since).days == 7:
             return "NM report for week ending %s" % str(self.until.date())
@@ -75,30 +103,33 @@ class Reporter(object):
         "Weekly Summary Statistics"
 
         # Processes that started
+        # We reuse last_log as that's what print_proclist expects
         new_procs = bmodels.Process.objects.filter(is_active=True) \
                                    .annotate(
-                                       started=Min("log__logdate")) \
-                                   .filter(started__gte=self.since)
+                                       last_log=Min("log__logdate")) \
+                                   .filter(last_log__gte=self.since)
 
-        counts = dict()
+        counts = defaultdict(list)
         for p in new_procs:
-            counts[p.applying_for] = counts.get(p.applying_for, 0) + 1
+            counts[p.applying_for].append(p)
 
-        for k in sorted(counts.iterkeys(), key=lambda x:const.SEQ_STATUS.get(x, 0)):
-            print >>out, "%d more people applied to become a %s" % (counts[k], const.ALL_STATUS_DESCS.get(k, "(unknown)"))
+        for k, processes in sorted(counts.iteritems(), key=lambda x:const.SEQ_STATUS.get(x[0], 0)):
+            print >>out, "%d more people applied to become a %s:" % (len(counts[k]), const.ALL_STATUS_DESCS.get(k, "(unknown)"))
+            self.print_proclist(out, processes, False)
 
         # Processes that ended
         new_procs = bmodels.Process.objects.filter(progress=const.PROGRESS_DONE) \
                                    .annotate(
-                                       ended=Max("log__logdate")) \
-                                   .filter(ended__gte=self.since)
+                                       last_log=Max("log__logdate")) \
+                                   .filter(last_log__gte=self.since)
 
-        counts = dict()
+        counts = defaultdict(list)
         for p in new_procs:
-            counts[p.applying_for] = counts.get(p.applying_for, 0) + 1
+            counts[p.applying_for].append(p)
 
-        for k in sorted(counts.iterkeys(), key=lambda x:const.SEQ_STATUS.get(x, 0)):
-            print >>out, "%d people became %s" % (counts[k], const.ALL_STATUS_DESCS.get(k, "(unknown)"))
+        for k, processes in sorted(counts.iteritems(), key=lambda x:const.SEQ_STATUS.get(x[0], 0)):
+            print >>out, "%d people became a %s:" % (len(counts[k]), const.ALL_STATUS_DESCS.get(k, "(unknown)"))
+            self.print_proclist(out, processes, False)
 
     def rep02_newams(self, out, **opts):
         "New AM candidates"
@@ -121,22 +152,6 @@ class Reporter(object):
     def rep03_amchecks(self, out, **opts):
         "AM checks"
 
-        def print_proclist(procs):
-            print >>out
-
-            col_uid = 0
-            for p in procs:
-                l = len(p.manager.person.uid)
-                if l > col_uid:
-                    col_uid = l
-
-            for p in procs:
-                print >>out, \
-                        str(p.last_log.date()).rjust(12), \
-                        p.manager.person.uid.ljust(col_uid), \
-                        "%s <%s>" % (p.person.fullname, p.person.lookup_key)
-            print >>out
-
         # Inactive AM processes
         procs = bmodels.Process.objects.filter(is_active=True, progress=const.PROGRESS_AM) \
                                .annotate(
@@ -147,7 +162,7 @@ class Reporter(object):
         if count > 0:
             print >>out, "%d processes have had no apparent activity in the last %d days:" % (
                 count, INACTIVE_AM_PERIOD)
-            print_proclist(procs)
+            self.print_proclist(out, procs)
 
         # Inactive AM_HOLD processes
         procs = bmodels.Process.objects.filter(is_active=True, progress=const.PROGRESS_AM_HOLD) \
@@ -159,7 +174,7 @@ class Reporter(object):
         if count > 0:
             print >>out, "%d processes have been on hold for longer than %d days:" % (
                 count, INACTIVE_AMHOLD_PERIOD)
-            print_proclist(procs)
+            self.print_proclist(out, procs)
 
 
     # $sql = "SELECT forename, surname, email FROM applicant WHERE newmaint IS NOT NULL AND newmaint BETWEEN NOW() - interval '6 months 1 week' AND NOW() - interval '6 months' ORDER BY newmaint DESC";
