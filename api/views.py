@@ -1,6 +1,6 @@
 # nm.debian.org website API
 #
-# Copyright (C) 2012  Enrico Zini <enrico@debian.org>
+# Copyright (C) 2012--2013  Enrico Zini <enrico@debian.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -92,3 +92,24 @@ def people(request):
         return json_response(dict(r=res))
     except Exception, e:
         return json_response(dict(e=str(e)), status_code=500)
+
+def contributors(request):
+    from django.db.models import Min, Max
+    contribs = []
+    for am in bmodels.AM.objects.all():
+        res = bmodels.Log.objects.filter(changed_by=am.person, process__manager=am).aggregate(
+            since=Min("logdate"),
+            until=Max("logdate"))
+        if res["since"] is None or res["until"] is None:
+            continue
+        contribs.append({
+            "id": { "type": "uid", "id": am.person.uid },
+            "contributions": [
+                {
+                    "type": "am",
+                    "begin": res["since"].strftime("%Y-%m-%d"),
+                    "end": res["until"].strftime("%Y-%m-%d"),
+                }
+            ]})
+
+    return json_response(contribs)
