@@ -67,6 +67,9 @@ class SubmitContributors(MaintenanceTask):
                 url=self.maint.link(am))
 
         if DC_SUBMIT_URL:
-            submission.post(DC_AUTH_TOKEN, baseurl=DC_SUBMIT_URL)
+            res, info = submission.post(DC_AUTH_TOKEN, baseurl=DC_SUBMIT_URL)
         else:
-            submission.post(DC_AUTH_TOKEN)
+            res, info = submission.post(DC_AUTH_TOKEN)
+
+        if not res:
+            log.error("%s: submission failed: %r", self.IDENTIFIER, info)
