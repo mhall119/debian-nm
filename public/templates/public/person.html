@@ -2,7 +2,6 @@
 {% load nm %}
 {% load macros %}
 {% load js %}
-{% load markup %}
 
 {% block head_resources %}
   {{block.super}}
@@ -119,7 +118,7 @@
 <div class="personbio">
 {% if person.bio %}
   <div class="expanded">
-    {{person.bio|markdown:"safe"}}
+    {{bio_html|safe}}
   </div>
   <div class="collapsed">
     {{person.bio|truncatechars:128}} <span class="expander">(expand)</span>

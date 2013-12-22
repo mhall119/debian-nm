@@ -21,6 +21,7 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 import backend.models as bmodels
 from backend import const
+import markdown
 import datetime
 import json
 
@@ -293,6 +294,8 @@ def person(request, key):
     ctx["adv_processes"] = person.advocated \
                 .annotate(started=Min("log__logdate"), ended=Max("log__logdate")) \
                 .order_by("is_active", "ended")
+
+    ctx["bio_html"] = markdown.markdown(person.bio, safe_mode="escape")
 
     return render_to_response("public/person.html", ctx,
                               context_instance=template.RequestContext(request))
