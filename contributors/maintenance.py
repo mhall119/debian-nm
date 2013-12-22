@@ -51,7 +51,7 @@ class SubmitContributors(MaintenanceTask):
             if res["since"] is None or res["until"] is None:
                 continue
             submission.add_contribution_data(
-                dc.Identifier(type="uid", id=am.person.uid, desc=am.person.fullname),
+                dc.Identifier(type="login", id=am.person.uid, desc=am.person.fullname),
                 type="am", begin=res["since"].date(), end=res["until"].date(),
                 url=self.maint.link(am))
 
@@ -62,7 +62,7 @@ class SubmitContributors(MaintenanceTask):
             if res["since"] is None or res["until"] is None:
                 continue
             submission.add_contribution_data(
-                dc.Identifier(type="uid", id=am.person.uid, desc=am.person.fullname),
+                dc.Identifier(type="login", id=am.person.uid, desc=am.person.fullname),
                 type="fd", begin=res["since"].date(), end=res["until"].date(),
                 url=self.maint.link(am))
 
