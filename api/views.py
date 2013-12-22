@@ -112,4 +112,20 @@ def contributors(request):
                 }
             ]})
 
+    for am in bmodels.AM.objects.filter(is_fd=True):
+        res = bmodels.Log.objects.filter(changed_by=am.person).exclude(process__manager=am).aggregate(
+            since=Min("logdate"),
+            until=Max("logdate"))
+        if res["since"] is None or res["until"] is None:
+            continue
+        contribs.append({
+            "id": { "type": "uid", "id": am.person.uid },
+            "contributions": [
+                {
+                    "type": "fd",
+                    "begin": res["since"].strftime("%Y-%m-%d"),
+                    "end": res["until"].strftime("%Y-%m-%d"),
+                }
+            ]})
+
     return json_response(contribs)
