@@ -21,6 +21,5 @@ from django.views.generic import TemplateView
 urlpatterns = patterns('api.views',
     url(r'^$', TemplateView.as_view(template_name="api/doc.html"), name="api_doc"),
     url(r'^people$', 'people', name="api_people"),
-    url(r'^contributors$', 'contributors', name="api_contributors"),
 )
 

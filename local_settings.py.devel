@@ -39,3 +39,7 @@ DACS_TEST_USERNAME = "enrico:enrico:enrico:enrico"
 # Avoid sending emails
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = '/tmp/nm_notification_mails'
+
+# Test Debian Contributors submission locally
+#DC_AUTH_TOKEN = "antani"
+#DC_SUBMIT_URL = "http://localhost:8000"

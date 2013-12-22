@@ -133,6 +133,7 @@ INSTALLED_APPS = (
     'projectb',
     'minechangelogs',
     'api',
+    'contributors',
     'south',
 )
 
