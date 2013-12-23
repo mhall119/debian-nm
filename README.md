@@ -12,6 +12,11 @@ Debian NM Front Desk web application
       (you can either build the package from it or symlink the module directory
       into the nm.debian.org sources)
 
+    # http://anonscm.debian.org/gitweb/?p=nm/python-debiancontributors.git
+    git clone https://alioth.debian.org/anonscm/git/nm/python-debiancontributors.git
+      (you can either build the package from it or symlink the module directory
+      into the nm.debian.org sources)
+
 ### Configuration
 
     mkdir data # required by default settings
