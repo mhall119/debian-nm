@@ -7,6 +7,11 @@ Debian NM Front Desk web application
     apt-get install python-django python-ldap python-psycopg2 python-xapian \
      python-debian python-django-south python-markdown
 
+    # http://anonscm.debian.org/gitweb/?p=users/enrico/django_maintenance.git
+    git clone https://alioth.debian.org/anonscm/git/users/enrico/django_maintenance.git
+      (you can either build the package from it or symlink the module directory
+      into the nm.debian.org sources)
+
 ### Configuration
 
     mkdir data # required by default settings
