@@ -20,6 +20,7 @@
 import tempfile
 import os.path
 import os
+import shutil
 from cStringIO import StringIO
 
 class atomic_writer(object):
@@ -109,3 +110,17 @@ class StreamStdoutKeepStderr(object):
                 self.stderr.write(buf)
         if last_line is not None:
             yield last_line
+
+class NamedTemporaryDirectory(object):
+    """
+    Create a temporary directory, and delete it at the end
+    """
+    def __init__(self, parent=None):
+        self.pathname = tempfile.mkdtemp(dir=parent)
+
+    def __enter__(self):
+        return self.pathname
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        shutil.rmtree(self.pathname)
+        return False
