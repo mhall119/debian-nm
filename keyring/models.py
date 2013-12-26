@@ -42,18 +42,21 @@ WithFingerprint = namedtuple("WithFingerprint", (
 
 Uid = namedtuple("Uid", ("name", "email", "comment"))
 
+def gpg_keyring_cmd(keyring, *args):
+    keyring = os.path.join(KEYRINGS, keyring)
+    cmd = [
+        "gpg", "-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb",
+        "--trust-model", "always", "--with-colons", "--fixed-list-mode",
+        "--with-fingerprint", "--keyring", keyring
+    ]
+    cmd.extend(args)
+    return cmd
+
 def _check_keyring(keyring, fpr):
     """
     Check if a fingerprint exists in a keyring
     """
-    keyring = os.path.join(KEYRINGS, keyring)
-
-    cmd = [
-        "gpg",
-        "-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb", "--trust-model", "always",
-        "--fixed-list-mode", "--keyring", keyring,
-        "--with-colons", "--with-fingerprint", "--list-keys", fpr,
-    ]
+    cmd = gpg_keyring_cmd(keyring, "--list-keys", fpr)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
     result = proc.wait()
@@ -70,14 +73,7 @@ def _list_keyring(keyring):
     """
     List all fingerprints in a keyring
     """
-    keyring = os.path.join(KEYRINGS, keyring)
-
-    cmd = [
-        "gpg",
-        "-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb", "--trust-model", "always",
-        "--fixed-list-mode", "--keyring", keyring,
-        "--with-colons", "--with-fingerprint", "--list-keys",
-    ]
+    cmd = gpg_keyring_cmd(keyring, "--list-keys")
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     proc.stdin.close()
     lines = StreamStdoutKeepStderr(proc)
