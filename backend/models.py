@@ -27,6 +27,7 @@ from backend.notifications import maybe_notify_applicant_on_progress
 import datetime
 import urllib
 import os.path
+import re
 from south.modelsinspector import add_introspection_rules
 from django.db.models.signals import post_save
 
@@ -115,10 +116,10 @@ class FingerprintField(models.CharField):
             # otherwise, strip white spaces and upper case string.
             # Also could we try a soft validation ??
             return value.replace(' ', '').upper()
-        elif value.startswith("FIXME-"):
-            return value
+        elif value.startswith("FIXME"):
+            return re.sub("[^a-zA-Z0-9_-]+", "-", value)[:40]
         else:
-            return "FIXME-{0}".format(value)
+            raise ValueError("Invalid fingerprint")
 
     def formfield(self, **kwargs):
         # we want bypass our parent to fix "maxlength" attribute in widget

@@ -327,7 +327,7 @@ class SimpleFixtureFingerprintField(object):
 
         bmodels.Person(cn="Invalid", sn="FPR", email="invalid@debian.org", uid="invalid_fpr",
                        status=bconst.STATUS_MM,
-                       fpr="66B4 Invalid FPR BFAB").save()
+                       fpr="FIXME: I'll let you know later when I'll have a bit of a clue").save()
 
         bmodels.Person(cn="Empty", sn="FPR", email="empty@debian.org", uid="empty",
                        status=bconst.STATUS_DD_NU,
@@ -343,6 +343,12 @@ class FingerprintTest(TransactionTestCase):
         on_db_valid_fpr = cr.execute("select fpr from person where uid = 'safanaj'").fetchone()[0]
         self.assertEquals(on_db_valid_fpr, "A4105B0A9F8497ECAB5F16838D5B478CF7FE4DAA")
         on_db_invalid_fpr = cr.execute("select fpr from person where uid = 'invalid_fpr'").fetchone()[0]
-        self.assertEquals(on_db_invalid_fpr, "FIXME-66B4 Invalid FPR BFAB")
+        self.assertEquals(on_db_invalid_fpr, "FIXME-I-ll-let-you-know-later-when-I-ll-")
         on_db_empty_fpr = cr.execute("select fpr from person where uid = 'empty'").fetchone()[0]
         self.assertIsNone(on_db_empty_fpr)
+
+        p = bmodels.Person(cn="Invalid", sn="FPR", email="invalid@debian.org", uid="invalid_fpr",
+                       status=bconst.STATUS_MM,
+                       fpr="66B4 Invalid FPR BFAB")
+        self.assertRaises(ValueError, p.save)
+
