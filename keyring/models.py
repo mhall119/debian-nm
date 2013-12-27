@@ -427,7 +427,7 @@ def keycheck(fpr):
     # Joerg Jaspert <joerg@debian.org>,
     # Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
     # and others.
-    with NamedTemporaryDirectory() as tmpdir:
+    with NamedTemporaryDirectory(parent="/tmp") as tmpdir:
         work_keyring = os.path.join(tmpdir, "keycheck.gpg")
 
         # Get key
