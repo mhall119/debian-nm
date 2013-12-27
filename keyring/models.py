@@ -29,6 +29,7 @@ import os.path
 import subprocess
 from collections import namedtuple
 from backend.utils import StreamStdoutKeepStderr, NamedTemporaryDirectory
+import time
 import logging
 
 log = logging.getLogger(__name__)
@@ -195,79 +196,55 @@ def fetch_key(fpr, dest_keyring):
     if result != 0:
         raise RuntimeError("gpg exited with status %d: %s" % (result, stderr.strip()))
 
-def read_sigs(cmd):
-    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    proc.stdin.close()
-    lines = StreamStdoutKeepStderr(proc)
-    pub = None
-    fpr = None
-    uid = None
-    sigs = []
-    for line in lines:
-        if line.startswith(b"pub:"):
-            if pub:
-                yield pub, fpr, uid, sigs
-            pub = line.split(b":")
-            fpr = None
-            uid = None
-            sigs = []
-        elif line.startswith(b"fpr:"):
-            fpr = line.split(b":")[9]
-        elif line.startswith(b"uid:"):
-            if uid:
-                yield pub, fpr, uid, sigs
-            uid = line.split(b":")
-            sigs = []
-        elif line.startswith(b"sig:"):
-            sigs.append(line.split(b":"))
-    if pub:
-        yield pub, fpr, uid, sigs
-
-    result = proc.wait()
-    if result != 0:
-        raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
-
-class KeycheckResult(object):
-    def __init__(self, pub, fpr, uid, sigs):
+class Key(object):
+    def __init__(self, fpr, pub):
         self.pub = pub
         self.fpr = fpr
+        self.uids = {}
+        self.subkeys = {}
+
+    def get_uid(self, uid):
+        uidfpr = uid[7]
+        res = self.uids.get(uidfpr, None)
+        if res is None:
+            self.uids[uidfpr] = res = Uid(self, uid)
+        return res
+
+    def add_sub(self, sub):
+        subfpr = tuple(sub[3:6])
+        self.subkeys[subfpr] = sub
+
+    def keycheck(self):
+        return KeycheckKeyResult(self)
+
+class Uid(object):
+    def __init__(self, key, uid):
+        self.key = key
         self.uid = uid
-        self.uid_name = uid[9].decode("utf8", "replace")
-        self.sigs_ok = []
-        self.sigs_no_key = []
-        self.sigs_not_ok = []
-        for sig in sigs:
-            if sig[1] == "?":
-                self.sigs_no_key.append(sig)
-            elif sig[1] == "!":
-                self.sigs_ok.append(sig)
-            else:
-                self.sigs_not_ok.append(sig)
+        self.name = uid[9].decode("utf8", "replace")
+        self.sigs = {}
 
+    def add_sig(self, sig):
+        # FIXME: missing a full fingerprint, we try to index with as much
+        # identifying data as possible
+        k = tuple(sig[3:6])
+        self.sigs[k] = sig
+
+class KeycheckKeyResult(object):
+    def __init__(self, key):
+        self.key = key
+        self.uids = []
         self.errors = set()
+        self.capabilities = {}
 
-        if len(fpr) == 32:
+        # Check key type from fingerprint length
+        if len(key.fpr) == 32:
             self.errors.add("ver3")
 
         # pub:f:1024:17:C5AF774A58510B5A:2004-04-17:::-:Christoph Berg <cb@df7cb.de>::scESC:
 
-        # Check key and uid validity
-
-        flags = pub[1]
-        if "i" in flags: self.errors.update(("skip", "key_invalid"))
-        if "d" in flags: self.errors.update(("skip", "key_disabled"))
-        if "r" in flags: self.errors.update(("skip", "key_revoked"))
-        if "t" in flags: self.errors.update(("skip", "key_expired"))
-
-        flags = uid[1]
-        if "i" in flags: self.errors.update(("skip", "uid_invalid"))
-        if "d" in flags: self.errors.update(("skip", "uid_disabled"))
-        if "r" in flags: self.errors.update(("skip", "uid_revoked"))
-        if "t" in flags: self.errors.update(("skip", "uid_expired"))
-
         # Check key size
-        keysize = int(pub[2])
-        # FIXME: proper reporting
+        keysize = int(key.pub[2])
         if keysize >= 4096:
             pass
         elif keysize >= 2048:
@@ -276,49 +253,146 @@ class KeycheckResult(object):
             self.errors.add("key_size_small")
 
         # Check key algorithm
-        keyalgo = int(pub[3])
+        keyalgo = int(key.pub[3])
         if keyalgo == 1:
-            #echo "This is an RSA key."
             pass
         elif keyalgo == 17:
             self.errors.add("key_algo_dsa")
         else:
             self.errors.add("key_algo_unknown")
 
+        # Check key flags
+        flags = key.pub[1]
+        if "i" in flags: self.errors.update(("skip", "key_invalid"))
+        if "d" in flags: self.errors.update(("skip", "key_disabled"))
+        if "r" in flags: self.errors.update(("skip", "key_revoked"))
+        if "t" in flags: self.errors.update(("skip", "key_expired"))
 
-    ## FIXME: return warnings properly
-    #if len(fpr) == 32:
-    #    print("Warning: It looks like this key is an version 3 GPG key. This is bad.")
-    #    print("This is not accepted for the NM ID Step. Please doublecheck and then")
-    #    print("get your applicant to send you a correct key if this is script isnt wrong.")
-    #    EXIT=1
-    #else:
-    #    print("Key is OpenPGP version 4 or greater.")
+        # Check UIDs
+        for uid in key.uids.itervalues():
+            self.uids.append(KeycheckUidResult(uid))
 
-    #    if keysize >= 4096:
-    #        print("Key has {} bits.".format(keysize))
-    #    elif keysize >= 2048:
-    #        print("Key has only {} bits.  Please explain why this key size is used".format(keysize))
-    #        print("(see [KM] for details).")
-    #        print("[KM] http://lists.debian.org/debian-devel-announce/2010/09/msg00003.html")
-    #        EXIT=1
-    #    else:
-    #        print("Key has only {} bits.  This is not acceptable if the application".format(keysize))
-    #        print("was started after October 1st, 2010 (see [KM] for details).")
-    #        print("[KM] http://lists.debian.org/debian-devel-announce/2010/09/msg00003.html")
-    #        EXIT=1
+        def int_expire(x):
+            if x is None or x == "": return x
+            return int(x)
 
-    #    if keyalgo == 1:
-    #        #echo "This is an RSA key."
-    #        pass
-    #    elif keyalgo == 17:
-    #        print("This is an DSA key.  This might need an explanation (see [KM] for details).")
-    #        print("[KM] http://lists.debian.org/debian-devel-announce/2010/09/msg00003.html")
-    #        EXIT=1
-    #    else:
-    #        print("Unknown key algorithm", keyalgo)
-    #        EXIT=1
+        def max_expire(a, b):
+            """
+            Pick the maximum expiration indication between the two.
+            a and b can be:
+                None: nothing known (sorts lowest)
+                number: an expiration timestamp
+                "": no expiration (sorts highest)
+            """
+            if a is None: return int_expire(b)
+            if b is None: return int_expire(a)
+            if a == "": return int_expire(a)
+            if b == "": return int_expire(b)
+            return max(int(a), int(b))
 
+        # Check capabilities
+        for cap in "es":
+            # Check in primary key
+            if cap in key.pub[11]:
+                self.capabilities[cap] = int_expire(key.pub[6])
+
+            # Check in subkeys
+            for sk in key.subkeys.itervalues():
+                if cap in sk[11]:
+                    oldcap = self.capabilities.get(cap, None)
+                    self.capabilities[cap] = max_expire(oldcap, sk[6])
+
+        cutoff = time.time() + 86400 * 90
+
+        c = self.capabilities.get("e", None)
+        if c is None:
+            self.errors.add("key_encryption_missing")
+        elif c is not "" and c < cutoff:
+            self.errors.add("key_encryption_expires_soon")
+
+        c = self.capabilities.get("s", None)
+        if c is None:
+            self.errors.add("key_signing_missing")
+        elif c is not "" and c < cutoff:
+            self.errors.add("key_signing_expires_soon")
+
+
+class KeycheckUidResult(object):
+    def __init__(self, uid):
+        self.uid = uid
+        self.errors = set()
+
+        # uid:q::::1241797807::73B85305F2B11D695B610022AF225CCBC6B3F6D9::Enrico Zini <enrico@enricozini.org>:
+
+        # Check uid flags
+
+        flags = uid.uid[1]
+        if "i" in flags: self.errors.update(("skip", "uid_invalid"))
+        if "d" in flags: self.errors.update(("skip", "uid_disabled"))
+        if "r" in flags: self.errors.update(("skip", "uid_revoked"))
+        if "t" in flags: self.errors.update(("skip", "uid_expired"))
+
+        # Check signatures
+        self.sigs_ok = []
+        self.sigs_no_key = []
+        self.sigs_not_ok = []
+        for sig in uid.sigs.itervalues():
+            # dkg says:
+            # ! means "verified"
+            # - means "not verified" (bad signature, signature from expired key)
+            # ? means "signature from a key we don't have"
+            if sig[1] == "?" or sig[1] == "-":
+                self.sigs_no_key.append(sig)
+            elif sig[1] == "!":
+                self.sigs_ok.append(sig)
+            else:
+                self.sigs_not_ok.append(sig)
+
+
+def read_sigs(cmd):
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    proc.stdin.close()
+    lines = StreamStdoutKeepStderr(proc)
+    keys = {}
+    pub = None
+    cur_key = None
+    cur_uid = None
+    for lineno, line in enumerate(lines, start=1):
+        if line.startswith(b"pub:"):
+            # Keep track of this pub record, to correlate with the following
+            # fpr record
+            pub = line.split(b":")
+            cur_key = None
+            cur_uid = None
+        elif line.startswith(b"fpr:"):
+            # Correlate fpr with the previous pub record, and start gathering
+            # information for a new key
+            if pub is None:
+                raise Exception("gpg:{}: found fpr line with no previous pub line".format(lineno))
+            fpr = line.split(b":")[9]
+            cur_key = keys.get(fpr, None)
+            if cur_key is None:
+                keys[fpr] = cur_key = Key(fpr, pub)
+            pub = None
+            cur_uid = None
+        elif line.startswith(b"uid:"):
+            if cur_key is None:
+                raise Exception("gpg:{}: found uid line with no previous pub+fpr lines".format(lineno))
+            cur_uid = cur_key.get_uid(line.split(b":"))
+        elif line.startswith(b"sig:"):
+            if cur_uid is None:
+                raise Exception("gpg:{}: found sig line with no previous uid line".format(lineno))
+            cur_uid.add_sig(line.split(b":"))
+        elif line.startswith(b"sub:"):
+            if cur_key is None:
+                raise Exception("gpg:{}: found sub line with no previous pub+fpr lines".format(lineno))
+            cur_key.add_sub(line.split(b":"))
+
+    result = proc.wait()
+    if result != 0:
+        raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
+
+    return keys.itervalues()
 
 def keycheck(fpr):
     """
@@ -337,16 +411,6 @@ def keycheck(fpr):
     # Based on keycheck,sh
     # Copyright (C) 2003-2007 Joerg Jaspert <joerg@debian.org> and others
 
-    # For the rsync of the debian keyrings and for the nm.gpg
-    #DESTDIR="${DEBHOME:-"$HOME/debian"}/keyring.debian.org/keyrings"
-    # Don't try to access the network? (-n)
-    #NONET=""
-    # Keep nm.gpg after check? (-k)
-    # nm.gpg holds all keys you checked with this script.
-    #KEEP=""
-    # The options for the gpg call in this script.
-    # Contains only options used in ALL gpg calls.
-    #GPGOPTS="-q --no-options --no-default-keyring --no-auto-check-trustdb --keyring $DESTDIR/nm.gpg --trust-model always"
     # Return value
     EXIT=0
 
@@ -358,82 +422,5 @@ def keycheck(fpr):
 
         # Check key
         cmd = gpg_keyring_cmd(("debian-keyring.gpg", "debian-nonupload.gpg"), "--keyring", work_keyring, "--check-sigs", fpr)
-        for pub, fpr, uid, sigs in read_sigs(cmd):
-            res = KeycheckResult(pub, fpr, uid, sigs)
-            print("Key {fpr}: {sigs_ok} good sigs, {sigs_no_key} unknown sigs, {sigs_not_ok} ?? sigs".format(
-                fpr=fpr, sigs_ok=len(res.sigs_ok), sigs_no_key=len(res.sigs_no_key), sigs_not_ok=len(res.sigs_not_ok)))
-            if res.errors:
-                print("    errors:", ", ".join(sorted(res.errors)))
-
-        # # this awk script checks to see whether the key details on stdin show
-        # # a valid usage flag for a given future date.
-        # #    (author: Daniel Kahn Gillmor <dkg@fifthhorseman.net>)
-        # #
-        # # it needs two variables set before invocation:
-        # #  KEYFLAG: which flag are we looking for?  (see http://tools.ietf.org/html/rfc4880#section-5.2.3.21
-        # #    gpg supports at least:
-        # #      a (authentication), e (encryption), s (signing), c (certification)
-        # #  TARGDATE: unix timestamp of date that we care about
-        # AWK_CHECKDATE='
-        # BEGIN {
-        # PRIFLAGS = "";
-        # SUBFOUND = 0;
-        # }
-        # $1 == "pub" && $2 != "r" {
-        # PRIFLAGS = $12;
-        # PRIEXP = $7;
-        # PRIFPR = $5;
-        # }
-        # $1 == "sub" && $2 != "r" && $12 ~ KEYFLAG {
-        # if (!SUBFOUND || $7 == "" || (SUBEXP != "" && $7 > SUBEXP) )
-        #     SUBEXP = $7;
-        # SUBFOUND = 1;
-        # }
-        # END {
-        # if (PRIFLAGS ~ KEYFLAG)
-        # EXPIRES=PRIEXP;
-        # else if (!SUBFOUND)
-        # { print "No valid \"" KEYFLAG "\" usage flag set on key " PRIFPR "!" ; exit 1 }
-        # else if (PRIEXP != "" && PRIEXP < SUBEXP)
-        # EXPIRES=PRIEXP;
-        # else
-        # EXPIRES=SUBEXP;
-        # if ( "" == EXPIRES )
-        # print "Valid \"" KEYFLAG "\" flag, no expiration.";
-        # else if ( EXPIRES > TARGDATE )
-        # print "Valid \"" KEYFLAG "\" flag, expires " strftime("%c", EXPIRES) ".";
-        # else {
-        # print "Valid \"" KEYFLAG "\" flag, but it expires " strftime("%c", EXPIRES) ".";
-        # print "This is too soon!";
-        # print "Please ask the applicant to extend the lifetime of their OpenPGP key.";
-        # exit 1;
-        # }
-        # }
-        # '
-
-        # # we want to make sure that there will be usable, valid keys three months in the future:
-        # EXPCUTOFF=$(( $(date +%s) + 86400*30*3 ))
-
-        # gpg ${GPGOPTS} --with-colons --fixed-list-mode --list-key "$KEYID" | \
-        # gawk -F : -v KEYFLAG=e -v "TARGDATE=$EXPCUTOFF" "$AWK_CHECKDATE" || EXIT=$?
-        # gpg ${GPGOPTS} --with-colons --fixed-list-mode --list-key "$KEYID" | \
-        # gawk -F : -v KEYFLAG=s -v "TARGDATE=$EXPCUTOFF" "$AWK_CHECKDATE" || EXIT=$?
-
-        # # Clean up
-
-        # if [ "$EXIT" != 0 ] ; then
-        #     cat <<EOF
-
-        # #########################################################################
-        # ### There are problems with the key that might make it unusable for   ###
-        # ### inclusion in the Debian keyring or usage with Debian's LDAP       ###
-        # ### directory.  If unsure, please get in touch with the NM front-desk ###
-        # ### nm@debian.org to resolve these problems.                          ###
-        # ### (Please do not include this notice in the AM report.)             ###
-        # #########################################################################
-        # EOF
-        # fi
-
-        # exit $EXIT
-
-        return EXIT
+        for key in read_sigs(cmd):
+            yield key.keycheck()

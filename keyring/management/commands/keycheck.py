@@ -41,8 +41,83 @@ class Command(BaseCommand):
         else:
             logging.basicConfig(level=logging.INFO, stream=sys.stderr, format=FORMAT)
 
-        res = kmodels.keycheck(fpr)
-        if res == 0:
-            print("ok")
-        else:
-            print("not ok")
+        for kc in kmodels.keycheck(fpr):
+            print("Key {fpr}: {uids} uids, check: {errors}".format(
+                fpr=kc.key.fpr,
+                uids=len(kc.uids),
+                errors=(", ".join(sorted(kc.errors)) if kc.errors else "ok")
+            ))
+            for ku in kc.uids:
+                print("  uid {uid}: sigs: {sigs_ok} ok, {sigs_no_key} unknown, {sigs_not_ok} ??; check: {errors}".format(
+                    uid=ku.uid.name,
+                    sigs_ok=len(ku.sigs_ok),
+                    sigs_no_key=len(ku.sigs_no_key),
+                    sigs_not_ok=len(ku.sigs_not_ok),
+                    errors=(", ".join(sorted(ku.errors)) if ku.errors else "ok")
+                ))
+
+    ## FIXME: return warnings properly
+    #if len(fpr) == 32:
+    #    print("Warning: It looks like this key is an version 3 GPG key. This is bad.")
+    #    print("This is not accepted for the NM ID Step. Please doublecheck and then")
+    #    print("get your applicant to send you a correct key if this is script isnt wrong.")
+    #    EXIT=1
+    #else:
+    #    print("Key is OpenPGP version 4 or greater.")
+
+    #    if keysize >= 4096:
+    #        print("Key has {} bits.".format(keysize))
+    #    elif keysize >= 2048:
+    #        print("Key has only {} bits.  Please explain why this key size is used".format(keysize))
+    #        print("(see [KM] for details).")
+    #        print("[KM] http://lists.debian.org/debian-devel-announce/2010/09/msg00003.html")
+    #        EXIT=1
+    #    else:
+    #        print("Key has only {} bits.  This is not acceptable if the application".format(keysize))
+    #        print("was started after October 1st, 2010 (see [KM] for details).")
+    #        print("[KM] http://lists.debian.org/debian-devel-announce/2010/09/msg00003.html")
+    #        EXIT=1
+
+    #    if keyalgo == 1:
+    #        #echo "This is an RSA key."
+    #        pass
+    #    elif keyalgo == 17:
+    #        print("This is an DSA key.  This might need an explanation (see [KM] for details).")
+    #        print("[KM] http://lists.debian.org/debian-devel-announce/2010/09/msg00003.html")
+    #        EXIT=1
+    #    else:
+    #        print("Unknown key algorithm", keyalgo)
+    #        EXIT=1
+
+        # # this awk script checks to see whether the key details on stdin show
+        # # a valid usage flag for a given future date.
+        # #    (author: Daniel Kahn Gillmor <dkg@fifthhorseman.net>)
+        # #
+        # # it needs two variables set before invocation:
+        # #  KEYFLAG: which flag are we looking for?  (see http://tools.ietf.org/html/rfc4880#section-5.2.3.21
+        # #    gpg supports at least:
+        # #      a (authentication), e (encryption), s (signing), c (certification)
+        # #  TARGDATE: unix timestamp of date that we care about
+
+        # # we want to make sure that there will be usable, valid keys three months in the future:
+        # EXPCUTOFF=$(( $(date +%s) + 86400*30*3 ))
+
+        # gpg ${GPGOPTS} --with-colons --fixed-list-mode --list-key "$KEYID" | \
+        # gawk -F : -v KEYFLAG=e -v "TARGDATE=$EXPCUTOFF" "$AWK_CHECKDATE" || EXIT=$?
+        # gpg ${GPGOPTS} --with-colons --fixed-list-mode --list-key "$KEYID" | \
+        # gawk -F : -v KEYFLAG=s -v "TARGDATE=$EXPCUTOFF" "$AWK_CHECKDATE" || EXIT=$?
+
+        # # Clean up
+
+        # if [ "$EXIT" != 0 ] ; then
+        #     cat <<EOF
+
+        # #########################################################################
+        # ### There are problems with the key that might make it unusable for   ###
+        # ### inclusion in the Debian keyring or usage with Debian's LDAP       ###
+        # ### directory.  If unsure, please get in touch with the NM front-desk ###
+        # ### nm@debian.org to resolve these problems.                          ###
+        # ### (Please do not include this notice in the AM report.)             ###
+        # #########################################################################
+        # EOF
+        # fi
