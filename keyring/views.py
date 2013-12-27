@@ -46,7 +46,7 @@ def keycheck(request, fpr):
     if request.method != "GET":
         return http.HttpResponseForbidden("Only GET request is allowed here")
 
-    if getattr(request, 'limited', False):
+    if getattr(request, 'limited', False) and request.user.is_anonymous():
         return json_response({
             "error": "too many requests, please wait a minute before retrying",
         }, status_code=420)
