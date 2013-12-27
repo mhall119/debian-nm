@@ -396,7 +396,7 @@ class KeycheckUidResult(object):
         # Check signatures
         self.sigs_ok = []
         self.sigs_no_key = []
-        self.sigs_not_ok = []
+        self.sigs_bad = []
         for sig in uid.sigs.itervalues():
             # dkg says:
             # ! means "verified"
@@ -407,7 +407,7 @@ class KeycheckUidResult(object):
             elif sig[1] == "!":
                 self.sigs_ok.append(sig)
             else:
-                self.sigs_not_ok.append(sig)
+                self.sigs_bad.append(sig)
 
 def keycheck(fpr):
     """

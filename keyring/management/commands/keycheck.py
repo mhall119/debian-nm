@@ -48,11 +48,11 @@ class Command(BaseCommand):
                 errors=(", ".join(sorted(kc.errors)) if kc.errors else "ok")
             ))
             for ku in kc.uids:
-                print("  uid {uid}: sigs: {sigs_ok} ok, {sigs_no_key} unknown, {sigs_not_ok} ??; check: {errors}".format(
+                print("  uid {uid}: sigs: {sigs_ok} ok, {sigs_no_key} unknown, {sigs_bad} ??; check: {errors}".format(
                     uid=ku.uid.name,
                     sigs_ok=len(ku.sigs_ok),
                     sigs_no_key=len(ku.sigs_no_key),
-                    sigs_not_ok=len(ku.sigs_not_ok),
+                    sigs_bad=len(ku.sigs_bad),
                     errors=(", ".join(sorted(ku.errors)) if ku.errors else "ok")
                 ))
 
