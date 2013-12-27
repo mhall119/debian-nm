@@ -45,42 +45,80 @@ KEYSERVER = getattr(settings, "KEYSERVER", "pgp.mit.edu")
 
 Uid = namedtuple("Uid", ("name", "email", "comment"))
 
-def gpg_cmd(*args):
-    cmd = [
-        "gpg", "-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb",
-        "--trust-model", "always", "--with-colons", "--fixed-list-mode",
-        "--with-fingerprint"
-    ]
-    cmd.extend(args)
-    return cmd
+class GPG(object):
+    def __init__(self, homedir=None):
+        self.homedir = homedir
 
-def gpg_keyring_cmd(keyrings, *args):
-    """
-    Build a gpg invocation command using the given keyring, or sequence of
-    keyring names
-    """
-    # If we only got one string, make it into a sequence
-    if isinstance(keyrings, basestring):
-        keyrings = (keyrings, )
-    cmd = [
-        "gpg", "-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb",
-        "--trust-model", "always", "--with-colons", "--fixed-list-mode",
-        "--with-fingerprint",
-    ]
-    for k in keyrings:
-        cmd.append("--keyring")
-        cmd.append(os.path.join(KEYRINGS, k))
-    cmd.extend(args)
-    return cmd
+    def cmd(self, *args):
+        cmd = ["/usr/bin/gpg"]
+        if self.homedir is not None:
+            cmd.append("--homedir")
+            cmd.append(self.homedir)
+        cmd.extend(("-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb",
+            "--trust-model", "always", "--with-colons", "--fixed-list-mode",
+            "--with-fingerprint"))
+        cmd.extend(args)
+        return cmd
+
+    def keyring_cmd(self, keyrings, *args):
+        """
+        Build a gpg invocation command using the given keyring, or sequence of
+        keyring names
+        """
+        # If we only got one string, make it into a sequence
+        if isinstance(keyrings, basestring):
+            keyrings = (keyrings, )
+        cmd = ["/usr/bin/gpg"]
+        if self.homedir is not None:
+            cmd.append("--homedir")
+            cmd.append(self.homedir)
+        cmd.extend(("-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb",
+            "--trust-model", "always", "--with-colons", "--fixed-list-mode",
+            "--with-fingerprint"))
+        for k in keyrings:
+            cmd.append("--keyring")
+            cmd.append(os.path.join(KEYRINGS, k))
+        cmd.extend(args)
+        return cmd
+
+    def fetch_key(self, fpr, dest_keyring):
+        """
+        Fetch the key with the given fingerprint into the given keyring
+        """
+        cmd = self.cmd("--keyring", dest_keyring, "--keyserver", KEYSERVER, "--recv-keys", fpr)
+        stdout, stderr, result = self.run_cmd(cmd)
+        if result != 0:
+            raise RuntimeError("gpg exited with status %d: %s" % (result, stderr.strip()))
+
+    def run_cmd(self, cmd):
+        """
+        Run gpg with the given command, waiting for its completion, returning a triple
+        (stdout, stderr, result)
+        """
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = proc.communicate()
+        result = proc.wait()
+        return stdout, stderr, result
+
+    def pipe_cmd(self, cmd):
+        """
+        Run gpg with the given command, returning a couple
+        (proc, lines)
+        where proc is the subprocess.Popen object, and lines is a
+        backend.utils.StreamStdoutKeepStderr object connected to proc.
+        """
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc.stdin.close()
+        lines = StreamStdoutKeepStderr(proc)
+        return proc, lines
 
 def _check_keyring(keyring, fpr):
     """
     Check if a fingerprint exists in a keyring
     """
-    cmd = gpg_keyring_cmd(keyring, "--list-keys", fpr)
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = proc.communicate()
-    result = proc.wait()
+    gpg = GPG()
+    cmd = gpg.keyring_cmd(keyring, "--list-keys", fpr)
+    stdout, stderr, result = gpg.run_cmd(cmd)
     present = None
     if result == 0:
         present = True
@@ -94,10 +132,9 @@ def _list_keyring(keyring):
     """
     List all fingerprints in a keyring
     """
-    cmd = gpg_keyring_cmd(keyring, "--list-keys")
-    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    proc.stdin.close()
-    lines = StreamStdoutKeepStderr(proc)
+    gpg = GPG()
+    cmd = gpg.keyring_cmd(keyring, "--list-keys")
+    proc, lines = gpg.pipe_cmd(cmd)
     for line in lines:
         if not line.startswith("fpr"): continue
         yield line.split(":")[9]
@@ -188,14 +225,6 @@ def list_emeritus_dd():
 def list_removed_dd():
     return _list_keyring("removed-keys.pgp")
 
-def fetch_key(fpr, dest_keyring):
-    cmd = gpg_cmd("--keyring", dest_keyring, "--keyserver", KEYSERVER, "--recv-keys", fpr)
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = proc.communicate()
-    result = proc.wait()
-    if result != 0:
-        raise RuntimeError("gpg exited with status %d: %s" % (result, stderr.strip()))
-
 class Key(object):
     """
     Collects data about a key, parsed from gpg --with-colons --fixed-list-mode
@@ -221,13 +250,10 @@ class Key(object):
         return KeycheckKeyResult(self)
 
     @classmethod
-    def read_from_gpg(cls, cmd):
+    def read_from_gpg(cls, lines):
         """
         Run the given gpg command and read key and signature data from its output
         """
-        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        proc.stdin.close()
-        lines = StreamStdoutKeepStderr(proc)
         keys = {}
         pub = None
         cur_key = None
@@ -262,10 +288,6 @@ class Key(object):
                 if cur_key is None:
                     raise Exception("gpg:{}: found sub line with no previous pub+fpr lines".format(lineno))
                 cur_key.add_sub(line.split(b":"))
-
-        result = proc.wait()
-        if result != 0:
-            raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
 
         return keys.itervalues()
 
@@ -430,10 +452,18 @@ def keycheck(fpr):
     with NamedTemporaryDirectory(parent="/tmp") as tmpdir:
         work_keyring = os.path.join(tmpdir, "keycheck.gpg")
 
+        gpg = GPG(homedir=tmpdir)
+
         # Get key
-        fetch_key(fpr, work_keyring)
+        gpg.fetch_key(fpr, work_keyring)
 
         # Check key
-        cmd = gpg_keyring_cmd(("debian-keyring.gpg", "debian-nonupload.gpg"), "--keyring", work_keyring, "--check-sigs", fpr)
-        for key in Key.read_from_gpg(cmd):
+        cmd = gpg.keyring_cmd(("debian-keyring.gpg", "debian-nonupload.gpg"), "--keyring", work_keyring, "--check-sigs", fpr)
+        proc, lines = gpg.pipe_cmd(cmd)
+        for key in Key.read_from_gpg(lines):
             yield key.keycheck()
+
+        result = proc.wait()
+        if result != 0:
+            raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
+
