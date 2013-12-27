@@ -122,6 +122,7 @@ INSTALLED_APPS = (
     # http://git.debian.org/?p=users/enrico/django_maintenance.git
     'django_maintenance',
     'django_dacs',
+    'ratelimit',
     'keyring',
     'dsa',
     'deblayout',
