@@ -32,6 +32,8 @@ class atomic_writer(object):
         self.mode = mode
         self.sync = sync
         dirname = os.path.dirname(self.fname)
+        if not os.path.isdir(dirname):
+            os.makedirs(dirname)
         self.outfd = tempfile.NamedTemporaryFile(dir=dirname)
 
     def __enter__(self):

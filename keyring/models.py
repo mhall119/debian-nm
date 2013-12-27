@@ -136,6 +136,13 @@ def _list_keyring(keyring):
     cmd = gpg.keyring_cmd(keyring, "--list-keys")
     proc, lines = gpg.pipe_cmd(cmd)
     for line in lines:
+        try:
+            line = line.decode('utf8')
+        except:
+            try:
+                line = line.decode('iso8859-1')
+            except:
+                line = line.decode('utf8', 'replace')
         if not line.startswith("fpr"): continue
         yield line.split(":")[9]
     result = proc.wait()
