@@ -197,6 +197,9 @@ def fetch_key(fpr, dest_keyring):
         raise RuntimeError("gpg exited with status %d: %s" % (result, stderr.strip()))
 
 class Key(object):
+    """
+    Collects data about a key, parsed from gpg --with-colons --fixed-list-mode
+    """
     def __init__(self, fpr, pub):
         self.pub = pub
         self.fpr = fpr
@@ -217,7 +220,59 @@ class Key(object):
     def keycheck(self):
         return KeycheckKeyResult(self)
 
+    @classmethod
+    def read_from_gpg(cls, cmd):
+        """
+        Run the given gpg command and read key and signature data from its output
+        """
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc.stdin.close()
+        lines = StreamStdoutKeepStderr(proc)
+        keys = {}
+        pub = None
+        cur_key = None
+        cur_uid = None
+        for lineno, line in enumerate(lines, start=1):
+            if line.startswith(b"pub:"):
+                # Keep track of this pub record, to correlate with the following
+                # fpr record
+                pub = line.split(b":")
+                cur_key = None
+                cur_uid = None
+            elif line.startswith(b"fpr:"):
+                # Correlate fpr with the previous pub record, and start gathering
+                # information for a new key
+                if pub is None:
+                    raise Exception("gpg:{}: found fpr line with no previous pub line".format(lineno))
+                fpr = line.split(b":")[9]
+                cur_key = keys.get(fpr, None)
+                if cur_key is None:
+                    keys[fpr] = cur_key = cls(fpr, pub)
+                pub = None
+                cur_uid = None
+            elif line.startswith(b"uid:"):
+                if cur_key is None:
+                    raise Exception("gpg:{}: found uid line with no previous pub+fpr lines".format(lineno))
+                cur_uid = cur_key.get_uid(line.split(b":"))
+            elif line.startswith(b"sig:"):
+                if cur_uid is None:
+                    raise Exception("gpg:{}: found sig line with no previous uid line".format(lineno))
+                cur_uid.add_sig(line.split(b":"))
+            elif line.startswith(b"sub:"):
+                if cur_key is None:
+                    raise Exception("gpg:{}: found sub line with no previous pub+fpr lines".format(lineno))
+                cur_key.add_sub(line.split(b":"))
+
+        result = proc.wait()
+        if result != 0:
+            raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
+
+        return keys.itervalues()
+
 class Uid(object):
+    """
+    Collects data about a key uid, parsed from gpg --with-colons --fixed-list-mode
+    """
     def __init__(self, key, uid):
         self.key = key
         self.uid = uid
@@ -231,6 +286,9 @@ class Uid(object):
         self.sigs[k] = sig
 
 class KeycheckKeyResult(object):
+    """
+    Perform consistency checks on a key, based on the old keycheck.sh
+    """
     def __init__(self, key):
         self.key = key
         self.uids = []
@@ -318,6 +376,9 @@ class KeycheckKeyResult(object):
 
 
 class KeycheckUidResult(object):
+    """
+    Perform consistency checks on a key uid, based on the old keycheck.sh
+    """
     def __init__(self, uid):
         self.uid = uid
         self.errors = set()
@@ -348,52 +409,6 @@ class KeycheckUidResult(object):
             else:
                 self.sigs_not_ok.append(sig)
 
-
-def read_sigs(cmd):
-    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    proc.stdin.close()
-    lines = StreamStdoutKeepStderr(proc)
-    keys = {}
-    pub = None
-    cur_key = None
-    cur_uid = None
-    for lineno, line in enumerate(lines, start=1):
-        if line.startswith(b"pub:"):
-            # Keep track of this pub record, to correlate with the following
-            # fpr record
-            pub = line.split(b":")
-            cur_key = None
-            cur_uid = None
-        elif line.startswith(b"fpr:"):
-            # Correlate fpr with the previous pub record, and start gathering
-            # information for a new key
-            if pub is None:
-                raise Exception("gpg:{}: found fpr line with no previous pub line".format(lineno))
-            fpr = line.split(b":")[9]
-            cur_key = keys.get(fpr, None)
-            if cur_key is None:
-                keys[fpr] = cur_key = Key(fpr, pub)
-            pub = None
-            cur_uid = None
-        elif line.startswith(b"uid:"):
-            if cur_key is None:
-                raise Exception("gpg:{}: found uid line with no previous pub+fpr lines".format(lineno))
-            cur_uid = cur_key.get_uid(line.split(b":"))
-        elif line.startswith(b"sig:"):
-            if cur_uid is None:
-                raise Exception("gpg:{}: found sig line with no previous uid line".format(lineno))
-            cur_uid.add_sig(line.split(b":"))
-        elif line.startswith(b"sub:"):
-            if cur_key is None:
-                raise Exception("gpg:{}: found sub line with no previous pub+fpr lines".format(lineno))
-            cur_key.add_sub(line.split(b":"))
-
-    result = proc.wait()
-    if result != 0:
-        raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
-
-    return keys.itervalues()
-
 def keycheck(fpr):
     """
     This little (and maybe bad) function is used to check keys from NM's.
@@ -408,12 +423,10 @@ def keycheck(fpr):
     signature capabilities, and will continue to have them one month
     into the future.
     """
-    # Based on keycheck,sh
-    # Copyright (C) 2003-2007 Joerg Jaspert <joerg@debian.org> and others
-
-    # Return value
-    EXIT=0
-
+    # Based on keycheck,sh by
+    # Joerg Jaspert <joerg@debian.org>,
+    # Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
+    # and others.
     with NamedTemporaryDirectory() as tmpdir:
         work_keyring = os.path.join(tmpdir, "keycheck.gpg")
 
@@ -422,5 +435,5 @@ def keycheck(fpr):
 
         # Check key
         cmd = gpg_keyring_cmd(("debian-keyring.gpg", "debian-nonupload.gpg"), "--keyring", work_keyring, "--check-sigs", fpr)
-        for key in read_sigs(cmd):
+        for key in Key.read_from_gpg(cmd):
             yield key.keycheck()
