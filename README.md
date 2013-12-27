@@ -17,6 +17,14 @@ Debian NM Front Desk web application
       (you can either build the package from it or symlink the module directory
       into the nm.debian.org sources)
 
+    # https://github.com/jsocol/django-ratelimit
+    git clone https://github.com/jsocol/django-ratelimit.git
+      (you can either build the package from it or symlink the module directory
+      into the nm.debian.org sources)
+      Since I do not trust random stuff pulled via github, I performed a code
+      review of commit d58c489797405db348b30dec6103dcfff73160ec and it looks
+      safe to me (Enrico)
+
 ### Configuration
 
     mkdir data # required by default settings
