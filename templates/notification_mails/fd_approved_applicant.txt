@@ -1,5 +1,5 @@
 {% load nm %}
-From: {{log.changed_by|formataddr:"via nm"|safe}}
+From: {% if log.changed_by %}{{log.changed_by|formataddr:"via nm"|safe}}{% else %}nm@debian.org{% endif %}
 To: {{process.person|formataddr|safe}}
 Cc: nm@debian.org, {{process.archive_email|safe}}
 Subject: Ready for DAM review

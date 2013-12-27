@@ -55,7 +55,10 @@ def send_notification(template_name, log_next, log_prev=None):
         text = render_to_string(template_name, ctx).strip()
         m = email.message_from_string(text.encode('utf-8'))
         msg = EmailMessage()
-        msg.from_email = m.get("From", log_next.changed_by.preferred_email)
+        if log_next.changed_by is None:
+            msg.from_email = m.get("From", "nm@debian.org")
+        else:
+            msg.from_email = m.get("From", log_next.changed_by.preferred_email)
         msg.to = parse_recipient_list(m.get("To", EMAIL_PRIVATE_ANNOUNCES))
         if "Cc" in m: msg.cc = parse_recipient_list(m.get("Cc"))
         if "Bcc" in m: msg.bcc = parse_recipient_list(m.get("Bcc"))

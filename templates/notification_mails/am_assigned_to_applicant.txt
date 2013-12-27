@@ -1,6 +1,6 @@
 {% load nm %}
-From: {{log.changed_by|formataddr:"via nm"|safe}}
-To: {{process.manager.person|formataddr|safe}}
+From: {% if log.changed_by %}{{log.changed_by|formataddr:"via nm"|safe}}{% else %}nm@debian.org{% endif %}
+To: {% if process.manager %}{{process.manager.person|formataddr|safe}}{% endif %}
 Cc: {{process.archive_email|safe}}
 Subject: New '{{process.applying_for|desc_status|safe}}' applicant {{process.person.fullname|safe}}
 
@@ -22,4 +22,4 @@ nm@debian.org if you wish to decline the assignment.
 
 Have a good AMing, and if you need anything please mail nm@debian.org.
 
-{{log.changed_by.fullname|safe}} (for Front Desk)
+{% if log.changed_by %}{{log.changed_by.fullname|safe}} (for Front Desk){% else %}Front Desk{% endif %}
