@@ -352,3 +352,69 @@ class FingerprintTest(TransactionTestCase):
                        fpr="66B4 Invalid FPR BFAB")
         self.assertRaises(ValueError, p.save)
 
+
+class PersonExpires(TransactionTestCase):
+    def setUp(self):
+        self.person = bmodels.Person(cn="Enrico", sn="Zini", email="enrico@debian.org", uid="enrico",
+                                     status=bconst.STATUS_MM, fpr="66B4DFB68CB24EBBD8650BC4F4B4B0CC797EBFAB")
+        self.person.save()
+
+    def test_expires(self):
+        from django_maintenance.maintenance import Maintenance
+        def run_maint():
+            from .maintenance import BackupDB
+            maint = Maintenance(task_filter=lambda x:x.IDENTIFIER.endswith(".PersonExpires"), test_mock=BackupDB)
+            maint.run()
+            res = Person.objects.filter(pk=self.person.id)
+            if res.exists():
+                return res[0]
+            else:
+                return None
+        Person = bmodels.Person
+        today = datetime.date.today()
+
+        # if expires is Null, it won't expire
+        self.assertIsNone(self.person.expires)
+        p = run_maint()
+        self.assertIsNotNone(p)
+        self.assertIsNone(p.expires)
+
+        # if expires is today or later, it hasn't expired yet
+        self.person.expires = today
+        self.person.save()
+        p = run_maint()
+        self.assertIsNotNone(p)
+        self.assertEquals(p.expires, today)
+
+        self.person.expires = today + datetime.timedelta(days=1)
+        self.person.save()
+        p = run_maint()
+        self.assertIsNotNone(p)
+        self.assertEquals(p.expires, today + datetime.timedelta(days=1))
+
+        # if expires is older than today and Person is DC and there are no
+        # processes, it expires
+        self.person.expires = today - datetime.timedelta(days=1)
+        self.person.save()
+        p = run_maint()
+        self.assertIsNone(p)
+
+        # if expires is older than today and Person is not DC, then it does not
+        # expire, and its 'expires' date is reset
+        self.person.status = bconst.STATUS_MM_GA
+        self.person.save()
+        p = run_maint()
+        self.assertIsNotNone(p)
+        self.assertIsNone(p.expires)
+
+        # if expires is older than today and Person has open processes, then it
+        # does not expire, and its 'expires' date is reset
+        self.person.status = bconst.STATUS_MM
+        self.person.save()
+        proc = bmodels.Process(person=self.person,
+                applying_as=self.person.status, applying_for=bconst.STATUS_MM_GA,
+                progress=bconst.PROGRESS_APP_NEW, is_active=True)
+        proc.save()
+        p = run_maint()
+        self.assertIsNotNone(p)
+        self.assertIsNone(p.expires)

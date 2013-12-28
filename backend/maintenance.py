@@ -131,6 +131,33 @@ class ComputeProcessActiveFlag(MaintenanceTask):
                  bmodels.Process.objects.filter(is_active=True).count(),
                  cursor.rowcount)
 
+class PersonExpires(MaintenanceTask):
+    """
+    Expire old Person records
+    """
+    DEPENDS = [BackupDB, MakeLink]
+
+    @transaction.commit_on_success
+    def run(self):
+        """
+        Generate a sequence of Person objects that have expired
+        """
+        today = datetime.date.today()
+        for p in bmodels.Person.objects.filter(expires__lt=today):
+            if p.status != const.STATUS_MM:
+                log.info("%s: removing expiration date for %s who has become %s",
+                         self.IDENTIFIER, self.maint.link(p), p.status)
+                p.expires = None
+                p.save()
+            elif p.processes.exists():
+                log.info("%s: removing expiration date for %s who now has process history",
+                         self.IDENTIFIER, self.maint.link(p))
+                p.expires = None
+                p.save()
+            else:
+                log.info("%s: deleting expired Person %s", self.IDENTIFIER, p)
+                p.delete()
+
 class CheckOneProcessPerPerson(MaintenanceTask):
     """
     Check that one does not have more than one open process at the current time
