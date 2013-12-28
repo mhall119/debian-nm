@@ -337,6 +337,9 @@ class Person(models.Model):
     fd_comment = models.TextField("Front Desk comments", null=True, blank=True)
     # null=True because we currently do not have the info for old entries
     created = models.DateTimeField("Person record created", null=True, default=datetime.datetime.utcnow)
+    expires = models.DateField("Expiration date for the account", null=True, default=None,
+            help_text="This person will be deleted after this date if the status is still {} and"
+                      " no Process has started".format(const.STATUS_MM))
 
     @property
     def person(self):
