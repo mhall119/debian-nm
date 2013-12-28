@@ -2,7 +2,7 @@
 
 # nm.debian.org website backend
 #
-# Copyright (C) 2012  Enrico Zini <enrico@debian.org>
+# Copyright (C) 2012--2013  Enrico Zini <enrico@debian.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,9 +17,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 from django.db import models
-from django.db.models import fields as models_fields
 from django.contrib.auth.models import User
 from django.conf import settings
 from . import const
@@ -369,7 +371,7 @@ class Person(models.Model):
 
     def permissions_of(self, person):
         """
-        Compute which NMPermissions \a person has over this person
+        Compute which NMPermissions the given person has over this person
         """
         return NMPermissions.compute(self, person)
 
@@ -399,12 +401,12 @@ class Person(models.Model):
             if not self.sn:
                 return self.cn
             else:
-                return "%s %s" % (self.cn, self.sn)
+                return "{} {}".format(self.cn, self.sn)
         else:
             if not self.sn:
-                return "%s %s" % (self.cn, self.mn)
+                return "{} {}".format(self.cn, self.mn)
             else:
-                return "%s %s %s" % (self.cn, self.mn, self.sn)
+                return "{} {} {}".format(self.cn, self.mn, self.sn)
 
     @property
     def preferred_email(self):
@@ -413,22 +415,23 @@ class Person(models.Model):
         field.
         """
         if self.status in (const.STATUS_DD_U, const.STATUS_DD_NU):
-            return "%s@debian.org" % self.uid
+            return "{}@debian.org".format(self.uid)
         else:
             return self.email
 
     def __unicode__(self):
-        return u"%s <%s>" % (self.fullname, self.email)
+        return u"{} <{}>".format(self.fullname, self.email)
 
     def __repr__(self):
-        return "%s <%s> [uid:%s, status:%s]" % (self.fullname.encode("unicode_escape"), self.email, self.uid, self.status)
+        return "{} <{}> [uid:{}, status:{}]".format(
+                self.fullname.encode("unicode_escape"), self.email, self.uid, self.status)
 
     @models.permalink
     def get_absolute_url(self):
         return ("person", (), dict(key=self.lookup_key))
 
     def get_ddpo_url(self):
-        return u"http://qa.debian.org/developer.php?%s" % urllib.urlencode(dict(login=self.preferred_email))
+        return u"http://qa.debian.org/developer.php?{}".format(urllib.urlencode(dict(login=self.preferred_email)))
 
     def get_portfolio_url(self):
         parms = dict(
@@ -445,7 +448,7 @@ class Person(models.Model):
             parms["gpgfp"] = self.fpr
         if self.uid:
             parms["username"] = self.uid
-        return u"http://portfolio.debian.net/result?%s" % urllib.urlencode(parms)
+        return u"http://portfolio.debian.net/result?".format(urllib.urlencode(parms))
 
     def get_allowed_processes(self):
         "Return a lits of processes that this person can begin"
@@ -637,8 +640,6 @@ class AM(models.Model):
         raise Http404
 
 
-from django.utils.log import getLogger
-
 class Process(models.Model):
     """
     A process through which a person gets a new status
@@ -676,20 +677,20 @@ class Process(models.Model):
         if not self.archive_key:
             ts = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
             if self.person.uid:
-                self.archive_key = "%s-%s-%s" % (ts, self.applying_for, self.person.uid)
+                self.archive_key = "-".join((ts, self.applying_for, self.person.uid))
             else:
-                self.archive_key = "%s-%s-%s" % (ts, self.applying_for, self.person.email)
+                self.archive_key = "-".join((ts, self.applying_for, self.person.email))
         super(Process, self).save(*args, **kw)
 
     def __unicode__(self):
-        return u"%s to become %s (%s)" % (
+        return u"{} to become {} ({})".format(
             unicode(self.person),
             const.ALL_STATUS_DESCS.get(self.applying_for, self.applying_for),
             const.ALL_PROGRESS_DESCS.get(self.progress, self.progress),
         )
 
     def __repr__(self):
-        return "%s %s->%s" % (
+        return "{} {}->{}".format(
             self.person.lookup_key,
             self.person.status,
             self.applying_for)
@@ -776,7 +777,7 @@ class Process(models.Model):
             key = self.person.uid
         else:
             key = self.person.email.replace("@", "=")
-        return "archive-%s@nm.debian.org" % key
+        return "archive-{}@nm.debian.org".format(key)
 
     def permissions_of(self, person):
         """
@@ -894,7 +895,7 @@ class Process(models.Model):
         adding a log entry and updating the person status.
         """
         if self.progress != const.PROGRESS_DAM_OK:
-            raise ValueError("cannot finalise progress %s: status is %s instead of %s" % (
+            raise ValueError("cannot finalise progress {}: status is {} instead of {}".format(
                 unicode(self), self.progress, const.PROGRESS_DAM_OK))
 
         if tstamp is None:
@@ -936,7 +937,7 @@ class Log(models.Model):
     logtext = TextNullField(null=True, blank=True)
 
     def __unicode__(self):
-        return u"%s: %s" % (self.logdate, self.logtext)
+        return u"{}: {}".format(self.logdate, self.logtext)
 
     @property
     def previous(self):
