@@ -24,6 +24,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.utils.timezone import now
 from . import const
 from backend.notifications import maybe_notify_applicant_on_progress
 import datetime
@@ -340,6 +341,7 @@ class Person(models.Model):
     expires = models.DateField("Expiration date for the account", null=True, default=None,
             help_text="This person will be deleted after this date if the status is still {} and"
                       " no Process has started".format(const.STATUS_MM))
+    pending = models.CharField("Nonce used to confirm this pending record", max_length=255, unique=False, blank=True)
 
     @property
     def person(self):
@@ -485,6 +487,16 @@ class Person(models.Model):
         the empty list.
         """
         return list(Process.objects.filter(person=self, is_active=True).order_by("id"))
+
+    def make_pending(self, days_valid=30):
+        """
+        Make this person a pending person.
+
+        It does not automatically save the Person.
+        """
+        from django.contrib.auth.models import BaseUserManager
+        self.pending = BaseUserManager.make_random_password(length=16)
+        self.expires = now().date() + datetime.timedelta(days=days_valid)
 
     @property
     def lookup_key(self):

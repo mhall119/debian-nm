@@ -375,7 +375,7 @@ def stats(request):
                               context_instance=template.RequestContext(request))
 
 def make_findperson_form(request):
-    excludes = ["user", "created", "status_changed"]
+    excludes = ["user", "created", "status_changed", "expires", "pending"]
 
     if not request.am or not request.am.is_admin:
         excludes.append("fd_comment")

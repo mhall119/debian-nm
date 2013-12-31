@@ -191,7 +191,7 @@ def person(request, key):
     if not perms.can_edit_ldap_fields:
         excludes.extend(("cn", "mn", "sn", "email", "uid", "fpr"))
     if not request.person.is_admin:
-        excludes.extend(("status", "fd_comment"))
+        excludes.extend(("status", "fd_comment", "expires", "pending"))
 
     class PersonForm(forms.ModelForm):
         class Meta:
