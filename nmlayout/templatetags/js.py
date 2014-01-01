@@ -25,7 +25,7 @@ register = template.Library()
 
 JS_MODULES = dict(
     core=dict(
-        files=["jquery-1.7.1.min.js"]
+        files=["jquery-1.10.2.min.js"]
     ),
     tables=dict(
         deps=["core"],
@@ -37,7 +37,7 @@ JS_MODULES = dict(
     ),
     ui=dict(
         deps=["core"],
-        files=["jquery-ui-1.8.17.tabs.min.js"],
+        files=["jquery-ui-1.10.3.custom.min.js"],
     ),
     jqplot=dict(
         deps=["core"],
