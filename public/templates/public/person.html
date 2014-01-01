@@ -89,7 +89,7 @@
     {% endif %}
     </td></tr>
     {% if person.pending %}
-    <tr><th>Pending</th><td>This is a new entry that requires confirmation before {{person.expires}}. Click <a href="">here</a> to send the email challenge again.</td></tr>
+    <tr><th>Pending</th><td>This is a new entry that requires confirmation before {{person.expires}}. Click <a href="{% url 'public_newnm_resend_challenge' key=person.lookup_key %}">here</a> to send the email challenge again.</td></tr>
     {% endif %}
     {% if am %}
     <tr>

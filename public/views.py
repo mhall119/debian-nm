@@ -21,6 +21,7 @@ from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from django.utils.timezone import now
 import backend.models as bmodels
+import backend.email as bemail
 from backend import const
 import markdown
 import datetime
@@ -511,14 +512,16 @@ def newnm(request):
             person.status_changed = now()
             person.make_pending(days_valid=DAYS_VALID)
             person.save()
-            # TODO: send challenge via email
-            # Redirect to the Person page
-            # TODO: to which we'll add instructions
-            #       to confirm the entry
-            return redirect(person.get_absolute_url())
+            # Redirect to the send challenge page
+            return redirect("public_newnm_resend_challenge", key=person.lookup_key)
     else:
         form = NewPersonForm()
     return render(request, "public/newnm.html", {
         "form": form,
         "DAYS_VALID": DAYS_VALID,
     })
+
+def newnm_resend_challenge(request, key):
+    person = bmodels.Person.lookup_or_404(key)
+    bemail.send_nonce("notification_mails/newperson.txt", person)
+    return redirect(person.get_absolute_url())

@@ -1,0 +1,23 @@
+{% load nm %}
+To: {{person|formataddr|safe}}
+Reply-To: {{reply_to}}
+
+Hello {{person.fullname|safe}},
+
+to confirm your new entry at https://nm.debian.org{{person.get_absolute_url}}
+you need to send the string {{nonce}}, signed with your key {{person.fpr}}, to
+the address {{reply_to}}.
+
+A way to do so is to use this command:
+
+  echo {{nonce}} | gpg --clearsign --default-key {{person.fpr}} | mail {{reply_to}}
+
+Or just reply to this email, making sure that {{nonce}} appears in the text,
+and that you sign your reply with the right key.
+
+For any problems, feel free to contact Front Desk at nm@debian.org.
+
+
+Regards,
+
+the nm.debian.org robotic minion for Front Desk

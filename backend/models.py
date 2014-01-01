@@ -501,7 +501,9 @@ class Person(models.Model):
         It does not automatically save the Person.
         """
         from django.utils.crypto import get_random_string
-        self.pending = get_random_string(length=12)
+        self.pending = get_random_string(length=12,
+                                         allowed_chars='abcdefghijklmnopqrstuvwxyz'
+                                         'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
         self.expires = now().date() + datetime.timedelta(days=days_valid)
 
     @property

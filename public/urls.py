@@ -21,6 +21,7 @@ from django.views.generic import RedirectView
 urlpatterns = patterns('public.views',
     url(r'^$', RedirectView.as_view(url="/"), name="public_index"),
     url(r'^newnm$', 'newnm', name="public_newnm"),
+    url(r'^newnm/resend_challenge/(?P<key>[^/]+)$', 'newnm_resend_challenge', name="public_newnm_resend_challenge"),
     url(r'^processes$', 'processes', name="processes"),
     url(r'^managers$', 'managers', name="managers"),
     url(r'^people(?:/(?P<status>\w+))?$', 'people', name="people"),
