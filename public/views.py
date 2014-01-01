@@ -19,6 +19,7 @@ from django import http, template, forms
 from django.shortcuts import render_to_response, redirect, render
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
+from django.utils.timezone import now
 import backend.models as bmodels
 from backend import const
 import markdown
@@ -65,7 +66,7 @@ def processes(request):
 
     context=dict()
 
-    cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=180)
+    cutoff = now() - datetime.timedelta(days=180)
 
     context["open"] = bmodels.Process.objects.filter(is_active=True) \
                                              .annotate(
@@ -274,7 +275,7 @@ def person(request, key):
     else:
         am = None
         am_processes = []
-        if person.status in (const.STATUS_DD_U, const.STATUS_DD_NU) and person.status_changed and (datetime.datetime.utcnow() - person.status_changed > datetime.timedelta(days=6*30)):
+        if person.status in (const.STATUS_DD_U, const.STATUS_DD_NU) and person.status_changed and (now() - person.status_changed > datetime.timedelta(days=6*30)):
             can_be_am = True
 
     ctx = dict(
@@ -320,7 +321,7 @@ def progress(request, progress):
 def stats(request):
     from django.db.models import Count, Min, Max
 
-    now = datetime.datetime.now()
+    dtnow = now()
     stats = dict()
 
     # Count of people by status
@@ -366,7 +367,7 @@ def stats(request):
         if mbox_mtime is None:
             p.mbox_age = None
         else:
-            p.mbox_age = (now - mbox_mtime).days
+            p.mbox_age = (dtnow - mbox_mtime).days
         active_processes.append(p)
     active_processes.sort(key=lambda x:x.log_first.logdate)
     ctx["active_processes"] = active_processes
@@ -492,3 +493,32 @@ def stats_latest(request):
         return res
 
     return render(request, "public/stats_latest.html", ctx)
+
+
+class NewPersonForm(forms.ModelForm):
+    class Meta:
+        model = bmodels.Person
+        fields = ["cn", "mn", "sn", "email", "bio", "uid", "fpr"]
+
+def newnm(request):
+    DAYS_VALID = 3
+
+    if request.method == 'POST':
+        form = NewPersonForm(request.POST)
+        if form.is_valid():
+            person = form.save(commit=False)
+            person.status = const.STATUS_MM
+            person.status_changed = now()
+            person.make_pending(days_valid=DAYS_VALID)
+            person.save()
+            # TODO: send challenge via email
+            # Redirect to the Person page
+            # TODO: to which we'll add instructions
+            #       to confirm the entry
+            return redirect(person.get_absolute_url())
+    else:
+        form = NewPersonForm()
+    return render(request, "public/newnm.html", {
+        "form": form,
+        "DAYS_VALID": DAYS_VALID,
+    })

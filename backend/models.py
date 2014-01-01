@@ -494,8 +494,8 @@ class Person(models.Model):
 
         It does not automatically save the Person.
         """
-        from django.contrib.auth.models import BaseUserManager
-        self.pending = BaseUserManager.make_random_password(length=16)
+        from django.utils.crypto import get_random_string
+        self.pending = get_random_string(length=12)
         self.expires = now().date() + datetime.timedelta(days=days_valid)
 
     @property

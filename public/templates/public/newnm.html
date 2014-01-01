@@ -1,16 +1,274 @@
 {% extends "public/base.html" %}
+{% load nm %}
+{% load js %}
 
 {% block breadcrumbs %}{{block.super}} / <a href="{% url 'public_newnm' %}">newnm</a>{% endblock %}
+
+{% block head_resources %}
+  {{block.super}}
+  {% jsinclude "nm,ui" %}
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+<style type="text/css">
+table.tableform, table.tableform tbody, table.tableform tr, table.tableform th, table.tableform td {
+  border: none;
+  background-image: none;
+}
+table.tableform th {
+  font-weight: normal;
+  text-align: right;
+}
+</style>
+<script type="text/javascript">
+{% nm_js_support %}
+$.widget("nm.fingerprint_comments", {
+  _create: function() {
+    var self = this;
+    self.reset();
+  },
+
+  reset: function() {
+    var self = this;
+    self.element.empty();
+    self.has_errors = false;
+  },
+
+  add_error: function(tag) {
+    var self = this;
+    self.has_errors = true;
+    var li = $("<li>").text(tag);
+    self.element.append(li);
+  },
+
+  add_uid_stats: function(uid) {
+    var self = this;
+    var msg = "Signatures: " + uid.sigs_ok.length + " good from Debian Developers, "
+                 + uid.sigs_bad + " bad from Debian Developers, ";
+                 + uid.sigs_no_key + " from others (including self).";
+    var p = $("<p>").text(msg);
+    self.element.append(p);
+    if (uid.sigs_ok.length)
+    {
+      var ul = $("<ul>").hide();
+      $.each(uid.sigs_ok, function(idx, name) {
+        var li = $("<li>").text(name);
+        ul.append(li);
+      });
+      self.element.append(ul);
+      p.css("cursor", "pointer");
+      p.click(function(evt) {
+        ul.toggle();
+      });
+    }
+  },
+
+  commit: function() {
+    var self = this;
+    if (!self.has_errors)
+    {
+      var li = $("<li>").text("Everything seems ok.");
+      self.element.append(li);
+    }
+  },
+});
+
+$.widget("nm.fingerprint", {
+  options: {
+  },
+
+  _create: function() {
+    var self = this;
+    self.el_check_button = $("#fpr_check");
+    self.el_check_spinner = $("#{{form.fpr.id_for_label}}_spinner");
+    self.el_comments = $("#fpr_comments");
+    self.el_fpr_field = $("#{{form.fpr.id_for_label}}");
+    self.el_keycheck = self.element.find(".fpr_keycheck");
+    self._set_loading(false);
+
+    self.el_check_button.click(function(evt) {
+      evt.preventDefault();
+      self.run_check();
+    });
+  },
+
+  _set_loading: function(val) {
+    var self = this;
+    self.el_check_button.toggle(!val);
+    self.el_check_spinner.toggle(val);
+  },
+
+  read_fpr: function() {
+    var self = this;
+    var fpr = self.el_fpr_field.val();
+    return fpr.replace(/\s+/g, "");
+  },
+
+  run_check: function() {
+    var self = this;
+    var fpr = self.read_fpr();
+    self._set_loading(true);
+    $.ajax({
+      url: "{% url 'keyring_keycheck' fpr='AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' %}".replace(
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", fpr),
+      method: "GET",
+      success: function(data) {
+        self._set_loading(false);
+        self.render_result(data);
+      },
+      error: function(xhr, status, error) {
+        self._set_loading(false);
+        self.render_error(xhr, status, error);
+      },
+    });
+  },
+
+  _add_keycheck_title: function(msg) {
+    var self = this;
+    var el = $("<h4>").text(msg);
+    self.el_keycheck.append(el);
+  },
+
+  render_result: function(data) {
+    var self = this;
+    self.el_keycheck.empty();
+
+    // Render key comments
+    self._add_keycheck_title("General key comments");
+    var key_comments = $("<ul>").fingerprint_comments();
+    self.el_keycheck.append(key_comments);
+    $.each(data.errors, function(idx, tag) {
+        key_comments.fingerprint_comments("add_error", tag);
+    });
+    key_comments.fingerprint_comments("commit");
+
+    // Render UID comments
+    var valid_uids = [];
+    $.each(data.uids, function(idx, uid) {
+      self._add_keycheck_title("UID " + uid.name);
+      var uid_comments = $("<ul>").fingerprint_comments();
+      self.el_keycheck.append(uid_comments);
+      uid_comments.fingerprint_comments("add_uid_stats", uid);
+      $.each(uid.errors, function(idx, tag) {
+        uid_comments.fingerprint_comments("add_error", tag);
+      });
+
+      // Take note of UIDs that look legit to use later for auto-filling the
+      // form
+      if (uid.sigs_ok.length > 0 && $.inArray("skip", uid.errors) == -1)
+        valid_uids.push(uid.name);
+    });
+
+    self._trigger("valid_uids", null, { key: data, valid_uids: valid_uids });
+  },
+
+  render_error: function(xhr, status, error) {
+    var self = this;
+    self.el_keycheck.empty();
+    self._add_keycheck_title("Key download failed");
+    var msg = xhr.responseText;
+    if (msg[0] == "{")
+    {
+      msg = $.parseJSON(msg);
+      var p = $("<pre>").text(msg.error);
+    } else {
+      var p = $("<p>").text(xhr.responseText);
+    }
+    self.el_keycheck.append(p);
+  },
+});
+
+// Parse a uid of the form 'Real Name <email@example.com>' into email
+// and realname parts.
+function parse_uid(uid)
+{
+  uid = $.trim(uid);
+  var re_uid = /^(?:(.+?)\s*)?(?:\(([^)]+)\)\s*)?(?:<([^>]+)>)?$/;
+  var matches = re_uid.exec(uid);
+  return {
+    name: matches[1],
+    comment: matches[2],
+    email: matches[3],
+  }
+}
+
+function autofill_from_uids(uids)
+{
+  // Harvest first, middle, last names; email; uid
+  var cn, mn, sn, email, uid;
+  $.each(uids, function(idx, uid) {
+    var info = parse_uid(uid);
+
+    // Infer cn, mn, sn with some crude heuristics
+    if (info.name && !cn)
+    {
+      var names = info.name.split(/\s+/);
+      if (names.length == 1)
+      {
+        cn = names[0];
+      }
+      else if (names.length == 3)
+      {
+        cn = names[0];
+        mn = names[1];
+        sn = names[2];
+      }
+      else
+      {
+        cn = names.slice(0, names.length/2).join(" ");
+        sn = names.slice(names.length/2).join(" ");
+      }
+    }
+
+    if (info.email && !email)
+    {
+      email = info.email;
+    }
+  });
+
+  if (email)
+    uid = email.replace(/@.+$/, "");
+  else if (cn)
+    uid = cn.split(" ")[0].toLowerCase();
+
+  function set_if_empty(id, val)
+  {
+    if (!val) return;
+    var el = $("#" + id);
+    if (!el.val())
+      el.val(val);
+  }
+  set_if_empty("{{form.cn.id_for_label}}", cn);
+  set_if_empty("{{form.mn.id_for_label}}", mn);
+  set_if_empty("{{form.sn.id_for_label}}", sn);
+  set_if_empty("{{form.email.id_for_label}}", email);
+  set_if_empty("{{form.uid.id_for_label}}", uid);
+}
+
+function main()
+{
+  $("#np_fpr").fingerprint({
+    valid_uids: function(evt, ui) {
+      autofill_from_uids(ui.valid_uids);
+    },
+  });
+}
+$(main);
+</script>
+{% endblock %}
 
 {% block content %}
 
 <h1>Debian New Member - Join the NM process</h2>
 
-<h2>If you are a DD, or have a guest account on Debian machines</h2>
+<h2 id="hasentry">If you already have an entry in the system</h2>
 
-<p>In this case you have an entry in the site database:
-<a href="{% url 'public_findperson' %}">look it up</a>, and send a link to your
-advocate(s). They can then:
+<p>You should already have an entry in the system if you are a DD, a DM, or
+have a guest account on Debian machines.</p>
+
+<p>You can check <a href="{% url 'public_findperson' %}">here</a>: if you find
+your own page, send its link to your advocate(s). They can then:
 <ol>
 	<li>login;</li>
 	<li>click on "advocate for DD" on the top right of the page;</li>
@@ -19,54 +277,134 @@ advocate(s). They can then:
 </p>
 
 
-<h2>If you don't yet have an entry in the system</h2>
+<h2>If you do not have an entry in the system</h2>
 
-<p>In this case you need to ask for a FD member to enter your information in
-the site database so that people can advocate you.</p>
+<p>Have you checked <a href="{% url 'public_findperson' %}">here</a>? If you
+already have an entry, see <a href="#hasentry">above</a>. Otherwise, keep
+going; the form is quite long, so you may want to read it all from top to
+bottom before starting to fill it in.</p>
 
-<p>Please mail nm@debian.org taking care to:</p>
+<p>Note that after you submit the form, you will have {{DAYS_VALID}} days to
+send a signed reply to an email challenge. You may want to make sure that you
+can read encrypted email and send signed emails before spending time on this
+form.</p>
 
-<ul>
-    <li>Say that you want to become a Debian Developer.</li>
-    <li>Say if you also need to upload packages.</li>
-    <li>Cc your advocate(s).</li>
-    <li>Say what username you would like (minimum 3 characters, check
-        <a href="http://db.debian.org">db.debian.org</a> to see if it is free,
-        see <a href="http://wiki.debian.org/DAManager">DAManager</a> for detailed
-        account name policy).</li>
-    <li>Add anything else you may think is useful.</li>
-    <li>Sign the email with the key you use to sign your Debian work.</li>
-</ul>
+<form action="{{request.build_absolute_uri}}" method="post">{% csrf_token %}
+  {{ form.non_field_errors }}
 
-<p>Here is an example you can use as a template. Don't forget to sign it with
-the right key:</p>
-<pre>
-From: $NAME &lt;$EMAIL&gt;
-To: nm@debian.org
-Cc: $ADVOCATE1@debian.org, $ADVOCATE2@debian.org
+  <div id="np_rules">
+    <h3>Ground rules</h3>
 
-Dear Front Desk,
+    <p>First thing first, if you contribute to Debian, everyone will assume that
+    you have read the <a href="">Debian Social Contract</a> (SC) and the
+    <a href="">Debian Free Software Guidelines</a> (DFSG) and agree with them. If
+    you have not read them yet, please take a moment to do so now.</p>
+    <p>Do you agree to uphold the Social Contract and the DFSG in your Debian
+    work? <input type="radio">Yes</input> <input type="radio">No</input></p>
 
-I would like join the NM process. $ADVOCATE1 and $ADVOCATE2 have agreed to
-advocate my application.
+    <p>If you contribute to Debian, you will also sooner or later get access to
+    Debian hardware or infrastructure. When that happens, everyone will assume
+    that you have read the <a href="http://www.debian.org/devel/dmup">Debian
+      Machine Usage Policies</a> (DMUP) and accept them.<p>
+    <p>Do you accept to follow the Debian Machine Usage Policies (DMUP) when you
+    use Debian resources? <input type="radio">Yes</input> <input type="radio">No</input></p>
+  </div>
 
-My information is:
+  <div id="np_fpr">
+    <h3>OpenPGP key</h3>
 
-               First name: _________
-              Middle name: _________ (if applicable)
-                Last name: _________ (if applicable)
-            Email address: _________
-          Short biography: _________
-                           _________
-       Preferred username: _________ (check <a href="{% url 'public_findperson' %}">here</a> for duplicates)
-  OpenPGP key fingerprint: _________
+    <p>Most Debian work is not anonymous, and requires the use of an
+    <a href="http://www.dewinter.com/gnupg_howto/">OpenPGP</a> key. We require
+    the key to be signed by two or more Debian Developers to make reasonably
+    sure that you are who you claim to be. This is called
+    <a href="http://www.w4kwh.org/privacy/keysign.html">"web of trust"</a>.
+    If you are curious, you can check the status of your key in the global web
+    of trust <a href="http://pgp.cs.uu.nl/">here</a>.</p>
+    <p>We also have some requirements on the key itself: it needs to be version
+    4 or later, it must not use DSA and it should be at least 4096 bits long.
+    Please enter the fingerprint of your OpenPGP key in the
+    "{{form.fpr.label}}" field below, press "Check" and I will check it for you
+    now while you keep reading the page. For your convenience, I will also try
+    to autofill many fields in this page based on the first User ID in your
+    key.</p>
+    {{form.fpr.label_tag}} {{form.fpr}} <button id="fpr_check">Check</button>
+    <img id="{{form.fpr.id_for_label}}_spinner" src="{{STATIC_URL}}/img/spinner.gif"></img>
+    {{form.fpr.errors}}
+    <div class="fpr_keycheck">
+    </div>
+  </div>
+ 
+  <div id="np_name">
+    <h3>Name</h3>
 
+    <p>I need to collect data that may eventually feed the Debian LDAP user
+    directory, which follows RFC-FIXME. It uses a first/middle/last name model
+    which does not fit many cultures well; it is a known problem, but we will
+    have to make do for now.</p>
+    <table class="tableform">
+      <tbody>
+      <tr><th>{{form.cn.label_tag}}</th><td>{{form.cn}}</td><td>{{form.cn.errors}}</td></tr>
+      <tr><th>{{form.mn.label_tag}} (if any)</th><td>{{form.mn}}</td><td>{{form.mn.errors}}</td></tr>
+      <tr><th>{{form.sn.label_tag}} (if any)</th><td>{{form.sn}}</td><td>{{form.sn.errors}}</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-I have been doing this and that with this and that person for so much time and
-I could use DD privileges so that I could also do these and those other things.
+  <div id="np_email">
+    <h3>Email address</h3>
 
---
-$NAME
-</pre>
+    <p>I need an email to contact you. If you will eventually get an address
+    @debian.org, it will initially forward to this email. You can change this
+    at any time later.</p>
+    {{form.email.label_tag}} {{form.email}}
+    {{form.email.errors}}
+  </div>
+
+  <div id="np_uid">
+    <h3>User name</h3>
+
+    <p>Please select a username. You will need this if you are requesting a
+    guest account on Debian machines, or if you are going to become a Debian
+    Developer. This is not needed for Debian Maintainers, but if you want, you
+    can reserve one now.</p>
+    <p>If you choose a username that is already in use, I will let you know
+    once you submit the form and you will be able to change it. In the
+    meantime, you can check <a href="{% url 'public_findperson' %}">here</a> to
+    see what usernames are already taken.</p>
+    <p>Account names should have three or more letters, unless you have a
+    really good reasons why it should be shorter. Debian Account Managers may
+    arbitrarily refuse some usernames (like "root" or "enricoisasillyperson"),
+    and get in touch asking you to please choose another one.</p>
+    {{form.uid.label_tag}} {{form.uid}}
+    {{form.uid.errors}}
+  </div>
+
+  <div id="np_bio">
+    <h3>Short presentation</h3>
+
+    <p>Finally, please tell something about yourself, how you came to Debian
+    and Free Software, and why you want to volunteer your time. Please describe
+    the contributions you have made to Debian, your primary areas of interest
+    and any goals you wish to accomplish.</p>
+
+    <p>The intention is to use this to introduce you publicly to the rest of
+    the project: it will be shown on your personal page on nm.debian.org and
+    posted to
+    <a href="http://lists.debian.org/debian-newmaint">the debian-newmaint mailing list</a>,
+    which is publicly archived.</p>
+    {{form.bio.label_tag}}<br>{{form.bio}}
+    {{form.bio.errors}}
+  </div>
+  
+  <div id="np_submit">
+    <h3>Submit</h3>
+
+    <p>You can now submit the form, and you will get an email asking you to
+    confirm your data by replying with a signed email. Once you have confirmed,
+    other Debian Developers can go to your personal page and advocate you for
+    what you require.</p>
+    <input type="submit">
+  </div>
+</form>
 
 {% endblock %}

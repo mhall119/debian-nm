@@ -16,11 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls import *
-from django.views.generic import TemplateView, RedirectView
+from django.views.generic import RedirectView
 
 urlpatterns = patterns('public.views',
     url(r'^$', RedirectView.as_view(url="/"), name="public_index"),
-    url(r'^newnm$', TemplateView.as_view(template_name='public/newnm.html'), name="public_newnm"),
+    url(r'^newnm$', 'newnm', name="public_newnm"),
     url(r'^processes$', 'processes', name="processes"),
     url(r'^managers$', 'managers', name="managers"),
     url(r'^people(?:/(?P<status>\w+))?$', 'people', name="people"),
