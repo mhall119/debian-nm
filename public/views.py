@@ -495,8 +495,27 @@ def stats_latest(request):
 
     return render(request, "public/stats_latest.html", ctx)
 
+YESNO = (
+        ("yes", "Yes"),
+        ("no", "No"),
+)
 
 class NewPersonForm(forms.ModelForm):
+    sc_ok = forms.ChoiceField(choices=YESNO, widget=forms.RadioSelect())
+    dmup_ok = forms.ChoiceField(choices=YESNO, widget=forms.RadioSelect())
+
+    def clean_sc_ok(self):
+        data = self.cleaned_data['sc_ok']
+        if data != "yes":
+            raise forms.ValidationError("You need to agree with the Debian Social Contract and DFSG to continue")
+        return data
+
+    def clean_dmup_ok(self):
+        data = self.cleaned_data['dmup_ok']
+        if data != "yes":
+            raise forms.ValidationError("You need to agree with the DMUP to continue")
+        return data
+
     class Meta:
         model = bmodels.Person
         fields = ["cn", "mn", "sn", "email", "bio", "uid", "fpr"]

@@ -296,18 +296,25 @@ form.</p>
     <h3>Ground rules</h3>
 
     <p>First thing first, if you contribute to Debian, everyone will assume that
-    you have read the <a href="">Debian Social Contract</a> (SC) and the
-    <a href="">Debian Free Software Guidelines</a> (DFSG) and agree with them. If
-    you have not read them yet, please take a moment to do so now.</p>
+    you have read the <a href="http://www.debian.org/social_contract">Debian Social Contract</a> (SC)
+    and the <a href="http://www.debian.org/social_contract#guidelines">Debian Free Software Guidelines</a> (DFSG)
+    and agree with them. If you have not read them yet, please take a moment to
+    do so now.</p>
     <p>Do you agree to uphold the Social Contract and the DFSG in your Debian
-    work? <input type="radio">Yes</input> <input type="radio">No</input></p>
+    work?
+    {% for r in form.sc_ok %} {{r}} {% endfor %}
+    </p>
+    {{form.sc_ok.errors}}
 
     <p>If you contribute to Debian, you will also sooner or later get access to
     Debian hardware or infrastructure. When that happens, everyone will assume
     that you have read the <a href="http://www.debian.org/devel/dmup">Debian
       Machine Usage Policies</a> (DMUP) and accept them.<p>
     <p>Do you accept to follow the Debian Machine Usage Policies (DMUP) when you
-    use Debian resources? <input type="radio">Yes</input> <input type="radio">No</input></p>
+    use Debian resources?
+    {% for r in form.dmup_ok %} {{r}} {% endfor %}
+    </p>
+    {{form.dmup_ok.errors}}
   </div>
 
   <div id="np_fpr">
