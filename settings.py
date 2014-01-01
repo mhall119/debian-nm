@@ -179,6 +179,9 @@ LDAP_SERVER = "ldap://db.debian.org"
 # Location of a keyring-maint mirror
 KEYRINGS = os.path.join(DATA_DIR, "keyrings")
 
+# Location of temporary keyrings used by keycheck
+KEYRINGS_TMPDIR = os.path.join(DATA_DIR, "tmp_keyrings")
+
 # Work paths used by minechangelogs (indexing cache and the index itself)
 MINECHANGELOGS_CACHEDIR = os.path.join(DATA_DIR, "mc_cache")
 MINECHANGELOGS_INDEXDIR = os.path.join(DATA_DIR, "mc_index")

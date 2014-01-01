@@ -25,16 +25,18 @@ from __future__ import division
 from __future__ import unicode_literals
 from django.db import models
 from django.conf import settings
+import os
 import os.path
 import subprocess
 from collections import namedtuple
-from backend.utils import StreamStdoutKeepStderr, NamedTemporaryDirectory
+from backend.utils import StreamStdoutKeepStderr, require_dir
 import time
 import logging
 
 log = logging.getLogger(__name__)
 
 KEYRINGS = getattr(settings, "KEYRINGS", "/srv/keyring.debian.org/keyrings")
+KEYRINGS_TMPDIR = getattr(settings, "KEYRINGS_TMPDIR", "/srv/keyring.debian.org/data/tmp_keyrings")
 #KEYSERVER = getattr(settings, "KEYSERVER", "keys.gnupg.net")
 KEYSERVER = getattr(settings, "KEYSERVER", "pgp.mit.edu")
 
@@ -56,7 +58,7 @@ class GPG(object):
             cmd.append(self.homedir)
         cmd.extend(("-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb",
             "--trust-model", "always", "--with-colons", "--fixed-list-mode",
-            "--with-fingerprint"))
+            "--with-fingerprint", "--no-permission-warning"))
         cmd.extend(args)
         return cmd
 
@@ -74,12 +76,26 @@ class GPG(object):
             cmd.append(self.homedir)
         cmd.extend(("-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb",
             "--trust-model", "always", "--with-colons", "--fixed-list-mode",
-            "--with-fingerprint"))
+            "--with-fingerprint", "--no-permission-warning"))
         for k in keyrings:
             cmd.append("--keyring")
             cmd.append(os.path.join(KEYRINGS, k))
         cmd.extend(args)
         return cmd
+
+    def has_key(self, keyrings, fpr):
+        """
+        Check if a fingerprint exists in a keyring
+        """
+        cmd = self.keyring_cmd(keyrings, "--list-keys", fpr)
+        stdout, stderr, result = self.run_cmd(cmd)
+        present = None
+        if result == 0:
+            return True
+        elif result == 2:
+            return False
+        else:
+            raise RuntimeError("gpg exited with status %d: %s" % (result, stderr.strip()))
 
     def fetch_key(self, fpr, dest_keyring):
         """
@@ -117,16 +133,7 @@ def _check_keyring(keyring, fpr):
     Check if a fingerprint exists in a keyring
     """
     gpg = GPG()
-    cmd = gpg.keyring_cmd(keyring, "--list-keys", fpr)
-    stdout, stderr, result = gpg.run_cmd(cmd)
-    present = None
-    if result == 0:
-        present = True
-    elif result == 2:
-        present = False
-    else:
-        raise RuntimeError("gpg exited with status %d: %s" % (result, stderr.strip()))
-    return present
+    return gpg.has_key(keyring, fpr)
 
 def _list_keyring(keyring):
     """
@@ -438,35 +445,73 @@ class KeycheckUidResult(object):
             else:
                 self.sigs_bad.append(sig)
 
-def keycheck(fpr):
+class UserKey(object):
     """
-    This little (and maybe bad) function is used to check keys from NM's.
-
-    First it downloads the key of the NM from a keyserver in the local nm.gpg
-    file.
-
-    Then it shows the key and all signatures made by existing Debian
-    Developers.
-
-    Finally, it checks to make sure that the key has encryption and
-    signature capabilities, and will continue to have them one month
-    into the future.
+    Manage a temporary keyring use to work with the key of a user that is not
+    in any of the main keyrings.
     """
-    # Based on keycheck,sh by
-    # Joerg Jaspert <joerg@debian.org>,
-    # Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
-    # and others.
-    with NamedTemporaryDirectory(parent="/tmp") as tmpdir:
-        work_keyring = os.path.join(tmpdir, "keycheck.gpg")
+    def __init__(self, fpr):
+        """
+        Create/access a temporary keyring dir for the given fingerprint.
 
-        gpg = GPG(homedir=tmpdir)
+        IMPORTANT: make sure that fpr is validated to a sequence of A-Fa-f0-9, as
+        it will be passed to os.path.join unchecked
+        """
+        self.fpr = fpr
+        self.pathname = os.path.join(KEYRINGS_TMPDIR, fpr)
+        require_dir(self.pathname)
+        self.gpg = GPG(homedir=self.pathname)
+        self.keyring = os.path.join(self.pathname, "user.gpg")
 
-        # Get key
-        gpg.fetch_key(fpr, work_keyring)
+    def has_key(self):
+        """
+        Check if we already have the key
+        """
+        return self.gpg.has_key(self.keyring, self.fpr)
+
+    def refresh(self):
+        """
+        Fetch/refresh the key
+        """
+        self.gpg.fetch_key(self.fpr, self.keyring)
+
+    def getmtime(self):
+        """
+        Return the modification time of the keyring. This can be used to check
+        how fresh is the key.
+
+        Returns 0 if the file is not there.
+        """
+        try:
+            return os.path.getmtime(self.keyring)
+        except OSError as e:
+            import errno
+            if e.errno == errno.ENOENT:
+                return 0
+            raise
+
+    def keycheck(self):
+        """
+        This little (and maybe bad) function is used to check keys from NM's.
+
+        First it downloads the key of the NM from a keyserver in the local nm.gpg
+        file.
+
+        Then it shows the key and all signatures made by existing Debian
+        Developers.
+
+        Finally, it checks to make sure that the key has encryption and
+        signature capabilities, and will continue to have them one month
+        into the future.
+        """
+        # Based on keycheck,sh by
+        # Joerg Jaspert <joerg@debian.org>,
+        # Daniel Kahn Gillmor <dkg@fifthhorseman.net>,
+        # and others.
 
         # Check key
-        cmd = gpg.keyring_cmd(("debian-keyring.gpg", "debian-nonupload.gpg"), "--keyring", work_keyring, "--check-sigs", fpr)
-        proc, lines = gpg.pipe_cmd(cmd)
+        cmd = self.gpg.keyring_cmd(("debian-keyring.gpg", "debian-nonupload.gpg"), "--keyring", self.keyring, "--check-sigs", self.fpr)
+        proc, lines = self.gpg.pipe_cmd(cmd)
         for key in Key.read_from_gpg(lines):
             yield key.keycheck()
 

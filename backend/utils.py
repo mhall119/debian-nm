@@ -20,6 +20,7 @@
 import tempfile
 import os.path
 import os
+import errno
 import shutil
 from cStringIO import StringIO
 
@@ -126,3 +127,13 @@ class NamedTemporaryDirectory(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         shutil.rmtree(self.pathname)
         return False
+
+def require_dir(pathname):
+    """
+    Make sure pathname exists, creating it if not.
+    """
+    try:
+        os.makedirs(pathname)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise

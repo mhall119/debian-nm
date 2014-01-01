@@ -24,6 +24,7 @@ from . import models as kmodels
 from django import http
 from ratelimit.decorators import ratelimit
 import json
+import time
 
 class Serializer(json.JSONEncoder):
     def default(self, o):
@@ -52,8 +53,12 @@ def keycheck(request, fpr):
         }, status_code=420)
 
     try:
+        key = kmodels.UserKey(fpr)
+        # Do not refresh more than once every 5 minutes
+        if key.getmtime() + 300 < time.time():
+            key.refresh()
         res = {}
-        for kc in kmodels.keycheck(fpr):
+        for kc in key.keycheck():
             uids = []
             k = {
                 "fpr": kc.key.fpr,
