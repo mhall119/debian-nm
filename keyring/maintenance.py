@@ -20,13 +20,20 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
 from django_maintenance import MaintenanceTask
+from django.conf import settings
 from backend.maintenance import MakeLink
 import backend.models as bmodels
 from backend import const
 from . import models as kmodels
+import os
+import os.path
+import time
+import shutil
 import logging
 
 log = logging.getLogger(__name__)
+
+KEYRINGS_TMPDIR = getattr(settings, "KEYRINGS_TMPDIR", "/srv/keyring.debian.org/data/tmp_keyrings")
 
 class Keyrings(MaintenanceTask):
     """
@@ -147,3 +154,19 @@ class CheckKeyringConsistency(MaintenanceTask):
     #            cand = i["deb"]
     #        if i["cur"] != cand:
     #            log.info("%s: %s %r != %r", keyring, fpr, i["cur"], cand)
+
+class CleanUserKeyrings(MaintenanceTask):
+    """
+    Remove old user keyrings
+    """
+    def run(self):
+        # Delete everything older than three days ago
+        threshold = time.time() - 86400 * 3
+        for fn in os.listdir(KEYRINGS_TMPDIR):
+            if fn.startswith("."): continue
+            pn = os.path.join(KEYRINGS_TMPDIR, fn)
+            if not os.path.isdir(pn): continue
+            if os.path.getmtime(pn) > threshold: continue
+
+            log.info("%s: removing old user keyring %s", self.IDENTIFIER, pn)
+            shutil.rmtree(pn)
