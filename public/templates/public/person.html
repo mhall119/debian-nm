@@ -88,6 +88,9 @@
     (changed before data import)
     {% endif %}
     </td></tr>
+    {% if person.pending %}
+    <tr><th>Pending</th><td>This is a new entry that requires confirmation before {{person.expires}}. Click <a href="">here</a> to send the email challenge again.</td></tr>
+    {% endif %}
     {% if am %}
     <tr>
         <th>Application manager</th>

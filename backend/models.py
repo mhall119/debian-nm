@@ -389,6 +389,10 @@ class Person(models.Model):
         if self.status not in dd_statuses:
             return False
 
+        # Applicant must not be a pending record
+        if person.pending:
+            return False
+
         # Applicant must not be DD
         if person.status in dd_statuses:
             return False
@@ -457,6 +461,8 @@ class Person(models.Model):
 
     def get_allowed_processes(self):
         "Return a lits of processes that this person can begin"
+        if self.pending: return []
+
         already_applying = frozenset(x["applying_for"] for x in self.processes.filter(is_active=True).values("applying_for"))
 
         pre_dd_statuses = frozenset((const.STATUS_MM, const.STATUS_MM_GA,
