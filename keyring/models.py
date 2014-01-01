@@ -459,7 +459,7 @@ class UserKey(object):
         """
         self.fpr = fpr
         self.pathname = os.path.join(KEYRINGS_TMPDIR, fpr)
-        require_dir(self.pathname)
+        require_dir(self.pathname, mode=0770)
         self.gpg = GPG(homedir=self.pathname)
         self.keyring = os.path.join(self.pathname, "user.gpg")
 

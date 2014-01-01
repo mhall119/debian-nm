@@ -128,12 +128,12 @@ class NamedTemporaryDirectory(object):
         shutil.rmtree(self.pathname)
         return False
 
-def require_dir(pathname):
+def require_dir(pathname, mode=0777):
     """
     Make sure pathname exists, creating it if not.
     """
     try:
-        os.makedirs(pathname)
+        os.makedirs(pathname, mode)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
