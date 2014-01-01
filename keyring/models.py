@@ -51,7 +51,7 @@ class GPG(object):
     def __init__(self, homedir=None):
         self.homedir = homedir
 
-    def cmd(self, *args):
+    def _base_cmd(self):
         cmd = ["/usr/bin/gpg"]
         if self.homedir is not None:
             cmd.append("--homedir")
@@ -59,6 +59,10 @@ class GPG(object):
         cmd.extend(("-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb",
             "--trust-model", "always", "--with-colons", "--fixed-list-mode",
             "--with-fingerprint", "--no-permission-warning"))
+        return cmd
+
+    def cmd(self, *args):
+        cmd = self._base_cmd()
         cmd.extend(args)
         return cmd
 
@@ -70,13 +74,7 @@ class GPG(object):
         # If we only got one string, make it into a sequence
         if isinstance(keyrings, basestring):
             keyrings = (keyrings, )
-        cmd = ["/usr/bin/gpg"]
-        if self.homedir is not None:
-            cmd.append("--homedir")
-            cmd.append(self.homedir)
-        cmd.extend(("-q", "--no-options", "--no-default-keyring", "--no-auto-check-trustdb",
-            "--trust-model", "always", "--with-colons", "--fixed-list-mode",
-            "--with-fingerprint", "--no-permission-warning"))
+        cmd = self._base_cmd()
         for k in keyrings:
             cmd.append("--keyring")
             cmd.append(os.path.join(KEYRINGS, k))
@@ -101,18 +99,18 @@ class GPG(object):
         """
         Fetch the key with the given fingerprint into the given keyring
         """
-        cmd = self.cmd("--keyring", dest_keyring, "--keyserver", KEYSERVER, "--recv-keys", fpr)
+        cmd = self.keyring_cmd(dest_keyring, "--keyserver", KEYSERVER, "--recv-keys", fpr)
         stdout, stderr, result = self.run_cmd(cmd)
         if result != 0:
             raise RuntimeError("gpg exited with status %d: %s" % (result, stderr.strip()))
 
-    def run_cmd(self, cmd):
+    def run_cmd(self, cmd, input=None):
         """
         Run gpg with the given command, waiting for its completion, returning a triple
         (stdout, stderr, result)
         """
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = proc.communicate()
+        stdout, stderr = proc.communicate(input=input)
         result = proc.wait()
         return stdout, stderr, result
 
@@ -475,6 +473,13 @@ class UserKey(object):
         """
         self.gpg.fetch_key(self.fpr, self.keyring)
 
+    def want_key(self):
+        """
+        Make sure that we have the key, no matter how old
+        """
+        if not self.has_key():
+            self.refresh()
+
     def getmtime(self):
         """
         Return the modification time of the keyring. This can be used to check
@@ -489,6 +494,18 @@ class UserKey(object):
             if e.errno == errno.ENOENT:
                 return 0
             raise
+
+    def encrypt(self, data):
+        """
+        Encrypt the given data with this key, returning the ascii-armored
+        encrypted result.
+        """
+        cmd = self.gpg.keyring_cmd(self.keyring, "--encrypt", "--armor", "--no-default-recipient",
+                "--trust-model=always", "--recipient", self.fpr)
+        stdout, stderr, result = self.gpg.run_cmd(cmd, input=data)
+        if result != 0:
+            raise RuntimeError("gpg exited with status %d: %s" % (result, stderr.strip()))
+        return stdout
 
     def keycheck(self):
         """

@@ -16,7 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import http, template, forms
-from django.shortcuts import render_to_response, redirect, render
+from django.shortcuts import render_to_response, redirect, render, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from django.utils.timezone import now
@@ -502,6 +502,9 @@ class NewPersonForm(forms.ModelForm):
         fields = ["cn", "mn", "sn", "email", "bio", "uid", "fpr"]
 
 def newnm(request):
+    """
+    Display the new Person form
+    """
     DAYS_VALID = 3
 
     if request.method == 'POST':
@@ -522,6 +525,28 @@ def newnm(request):
     })
 
 def newnm_resend_challenge(request, key):
+    """
+    Send/resend the encrypted email nonce for people who just requested a new
+    Person record
+    """
+    from keyring.models import UserKey
     person = bmodels.Person.lookup_or_404(key)
-    bemail.send_nonce("notification_mails/newperson.txt", person)
+    confirm_url = request.build_absolute_uri(reverse("public_newnm_confirm", kwargs=dict(nonce=person.pending)))
+    plaintext = "Please visit {} to confirm your application at {}\n".format(
+            confirm_url,
+            request.build_absolute_uri(person.get_absolute_url()))
+    key = UserKey(person.fpr)
+    encrypted = key.encrypt(plaintext.encode("utf8"))
+    bemail.send_nonce("notification_mails/newperson.txt", person, encrypted_nonce=encrypted)
     return redirect(person.get_absolute_url())
+
+def newnm_confirm(request, nonce):
+    """
+    Confirm a pending Person object, given its nonce
+    """
+    person = get_object_or_404(bmodels.Person, pending=nonce)
+    person.pending = ""
+    person.expires = now() + datetime.timedelta(days=30)
+    person.save()
+    return redirect(person.get_absolute_url())
+

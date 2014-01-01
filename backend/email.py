@@ -88,7 +88,7 @@ def send_notification(template_name, log_next, log_prev=None):
         raise
         log.debug("failed to sent mail for log %s", log_next)
 
-def send_nonce(template_name, person, nonce=None):
+def send_nonce(template_name, person, nonce=None, encrypted_nonce=None):
     """
     Render an email template to send a nonce to a person,
     then send the resulting email.
@@ -99,6 +99,7 @@ def send_nonce(template_name, person, nonce=None):
         ctx = {
             "person": person,
             "nonce": nonce,
+            "encrypted_nonce": encrypted_nonce,
             "reply_to": "todo@example.com",
             "default_subject": "Confirmation from nm.debian.org",
         }

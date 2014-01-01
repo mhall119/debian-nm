@@ -5,17 +5,16 @@ Reply-To: {{reply_to}}
 Hello {{person.fullname|safe}},
 
 to confirm your new entry at https://nm.debian.org{{person.get_absolute_url}}
-you need to send the string {{nonce}}, signed with your key {{person.fpr}}, to
-the address {{reply_to}}.
+you need to decrypt the following text. The result will be a URL, which you
+then visit to make your entry confirmed.
 
-A way to do so is to use this command:
+{{encrypted_nonce}}
 
-  echo {{nonce}} | gpg --clearsign --default-key {{person.fpr}} | mail {{reply_to}}
+You should not need instructions to decrypt this. If you do not know how to do
+it, you can consider it a challenge. In that case, you can start from here:
+http://www.dewinter.com/gnupg_howto/
 
-Or just reply to this email, making sure that {{nonce}} appears in the text,
-and that you sign your reply with the right key.
-
-For any problems, feel free to contact Front Desk at nm@debian.org.
+For any problem, feel free to contact Front Desk at nm@debian.org.
 
 
 Regards,
