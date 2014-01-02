@@ -104,11 +104,19 @@ class FingerprintField(models.CharField):
 
     ## not really useful, because in Person this is blank=True which not cleaned / validate
     def to_python(self, value):
+        from django.core.exceptions import ValidationError
         if value is None:
             # if the db has a NULL, convert it into the Django-friendly '' string
             return ""
+        elif not isinstance(value, basestring):
+            raise ValidationError("Fingerprint must be a string")
         else:
-            # otherwise, return just the value
+            value = value.strip()
+            if value.startswith("FIXME"):
+                return re.sub("[^a-zA-Z0-9_-]+", "-", value)[:40]
+            value = value.replace(' ', '')
+            if len(value) not in (32, 40):
+                raise ValidationError("Fingerprint must be 32 or 40 hex digits")
             return value
 
     def get_db_prep_value(self, value, connection, prepared=False):
@@ -122,7 +130,7 @@ class FingerprintField(models.CharField):
         elif value.startswith("FIXME"):
             return re.sub("[^a-zA-Z0-9_-]+", "-", value)[:40]
         else:
-            raise ValueError("Invalid fingerprint")
+            return None
 
     def formfield(self, **kwargs):
         # we want bypass our parent to fix "maxlength" attribute in widget
