@@ -504,6 +504,12 @@ class NewPersonForm(forms.ModelForm):
     sc_ok = forms.ChoiceField(choices=YESNO, widget=forms.RadioSelect(), label="SC and DFSG agreement")
     dmup_ok = forms.ChoiceField(choices=YESNO, widget=forms.RadioSelect(), label="DMUP agreement")
 
+    def clean_fpr(self):
+        fpr = self.cleaned_data['fpr']
+        if fpr is not None:
+            return fpr.replace(' ', '')
+        return fpr
+
     def clean_sc_ok(self):
         data = self.cleaned_data['sc_ok']
         if data != "yes":
