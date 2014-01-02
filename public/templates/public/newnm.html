@@ -20,6 +20,9 @@ table.tableform th {
   font-weight: normal;
   text-align: right;
 }
+.errorlist {
+  color: red;
+}
 </style>
 <script type="text/javascript">
 {% nm_js_support %}
@@ -261,6 +264,24 @@ $(main);
 {% block content %}
 
 <h1>Debian New Member - Join the NM process</h2>
+
+{% if errors %}
+<div>
+  {% if errors|length == 1 %}
+  There is an issue
+  {% else %}
+  There are some issues
+  {% endif %}
+  in your submission:
+  <ul>
+  {% for e in errors %}
+  <li><a href="#np_{{e.section}}">{{e.label}}</a>: {{e.errors}}</li>
+  {% endfor %}
+  </ul>
+  Click on the label to jump to the relevant section. The errors are also
+  shown next to the fields in the form.
+</div>
+{% endif %}
 
 <h2 id="hasentry">If you already have an entry in the system</h2>
 

@@ -501,8 +501,8 @@ YESNO = (
 )
 
 class NewPersonForm(forms.ModelForm):
-    sc_ok = forms.ChoiceField(choices=YESNO, widget=forms.RadioSelect())
-    dmup_ok = forms.ChoiceField(choices=YESNO, widget=forms.RadioSelect())
+    sc_ok = forms.ChoiceField(choices=YESNO, widget=forms.RadioSelect(), label="SC and DFSG agreement")
+    dmup_ok = forms.ChoiceField(choices=YESNO, widget=forms.RadioSelect(), label="DMUP agreement")
 
     def clean_sc_ok(self):
         data = self.cleaned_data['sc_ok']
@@ -538,8 +538,24 @@ def newnm(request):
             return redirect("public_newnm_resend_challenge", key=person.lookup_key)
     else:
         form = NewPersonForm()
+    errors = []
+    for k, v in form.errors.iteritems():
+        print(k)
+        if k in ("cn", "mn", "sn"):
+            section = "name"
+        elif k in ("sc_ok", "dmup_ok"):
+            section = "rules"
+        else:
+            section = k
+        errors.append({
+            "section": section,
+            "label": form.fields[k].label,
+            "id": k,
+            "errors": v,
+        })
     return render(request, "public/newnm.html", {
         "form": form,
+        "errors": errors,
         "DAYS_VALID": DAYS_VALID,
     })
 
