@@ -171,14 +171,18 @@ $.widget("nm.fingerprint", {
     self.el_keycheck.empty();
     self._add_keycheck_title("Key download failed");
     var msg = xhr.responseText;
+    var ul = $("<ul class='errorlist'>")
     if (msg[0] == "{")
     {
       msg = $.parseJSON(msg);
-      var p = $("<pre>").text(msg.error);
+      var pre = $("<pre class='errorlist'>").text(msg.error);
+      ul.append($("<li>").append(pre));
+    } else if (xhr.status == 404) {
+      ul.append($("<li>").text("invalid fingerprint"));
     } else {
-      var p = $("<p>").text(xhr.responseText);
+      ul.append($("<li>").text(xhr.responseText));
     }
-    self.el_keycheck.append(p);
+    self.el_keycheck.append(ul);
   },
 });
 

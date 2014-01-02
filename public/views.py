@@ -525,6 +525,10 @@ class NewPersonForm(forms.ModelForm):
     class Meta:
         model = bmodels.Person
         fields = ["cn", "mn", "sn", "email", "bio", "uid", "fpr"]
+        widgets = {
+            "fpr": forms.TextInput(attrs={'size': 60}),
+            "bio": forms.Textarea(attrs={'cols': 80, 'rows': 25}),
+        }
 
 def newnm(request):
     """
