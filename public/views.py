@@ -504,6 +504,10 @@ class NewPersonForm(forms.ModelForm):
     sc_ok = forms.ChoiceField(choices=YESNO, widget=forms.RadioSelect(), label="SC and DFSG agreement")
     dmup_ok = forms.ChoiceField(choices=YESNO, widget=forms.RadioSelect(), label="DMUP agreement")
 
+    def __init__(self, *args, **kwargs):
+        super(NewPersonForm, self).__init__(*args, **kwargs)
+        self.fields["fpr"].required = True
+
     def clean_fpr(self):
         fpr = self.cleaned_data['fpr']
         if fpr is not None:
