@@ -310,9 +310,8 @@ going; the form is quite long, so you may want to read it all from top to
 bottom before starting to fill it in.</p>
 
 <p>Note that after you submit the form, you will have {{DAYS_VALID}} days to
-send a signed reply to an email challenge. You may want to make sure that you
-can read encrypted email and send signed emails before spending time on this
-form.</p>
+visit a URL that you will receive encrypted in an emai. You want to make sure
+that you can read encrypted email before spending time on this form.</p>
 
 <form action="{{request.build_absolute_uri}}" method="post">{% csrf_token %}
   {{ form.non_field_errors }}
@@ -431,10 +430,10 @@ form.</p>
   <div id="np_submit">
     <h3>Submit</h3>
 
-    <p>You can now submit the form, and you will get an email asking you to
-    confirm your data by replying with a signed email. Once you have confirmed,
-    other Debian Developers can go to your personal page and advocate you for
-    what you require.</p>
+    <p>You can now submit the form, and you will get an email with a link to
+    visit to confirm your data. The link will be encrypted with your GPG key.
+    Once you have confirmed, other Debian Developers can go to your personal
+    page and advocate you for what you require.</p>
     <input type="submit">
   </div>
 </form>
