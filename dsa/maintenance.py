@@ -134,7 +134,7 @@ class CheckLDAPConsistency(MaintenanceTask):
                     log.info("%s: %s changed email from %s to %s",
                              self.IDENTIFIER, self.maint.link(person), person.email, email)
                     person.email = email
-                    person.sve()
+                    person.save()
                 else:
                     log.info("%s: %s has email %s but emailForward is empty in LDAP",
                              self.IDENTIFIER, self.maint.link(person), person.email)
