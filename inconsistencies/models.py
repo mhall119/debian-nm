@@ -124,14 +124,14 @@ class InconsistentFingerprint(Inconsistency):
                     uid = email.split("@", 1)[0]
                     try:
                         person = bmodels.Person.objects.get(uid=uid)
-                        yield "this seems to be the new key of {} <{}>".format(person.fullname, person.uid), [
+                        yield "this seems to be the new key of {} <{}> ({} sigs)".format(person.fullname, person.uid, len(ku.sigs_ok)), [
                             self._make_set_fpr_action(person)
                         ]
                     except bmodels.Person.DoesNotExist:
                         pass
                 try:
                     person = bmodels.Person.objects.get(email=email)
-                    yield "this seems to be the new key of {} <{}>".format(person.fullname, person.email), [
+                    yield "this seems to be the new key of {} <{}> ({} sigs)".format(person.fullname, person.email, len(ku.sigs_ok)), [
                         self._make_set_fpr_action(person)
                     ]
                 except bmodels.Person.DoesNotExist:
