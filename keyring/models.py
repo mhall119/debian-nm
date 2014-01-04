@@ -31,6 +31,7 @@ import subprocess
 from collections import namedtuple
 from backend.utils import StreamStdoutKeepStderr, require_dir
 import time
+import re
 import logging
 
 log = logging.getLogger(__name__)
@@ -307,6 +308,8 @@ class Uid(object):
     """
     Collects data about a key uid, parsed from gpg --with-colons --fixed-list-mode
     """
+    re_uid = re.compile(r"^(?P<name>.+?)\s*(?:\((?P<comment>.+)\))?\s*(?:<(?P<email>.+)>)?$")
+
     def __init__(self, key, uid):
         self.key = key
         self.uid = uid
@@ -318,6 +321,15 @@ class Uid(object):
         # identifying data as possible
         k = tuple(sig[3:6])
         self.sigs[k] = sig
+
+    def split(self):
+        mo = self.re_uid.match(self.name)
+        if not mo: return None
+        return {
+                "name": mo.group("name"),
+                "email": mo.group("email"),
+                "comment": mo.group("comment"),
+        }
 
 class KeycheckKeyResult(object):
     """

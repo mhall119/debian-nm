@@ -94,7 +94,7 @@ $(function() {
   <tbody>
   {% for i in by_fpr %}
   <tr>
-    <td>{{i.fpr}}</td>
+    <td><a href="{{i.get_absolute_url}}">{{i.fpr}}</a></td>
     <td>
       <ul>
         {% for msg in i.info_log %}

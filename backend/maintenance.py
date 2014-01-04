@@ -325,7 +325,7 @@ class Inconsistencies(MaintenanceTask):
         self.log("%s: %s %s", maintproc.IDENTIFIER, self.maint.link(process), log)
 
     def log_fingerprint(self, maintproc, fpr, log, **kw):
-        fpr = fpr.replace(" ", "")
+        fpr = fpr.replace(" ", "").upper()
         if self.imodels:
             self.imodels.InconsistentFingerprint.add_info(fpr, log=log, **kw)
         self.log("%s: %s %s", maintproc.IDENTIFIER, fpr, log)

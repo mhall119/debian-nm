@@ -11,9 +11,7 @@
 
 {% block content %}
 
-<h2>Inconsistency status for {{person.fullname}}</h2>
-
-{% include "public/personinfo.html" with person=person only %}
+<h2>Inconsistency status for fingerprint {{fpr}}</h2>
 
 <h3>Log</h3>
 
@@ -32,3 +30,4 @@
 {% include "inconsistencies/guesses.html" %}
 
 {% endblock %}
+

@@ -20,7 +20,8 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
+from django import http
 import backend.models as bmodels
 from . import models as imodels
 import backend.auth
@@ -44,3 +45,38 @@ def fix_person(request, key):
         "items": dict(inconsistency.info_items),
     })
 
+@backend.auth.is_admin
+def fix_fpr(request, fpr):
+    inconsistency = get_object_or_404(imodels.InconsistentFingerprint, fpr=fpr)
+    return render(request, "inconsistencies/fix_fpr.html", {
+        "inconsistency": inconsistency,
+        "fpr": fpr,
+        "log": inconsistency.info_log,
+        "items": dict(inconsistency.info_items),
+    })
+
+@backend.auth.is_admin
+def fix(request):
+    if request.method != "POST":
+        return http.HttpResponseBadRequest("only POST is allowed")
+
+    itype = request.POST["itype"]
+    if itype == "fpr":
+        inconsistency = get_object_or_404(imodels.InconsistentFingerprint, fpr=request.POST["ikey"])
+    else:
+        return http.HttpResponseNotFound("cannot lookup inconsistency type")
+
+    type = request.POST["type"]
+    if type == "person":
+        person = bmodels.Person.lookup_or_404(request.POST["key"])
+        log = []
+        set_fpr = request.POST.get("set_fpr")
+        if set_fpr is not None:
+            log.append("fix: fingerprint set to {}".format(set_fpr))
+            person.fpr = set_fpr
+        if log:
+            person.save()
+            imodels.InconsistentPerson.add_fix(person, log=log)
+            inconsistency.delete()
+
+    return redirect("inconsistencies_list")

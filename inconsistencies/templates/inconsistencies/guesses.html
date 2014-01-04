@@ -1,0 +1,26 @@
+<table>
+  <thead>
+    <tr><th>Guess</th><th>Actions</th></tr>
+  </thead>
+  <tbody>
+  {% for msg, actions in inconsistency.compute_guesses %}
+  <tr>
+    <td>{{msg}}</td>
+    <td>
+      <ul>
+        {% for a in actions %}
+        <form method="POST" action="{% url 'inconsistencies_fix' %}">{% csrf_token %}
+          {% for k, v in a.items %}
+          <input type="{% if k == 'label' %}submit{% else %}hidden{% endif %}" name="{{k}}" value="{{v}}">
+          {% endfor %}
+        </form>
+        {% endfor %}
+      </ul>
+    </td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="2">No guesses</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+

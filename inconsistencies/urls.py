@@ -25,5 +25,7 @@ from django.conf.urls import *
 urlpatterns = patterns('inconsistencies.views',
     url(r'^$', "inconsistencies_list", name="inconsistencies_list"),
     url(r'person/(?P<key>[^/]+)$', "fix_person", name="inconsistencies_fix_person"),
+    url(r'fpr/(?P<fpr>[A-F0-9]+)$', "fix_fpr", name="inconsistencies_fix_fpr"),
+    url(r'fix$', "fix", name="inconsistencies_fix"),
 )
 
