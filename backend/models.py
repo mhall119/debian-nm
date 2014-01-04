@@ -221,8 +221,8 @@ class NMPermissions(object):
         # Check if user is an advocate or an AM for some process
         is_advocate_of_all = None
         is_am_of_all = None
-        # Check if there are any active processes
-        any_active = False
+        is_advocate_of_any_active = False
+        is_am_of_any_active = False
         # Check if there are active processes in FD or DAM hands
         has_active_processes_in_fd_dam_hands = False
         for p in processes:
@@ -230,7 +230,6 @@ class NMPermissions(object):
             if p.person != person: continue
             # Take note of active processes not in FD or DAM's hands
             if p.is_active:
-                any_active = True
                 if p.progress in (
                         const.PROGRESS_AM_OK,
                         const.PROGRESS_FD_HOLD,
@@ -243,12 +242,16 @@ class NMPermissions(object):
                     has_active_processes_in_fd_dam_hands = True
             # Take note of processes 'user' is an AM of
             if p.manager and p.manager.person == user:
+                if p.is_active:
+                    is_am_of_any_active = True
                 if is_am_of_all is None:
                     is_am_of_all = True
             else:
                 is_am_of_all = False
             # Take note of processes 'user' is an advocate of
             if user in p.advocates.all():
+                if p.is_active:
+                    is_advocate_of_any_active = True
                 if is_advocate_of_all is None:
                     is_advocate_of_all = True
             else:
@@ -280,20 +283,21 @@ class NMPermissions(object):
             res.can_view_email=True
             return res
 
-        if is_advocate_of_all or is_am_of_all:
-            res.can_edit_bio = any_active
+        if is_advocate_of_any_active or is_am_of_any_active:
+            res.can_edit_bio = True
             res.can_edit_ldap_fields = (
                 # Except editing frozen LDAP entries
                 not has_ldap_record
                 # Or editing LDAP info when it is in FD
                 # or DAM's hands
                 and not has_active_processes_in_fd_dam_hands
-                # And there needs to be some active process
-                and any_active
             )
+
+        if is_advocate_of_all or is_am_of_all:
             # Set to false if there is some process that user is neither
-            # advocate nor am of
-            res.can_view_email=True
+            # advocate nor am of, to prevent showing emails they shouldn't be
+            # involved with
+            res.can_view_email = True
 
         return res
 
