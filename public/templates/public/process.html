@@ -220,7 +220,7 @@ See: <a href="http://lists.debian.org/debian-project/2010/09/msg00026.html">hand
 {% endif %}
 
 <table class="personinfo">
-    <tr><th>Applicant</th><td><a href="{{person.get_absolute_url}}">{{person.fullname}} &lt;{{person.email}}&gt;</a></td></tr>
+    <tr><th>Applicant</th><td><a href="{{person.get_absolute_url}}">{{person.fullname}} &lt;{{person.preferred_email}}&gt;</a></td></tr>
     <tr><th>Received application</th><td>{{started|date:"Y-m-d"}}</td></tr>
     <tr><th>Time of Last Action</th><td>{{last_change|date:"Y-m-d"}}</th></tr>
     <tr>
