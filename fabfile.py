@@ -16,5 +16,5 @@ def deploy():
     with cd(deploy_dir):
         sudo("git pull", user="nm")
         sudo("./manage.py collectstatic --noinput", user="nm")
-        sudo("./manage.py migrate backend", user="nm")
+        sudo("./manage.py migrate", user="nm")
         sudo("touch nm2.wsgi", user="nm")
