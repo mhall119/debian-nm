@@ -107,10 +107,10 @@ class CheckLDAPConsistency(MaintenanceTask):
     """
     Show entries that do not match between LDAP and our DB
     """
-    DEPENDS = [MakeLink]
+    DEPENDS = [BackupDB, MakeLink]
 
     def run(self):
-        # Prefetch people and index them by fingerprint
+        # Prefetch people and index them by uid
         people_by_uid = dict()
         for p in bmodels.Person.objects.all():
             if p.uid is None: continue
@@ -128,3 +128,13 @@ class CheckLDAPConsistency(MaintenanceTask):
                     log.warning("%s: %s has gidNumber 800 and a key, but the db has state %s",
                                 self.IDENTIFIER, self.maint.link(person), person.status)
 
+            email = entry.single("emailForward")
+            if email != person.email:
+                if email is not None:
+                    log.info("%s: %s changed email from %s to %s",
+                             self.IDENTIFIER, self.maint.link(person), person.email, email)
+                    person.email = email
+                    person.sve()
+                else:
+                    log.info("%s: %s has email %s but emailForward is empty in LDAP",
+                             self.IDENTIFIER, self.maint.link(person), person.email)
