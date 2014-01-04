@@ -283,4 +283,49 @@ class CheckDjangoPermissions(MaintenanceTask):
             log.warning("%s: auth.models.User.id %d has powers in NM that django does not know about",
                         self.IDENTIFIER, id)
 
+class Inconsistencies(MaintenanceTask):
+    """
+    Keep track of inconsistencies
+    """
+    NAME = "inconsistencies"
+    DEPENDS = [MakeLink]
 
+    def __init__(self, *args, **kw):
+        super(Inconsistencies, self).__init__(*args, **kw)
+        self.logger = log
+        try:
+            import inconsistencies.models as imodels
+            self.imodels = imodels
+        except ImportError:
+            self.imodels = None
+
+    def run(self):
+        """
+        Reset the inconsistency log at the start of maintenance
+        """
+        if not self.imodels: return
+        self.imodels.InconsistentPerson.objects.all().delete()
+        self.imodels.InconsistentProcess.objects.all().delete()
+        self.imodels.InconsistentFingerprint.objects.all().delete()
+
+    def log(self, *args, **kw):
+        if self.imodels:
+            self.logger.info(*args, **kw)
+        else:
+            self.logger.warning(*args, **kw)
+
+    def log_person(self, maintproc, person, log, **kw):
+        if self.imodels:
+            self.imodels.InconsistentPerson.add_info(person, log=log, **kw)
+        self.log("%s: %s %s", maintproc.IDENTIFIER, self.maint.link(person), log)
+
+    def log_process(self, maintproc, process, log, **kw):
+        if self.imodels:
+            self.imodels.InconsistentProcess.add_info(process, log=log, **kw)
+        self.log("%s: %s %s", maintproc.IDENTIFIER, self.maint.link(process), log)
+
+    def log_fingerprint(self, maintproc, fpr, log, **kw):
+        fpr = fpr.replace(" ", "")
+        if self.imodels:
+            self.imodels.InconsistentFingerprint.add_info(fpr, log=log, **kw)
+        self.log("%s: %s %s", maintproc.IDENTIFIER, fpr, log)

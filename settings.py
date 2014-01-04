@@ -135,6 +135,7 @@ INSTALLED_APPS = (
     'minechangelogs',
     'api',
     'contributors',
+    'inconsistencies',
     'south',
 )
 

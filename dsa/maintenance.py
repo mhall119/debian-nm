@@ -1,6 +1,6 @@
 # nm.debian.org website maintenance
 #
-# Copyright (C) 2012  Enrico Zini <enrico@debian.org>
+# Copyright (C) 2012--2014  Enrico Zini <enrico@debian.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,7 +21,7 @@ from __future__ import division
 from __future__ import unicode_literals
 from django_maintenance import MaintenanceTask
 from django.db import transaction
-from backend.maintenance import MakeLink, BackupDB
+from backend.maintenance import MakeLink, BackupDB, Inconsistencies
 from . import models as dmodels
 from backend import const
 import backend.models as bmodels
@@ -107,7 +107,7 @@ class CheckLDAPConsistency(MaintenanceTask):
     """
     Show entries that do not match between LDAP and our DB
     """
-    DEPENDS = [BackupDB, MakeLink]
+    DEPENDS = [BackupDB, MakeLink, Inconsistencies]
 
     def run(self):
         # Prefetch people and index them by uid
@@ -125,16 +125,21 @@ class CheckLDAPConsistency(MaintenanceTask):
 
             if entry.single("gidNumber") == "800" and entry.single("keyFingerPrint") is not None:
                 if person.status not in (const.STATUS_DD_U, const.STATUS_DD_NU):
-                    log.warning("%s: %s has gidNumber 800 and a key, but the db has state %s",
-                                self.IDENTIFIER, self.maint.link(person), person.status)
+                    self.maint.inconsistencies.log_person(self, person,
+                                                          "has gidNumber 800 and a key, but the db has state {}".format(person.status),
+                                                          dsa_status="dd")
 
             email = entry.single("emailForward")
             if email != person.email:
                 if email is not None:
-                    log.info("%s: %s changed email from %s to %s",
+                    log.info("%s: %s changing email from %s to %s (source: LDAP)",
                              self.IDENTIFIER, self.maint.link(person), person.email, email)
                     person.email = email
                     person.save()
-                else:
-                    log.info("%s: %s has email %s but emailForward is empty in LDAP",
-                             self.IDENTIFIER, self.maint.link(person), person.email)
+                # It gives lots of errors when run outside of the debian.org
+                # network, since emailForward is not exported there, and it has
+                # no use case I can think of so far
+                #
+                # else:
+                #     log.info("%s: %s has email %s but emailForward is empty in LDAP",
+                #              self.IDENTIFIER, self.maint.link(person), person.email)

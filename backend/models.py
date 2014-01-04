@@ -2,7 +2,7 @@
 
 # nm.debian.org website backend
 #
-# Copyright (C) 2012--2013  Enrico Zini <enrico@debian.org>
+# Copyright (C) 2012--2014  Enrico Zini <enrico@debian.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
