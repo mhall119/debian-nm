@@ -32,14 +32,15 @@ $(function() {
 
 <h2>Inconsistencies in Person records</h2>
 
-<table class="inctable">
+<table class="inctable tablesorter">
   <thead>
+    <tr><th>Person</th><th>log</th><th>Info</th><th>Age</th></tr>
   </thead>
   <tbody>
   {% for i in by_person %}
   <tr>
     <td><a href="{{i.get_absolute_url}}">{{i.person.fullname}}</a></td>
-    <td>
+    <td val="{{i.info_log|length}}">
       <ul>
         {% for msg in i.info_log %}
         <li><tt>{{msg}}</tt></li>
@@ -53,6 +54,7 @@ $(function() {
         {% endfor %}
       </ul>
     </td>
+    <td val={{i.created|date:"c"}}>{{i.created|timesince}}</td>
   </tr>
   {% endfor %}
   </tbody>
@@ -60,14 +62,15 @@ $(function() {
 
 <h2>Inconsistencies in Process records</h2>
 
-<table class="inctable">
+<table class="inctable tablesorter">
   <thead>
+    <tr><th>Process</th><th>log</th><th>Info</th><th>Age</th></tr>
   </thead>
   <tbody>
   {% for i in by_process %}
   <tr>
     <td><a href="{{i.process.get_absolute_url}}">{{i.process.fullname}}</a></td>
-    <td>
+    <td val="{{i.info_log|length}}">
       <ul>
         {% for msg in i.info_log %}
         <li><tt>{{msg}}</tt></li>
@@ -81,6 +84,7 @@ $(function() {
         {% endfor %}
       </ul>
     </td>
+    <td val={{i.created|date:"c"}}>{{i.created|timesince}}</td>
   </tr>
   {% endfor %}
   </tbody>
@@ -88,14 +92,15 @@ $(function() {
 
 <h2>Inconsistencies in fingerprint records</h2>
 
-<table class="inctable">
+<table class="inctable tablesorter">
   <thead>
+    <tr><th>Fingerprint</th><th>log</th><th>Info</th><th>Age</th></tr>
   </thead>
   <tbody>
   {% for i in by_fpr %}
   <tr>
     <td><a href="{{i.get_absolute_url}}">{{i.fpr}}</a></td>
-    <td>
+    <td val="{{i.info_log|length}}">
       <ul>
         {% for msg in i.info_log %}
         <li><tt>{{msg}}</tt></li>
@@ -109,6 +114,7 @@ $(function() {
         {% endfor %}
       </ul>
     </td>
+    <td val={{i.created|date:"c"}}>{{i.created|timesince}}</td>
   </tr>
   {% endfor %}
   </tbody>
