@@ -32,8 +32,18 @@ class Inconsistency(models.Model):
     class Meta:
         abstract = True
 
+    @property
+    def info_log(self):
+        return json.loads(self.info)["log"]
+
+    @property
+    def info_items(self):
+        for k, v in json.loads(self.info).iteritems():
+            if k == "log": continue
+            yield k, v
+
     def merge_info(self, log=None, **kw):
-        info = json.loads(self.info)
+        info = self.get_info()
         info.update(kw)
         if log is not None:
             info["log"].append(log)
@@ -43,11 +53,20 @@ class Inconsistency(models.Model):
 class InconsistentPerson(Inconsistency):
     person = models.OneToOneField(bmodels.Person)
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ("inconsistencies_fix_person", (), dict(key=self.person.lookup_key))
+
     @classmethod
     def add_info(cls, person, **kw):
         rec, created = cls.objects.get_or_create(person=person)
         rec.merge_info(**kw)
         rec.save()
+
+    def compute_guesses(self):
+        info = json.loads(self.info)
+        if "keyring_status" in info and info["keyring_status"] is None:
+            yield None, "{} may have changed key. Try to resolve all fingerprint issues first".format(self.person.fullname)
 
 
 class InconsistentProcess(Inconsistency):

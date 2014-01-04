@@ -80,36 +80,7 @@
 
 <h1>{{person.fullname}}</h1>
 
-<table class="personinfo">
-    <tr><th>Account name</th><td>{{person.uid|default:"None chosen yet"}}</td></tr>
-    <tr><th>OpenPGP fingerprint</th><td>{{person.fpr|fingerprint}}</td></tr>
-    <tr><th>Status</th><td>{{person.status|desc_status}} since {{person.status_changed|date:"Y-m-d"}}
-    {% if person.changed_before_data_import %}
-    (changed before data import)
-    {% endif %}
-    </td></tr>
-    {% if person.pending %}
-    <tr><th>Pending</th><td>This is a new entry that requires confirmation before {{person.expires}}. Click <a href="{% url 'public_newnm_resend_challenge' key=person.lookup_key %}">here</a> to send the email challenge again.</td></tr>
-    {% endif %}
-    {% if am %}
-    <tr>
-        <th>Application manager</th>
-        <td>
-            {% if am.is_am %}active,{% endif %}
-            {% if am.is_fd %}fd,{% endif %}
-            {% if am.is_dam %}dam,{% endif %}
-            {% if am.is_am_ctte %}am ctte,{% endif %}
-            {{person.am.processed.count}} applicants processed
-            {% if request.am == am or request.am.is_admin %}
-            <a href="{% url 'restricted_amprofile' uid=am.person.uid %}">[preferences]</a>
-            {% endif %}
-            {% if request.am.is_admin %}
-            <a href="{% url 'admin:backend_am_change' am.id %}">[admin]</a>
-            {% endif %}
-        </td>
-    </tr>
-    {% endif %}
-</table>
+{% include "public/personinfo.html" with person=person only %}
 
 {% if person|editable_by:request.am %}
 <a href="{% url 'restricted_person' key=person.lookup_key %}">edit</a>

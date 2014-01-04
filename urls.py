@@ -34,6 +34,7 @@ urlpatterns = patterns('',
     url(r'^am/', include("restricted.urls")),
     url(r'^api/', include("api.urls")),
     url(r'^keyring/', include("keyring.urls")),
+    url(r'^inconsistencies/', include("inconsistencies.urls")),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

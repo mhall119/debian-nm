@@ -89,14 +89,14 @@ class CheckKeyringConsistency(MaintenanceTask):
             for status, keyring in keyring_by_status.iteritems():
                 if fpr in keyring:
                     self.maint.inconsistencies.log_person(self, p,
-                                                                "has status {} but is in {} keyring (fpr: {})".format(p.status, status, fpr),
+                                                                "has status {} but is in {} keyring".format(p.status, status),
                                                                 keyring_status=status)
                     self.count += 1
                     found = True
                     break
             if not found and p.status != const.STATUS_REMOVED_DD:
                 self.maint.inconsistencies.log_person(self, p,
-                                                      "has status {} but is not in any keyring (fpr: {})".format(p.status, fpr),
+                                                      "has status {} but is not in any keyring".format(p.status),
                                                       keyring_status=None)
                 self.count += 1
 

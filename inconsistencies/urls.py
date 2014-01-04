@@ -20,27 +20,10 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-from django.shortcuts import render, get_object_or_404
-import backend.models as bmodels
-from . import models as imodels
-import backend.auth
+from django.conf.urls import *
 
-@backend.auth.is_admin
-def inconsistencies_list(request):
-    return render(request, "inconsistencies/list.html", {
-        "by_person": imodels.InconsistentPerson.objects.all().order_by("created"),
-        "by_process": imodels.InconsistentProcess.objects.all().order_by("created"),
-        "by_fpr": imodels.InconsistentFingerprint.objects.all().order_by("created"),
-    })
-
-@backend.auth.is_admin
-def fix_person(request, key):
-    person = bmodels.Person.lookup_or_404(key)
-    inconsistency = get_object_or_404(imodels.InconsistentPerson, person=person)
-    return render(request, "inconsistencies/fix_person.html", {
-        "inconsistency": inconsistency,
-        "person": person,
-        "log": inconsistency.info_log,
-        "items": dict(inconsistency.info_items),
-    })
+urlpatterns = patterns('inconsistencies.views',
+    url(r'^$', "inconsistencies_list", name="inconsistencies_list"),
+    url(r'person/(?P<key>[^/]+)$', "fix_person", name="inconsistencies_fix_person"),
+)
 

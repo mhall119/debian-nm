@@ -1,0 +1,14 @@
+<ul>
+  {% for url, msg in inconsistency.compute_guesses %}
+  <li>
+    {% if url %}
+    <a href="{{url}}">{{msg}}</a>
+    {% else %}
+    {{msg}}
+    {% endif %}
+  </li>
+  {% empty %}
+  <li>No guesses</li>
+  {% endfor %}
+</ul>
+
