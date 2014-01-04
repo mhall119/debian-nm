@@ -151,7 +151,7 @@ class NMPermissions(object):
     """
     Store NM-specific permissions
     """
-    def __init__(self, edit_bio=False, edit_ldap=False, view_email=False, is_advocate=False, is_am=False, is_fd=False, is_dam=False):
+    def __init__(self, edit_bio=False, edit_ldap=False, view_email=False, is_advocate=False, is_am=False, is_fd=False, is_dam=False, has_ldap_record=False):
         # A person's bio can be edited
         self.can_edit_bio = edit_bio
         # A person's LDAP-feeding fields can be edited
@@ -166,6 +166,8 @@ class NMPermissions(object):
         self.is_fd = is_fd
         # The current user is a DAM
         self.is_dam = is_dam
+        # The user has an LDAP record already
+        self.has_ldap_record = has_ldap_record
 
     @property
     def can_edit_anything(self):
@@ -206,7 +208,7 @@ class NMPermissions(object):
 
         # If the person is already in LDAP, then nobody can edit their LDAP
         # info, since this database then becomes a read-only mirror of LDAP
-        has_ldap_record = person.status not in (const.STATUS_MM, const.STATUS_DM)
+        res.has_ldap_record = person.status not in (const.STATUS_MM, const.STATUS_DM)
 
         # Check if the user a FD or DAM
         am = user.am_or_none
@@ -267,7 +269,7 @@ class NMPermissions(object):
         # FD and DAM can do everything except mess with LDAP
         if user.is_admin:
             res.can_edit_bio = True
-            res.can_edit_ldap_fields = not has_ldap_record
+            res.can_edit_ldap_fields = not res.has_ldap_record
             res.can_view_email = True
             return res
 
@@ -276,7 +278,7 @@ class NMPermissions(object):
             res.can_edit_bio = True
             res.can_edit_ldap_fields = (
                 # Except editing frozen LDAP entries
-                not has_ldap_record
+                not res.has_ldap_record
                 # Or editing LDAP info when it is in FD or DAM's hands
                 and not has_active_processes_in_fd_dam_hands
             )
@@ -287,7 +289,7 @@ class NMPermissions(object):
             res.can_edit_bio = True
             res.can_edit_ldap_fields = (
                 # Except editing frozen LDAP entries
-                not has_ldap_record
+                not res.has_ldap_record
                 # Or editing LDAP info when it is in FD
                 # or DAM's hands
                 and not has_active_processes_in_fd_dam_hands

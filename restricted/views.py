@@ -216,6 +216,7 @@ def person(request, key):
                               dict(
                                   person=person,
                                   form=form,
+                                  perms=perms,
                               ),
                               context_instance=template.RequestContext(request))
 

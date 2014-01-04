@@ -22,5 +22,14 @@
     <input type="submit" value="Submit" />
 </form>
 
+{% if perms.has_ldap_record %}
+<p>
+{{person.fullname}} already has an LDAP record (<tt>finger
+{{person.uid}}@db.debian.org</tt>), so their name, uid and email cannot be
+changed here. The email address can be changed using the
+<a href="https://db.debian.org/doc-mail.html">db.debian.org LDAP Gateway</a>.
+</p>
+{% endif %}
+
 {% endblock %}
 
