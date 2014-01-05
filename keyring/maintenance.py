@@ -461,7 +461,7 @@ class CheckKeyringLogs(MaintenanceTask):
         matchers = self._find_matchers()
 
         changelog = kmodels.Changelog()
-        for d, lines in changelog.read(since=datetime.datetime.utcnow() - datetime.timedelta(days=60)):
+        for d, lines in changelog.read(since=datetime.datetime.utcnow() - datetime.timedelta(days=360)):
             if re_import.match(lines[0]): continue
             oneline = " ".join(c.strip() for c in lines)
             if not self._run_matchers(matchers, d, oneline):
