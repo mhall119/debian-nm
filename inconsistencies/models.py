@@ -176,7 +176,7 @@ class InconsistentFingerprint(Inconsistency):
                 except bmodels.Person.DoesNotExist:
                     pass
                 if not has_guesses:
-                    yield "uncorrelated uid {} with {} sigs".format(ku.name, len(ku.sigs_ok)), []
+                    yield "uncorrelated uid {} with {} sigs".format(ku.uid.name, len(ku.sigs_ok)), []
 
     def _make_set_fpr_action(self, person):
         return {
