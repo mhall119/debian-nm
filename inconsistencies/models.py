@@ -156,10 +156,12 @@ class InconsistentFingerprint(Inconsistency):
                 if info is None: continue
                 email = info["email"]
                 if not email: continue
+                has_guesses = False
                 if email.endswith("@debian.org"):
                     uid = email.split("@", 1)[0]
                     try:
                         person = bmodels.Person.objects.get(uid=uid)
+                        has_guesses = True
                         yield "this seems to be the new key of {} <{}> ({} sigs)".format(person.fullname, person.uid, len(ku.sigs_ok)), [
                             self._make_set_fpr_action(person)
                         ]
@@ -167,11 +169,14 @@ class InconsistentFingerprint(Inconsistency):
                         pass
                 try:
                     person = bmodels.Person.objects.get(email=email)
+                    has_guesses = True
                     yield "this seems to be the new key of {} <{}> ({} sigs)".format(person.fullname, person.email, len(ku.sigs_ok)), [
                         self._make_set_fpr_action(person)
                     ]
                 except bmodels.Person.DoesNotExist:
                     pass
+                if not has_guesses:
+                    yield "uncorrelated uid {} with {} sigs".format(ku.name, len(ku.sigs_ok)), []
 
     def _make_set_fpr_action(self, person):
         return {
