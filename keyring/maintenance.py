@@ -330,9 +330,10 @@ class CheckKeyringLogs(MaintenanceTask):
             # print("# %s goes from %s to emeritus DD (already known in the database) %s" % (p.lookup_key, p.status, self.rturl(rt)))
             pass # Already emeritus
         else:
-            #print("./manage.py change_status %s %s --date='%s' --message='imported from keyring changelog, RT %s' # %s" % (
-            #    p.lookup_key, const.STATUS_EMERITUS_DD, d.strftime("%Y-%m-%d %H:%M:%S"), rt, self.rturl(rt)))
-            self._ann_person(d, rt, p, "keyring logs report change from {} to {}".format(p.status, const.STATUS_EMERITUS_DD), keyring_status=const.STATUS_EMERITUS_DD)
+            self._ann_person(d, rt, p, "keyring logs report change from {} to {}".format(p.status, const.STATUS_EMERITUS_DD),
+                             keyring_status=const.STATUS_EMERITUS_DD,
+                             fix_cmdline="./manage.py change_status {} {} --date='{}' --message='imported from keyring changelog, RT {}'".format(
+                                 p.lookup_key, const.STATUS_EMERITUS_DD, d.strftime("%Y-%m-%d %H:%M:%S"), rt))
 
     @keyring_log_matcher(r"^\s*\*\s+Move 0x(?P<key>[0-9A-F]+)\s+\([^)]+\) to removed keyring\s+\(RT #(?P<rt>\d+)")
     def do_new_rem(self, d, key, rt):
