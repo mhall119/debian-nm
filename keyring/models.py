@@ -375,7 +375,7 @@ class KeycheckKeyResult(object):
 
         # Check UIDs
         for uid in key.uids.itervalues():
-            self.uids.append(KeycheckUidResult(uid))
+            self.uids.append(KeycheckUidResult(self, uid))
 
         def int_expire(x):
             if x is None or x == "": return x
@@ -426,7 +426,8 @@ class KeycheckUidResult(object):
     """
     Perform consistency checks on a key uid, based on the old keycheck.sh
     """
-    def __init__(self, uid):
+    def __init__(self, key_result, uid):
+        self.key_result = key_result
         self.uid = uid
         self.errors = set()
 
@@ -445,6 +446,8 @@ class KeycheckUidResult(object):
         self.sigs_no_key = []
         self.sigs_bad = []
         for sig in uid.sigs.itervalues():
+            # Skip self-signatures
+            if self.key_result.key.fpr.endswith(sig[4]): continue
             # dkg says:
             # ! means "verified"
             # - means "not verified" (bad signature, signature from expired key)
