@@ -307,6 +307,9 @@ class Inconsistencies(MaintenanceTask):
         self.imodels.InconsistentPerson.objects.all().delete()
         self.imodels.InconsistentProcess.objects.all().delete()
         self.imodels.InconsistentFingerprint.objects.all().delete()
+        self.ann_person = []
+        self.ann_process = []
+        self.ann_fpr = []
 
     def log(self, *args, **kw):
         if self.imodels:
@@ -329,3 +332,32 @@ class Inconsistencies(MaintenanceTask):
         if self.imodels:
             self.imodels.InconsistentFingerprint.add_info(fpr, log=log, **kw)
         self.log("%s: %s %s", maintproc.IDENTIFIER, fpr, log)
+
+    def annotate_person(self, maintproc, person, log, **kw):
+        # Delay execution until finalization phase, when all inconsistencies
+        # we want to annotate have been found and logged
+        self.ann_person.append((maintproc, person, log, kw))
+        self.logger.debug("%s: annotation for %s: %s", maintproc.IDENTIFIER, self.maint.link(person), log)
+
+    def annotate_process(self, maintproc, process, log, **kw):
+        # Delay execution until finalization phase, when all inconsistencies
+        # we want to annotate have been found and logged
+        self.ann_process.append((maintproc, process, log, kw))
+        self.logger.debug("%s: annotation for %s: %s", maintproc.IDENTIFIER, self.maint.link(process), log)
+
+    def annotate_fingerprint(self, maintproc, fpr, log, **kw):
+        # Delay execution until finalization phase, when all inconsistencies
+        # we want to annotate have been found and logged
+        self.ann_fpr.append((maintproc, fpr, log, kw))
+        self.logger.debug("%s: annotation for %s: %s", maintproc.IDENTIFIER, fpr, log)
+
+    def log_stats(self):
+        # FIXME: we're abusing this for post-maintenance finalization. Add a
+        # post-run pass to django_maintenance
+        if self.imodels:
+            for maintproc, person, log, kw in self.ann_person:
+                self.imodels.InconsistentPerson.annotate(person, log=log, **kw)
+            for maintproc, process, log, kw in self.ann_process:
+                self.imodels.InconsistentProcess.annotate(process, log=log, **kw)
+            for maintproc, fpr, log, kw in self.ann_fpr:
+                self.imodels.InconsistentFingerprint.annotate(fpr, log=log, **kw)

@@ -32,6 +32,7 @@ from collections import namedtuple
 from backend.utils import StreamStdoutKeepStderr, require_dir
 import time
 import re
+import datetime
 import logging
 
 log = logging.getLogger(__name__)
@@ -548,3 +549,86 @@ class UserKey(object):
         if result != 0:
             raise RuntimeError("gpg exited with status %d: %s" % (result, lines.stderr.getvalue().strip()))
 
+class Changelog(object):
+    re_date = re.compile("^\d+-\d+-\d+$")
+    re_datetime = re.compile("^\d+-\d+-\d+ \d+:\d+:\d+$")
+    re_empty = re.compile(r"^\s*$")
+    re_author = re.compile(r"^\s+\[")
+
+    def _parse_date(self, s):
+        import rfc822
+        if self.re_date.match(s):
+            try:
+                return datetime.datetime.strptime(s, "%Y-%m-%d")
+            except ValueError:
+                date = rfc822.parsedate(s)
+        elif self.re_datetime.match(s):
+            try:
+                return datetime.datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                date = rfc822.parsedate(s)
+        else:
+            date = rfc822.parsedate(s)
+
+        if date is None:
+            return None
+        return datetime.datetime(*date[:6])
+
+    def _group_lines_by_indentation(self, lines):
+        """
+        Split a changelog entry into line groups based on indentation
+        """
+        def get_indent(s):
+            """
+            Count how many leading spaces there are in s
+            """
+            res = 0
+            for c in s:
+                if not c.isspace(): break
+                res += 1
+            return res
+
+        group = []
+        indent = None
+        for l in lines:
+            if self.re_empty.match(l):
+                if group: yield group
+                group = []
+                indent = None
+                continue
+
+            if self.re_author.match(l):
+                if group: yield group
+                group = []
+                indent = None
+                continue
+
+            i = get_indent(l)
+
+            if indent is None:
+                indent = i
+            elif i <= indent:
+                if group: yield group
+                group = []
+                indent = i
+
+            group.append(l)
+
+        if group:
+            yield group
+
+    def read(self, since=None):
+        """
+        Read and parse the keyring changelogs
+        """
+        from debian import changelog
+
+        fname = os.path.join(KEYRINGS, "../changelog")
+        with open(fname) as fd:
+            changes = changelog.Changelog(file=fd)
+
+        for c in changes:
+            d = self._parse_date(c.date)
+            if since is not None and d <= since: continue
+            for lines in self._group_lines_by_indentation(c.changes()):
+                yield d, lines

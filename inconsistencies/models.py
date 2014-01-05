@@ -68,6 +68,18 @@ class InconsistentPerson(Inconsistency):
         rec.save()
 
     @classmethod
+    def annotate(cls, person, **kw):
+        """
+        Annotate a person inconsistency, if it exists. Otherwise do nothing.
+        """
+        try:
+            rec = cls.objects.get(person=person)
+        except cls.DoesNotExist:
+            return
+        rec.merge_info(**kw)
+        rec.save()
+
+    @classmethod
     def add_fix(cls, person, **kw):
         """
         Log that a fix has been performed for a person, if an inconsistency
@@ -95,6 +107,18 @@ class InconsistentProcess(Inconsistency):
         rec.merge_info(**kw)
         rec.save()
 
+    @classmethod
+    def annotate(cls, process, **kw):
+        """
+        Annotate a process inconsistency, if it exists. Otherwise do nothing.
+        """
+        try:
+            rec = cls.objects.get(process=process)
+        except cls.DoesNotExist:
+            return
+        rec.merge_info(**kw)
+        rec.save()
+
 
 class InconsistentFingerprint(Inconsistency):
     fpr = bmodels.FingerprintField("OpenPGP key fingerprint", max_length=40, unique=True)
@@ -106,6 +130,18 @@ class InconsistentFingerprint(Inconsistency):
     @classmethod
     def add_info(cls, fpr, **kw):
         rec, created = cls.objects.get_or_create(fpr=fpr)
+        rec.merge_info(**kw)
+        rec.save()
+
+    @classmethod
+    def annotate(cls, fpr, **kw):
+        """
+        Annotate a fingerprint inconsistency, if it exists. Otherwise do nothing.
+        """
+        try:
+            rec = cls.objects.get(fpr=fpr)
+        except cls.DoesNotExist:
+            return
         rec.merge_info(**kw)
         rec.save()
 
