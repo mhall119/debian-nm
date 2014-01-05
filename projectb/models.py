@@ -200,7 +200,10 @@ class Maintainers(object):
             SELECT id, name
               FROM maintainer
              WHERE name like '%@%'
+               AND id != 8912
             """)
+            # FIXME: 8912 currently has broken utf8 in dak. Once dak is fixed,
+            #        remove the special casing.
             self.dak_names = list(cur)
         for id, name in self.dak_names:
             (name, email) = fix_maintainer(name)
