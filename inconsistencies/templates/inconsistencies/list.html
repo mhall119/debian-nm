@@ -47,13 +47,7 @@ $(function() {
         {% endfor %}
       </ul>
     </td>
-    <td>
-      <ul>
-        {% for k, v in i.info_items %}
-        <li><tt>{{k}}</tt>: <tt>{{v}}</tt></li>
-        {% endfor %}
-      </ul>
-    </td>
+    <td>{% include "inconsistencies/keytable.html" with inconsistency=i %}</td>
     <td val={{i.created|date:"c"}}>{{i.created|timesince}}</td>
   </tr>
   {% endfor %}
@@ -77,13 +71,7 @@ $(function() {
         {% endfor %}
       </ul>
     </td>
-    <td>
-      <ul>
-        {% for k, v in i.info_items %}
-        <li><tt>{{k}}</tt>: <tt>{{v}}</tt></li>
-        {% endfor %}
-      </ul>
-    </td>
+    <td>{% include "inconsistencies/keytable.html" with inconsistency=i %}</td>
     <td val={{i.created|date:"c"}}>{{i.created|timesince}}</td>
   </tr>
   {% endfor %}
@@ -107,13 +95,7 @@ $(function() {
         {% endfor %}
       </ul>
     </td>
-    <td>
-      <ul>
-        {% for k, v in i.info_items %}
-        <li><tt>{{k}}</tt>: <tt>{{v}}</tt></li>
-        {% endfor %}
-      </ul>
-    </td>
+    <td>{% include "inconsistencies/keytable.html" with inconsistency=i %}</td>
     <td val={{i.created|date:"c"}}>{{i.created|timesince}}</td>
   </tr>
   {% endfor %}
