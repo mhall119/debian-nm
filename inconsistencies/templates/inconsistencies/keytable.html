@@ -2,7 +2,16 @@
   <thead><tr><th>Key</th><th>Value</th></tr></thead>
   <tbody>
   {% for k, v in inconsistency.info_items %}
-  <tr><td>{{k}}</td><td>{{v}}</td></tr>
+  <tr>
+    <td>{{k}}</td>
+    <td>
+      {% if k == "keyring_rt" %}
+      <a href="http://rt.debian.org/{{v}}">{{v}}</a>
+      {% else %}
+      {{v}}
+      {% endif %}
+    </td>
+  </tr>
   {% endfor %}
   </tbody>
 </table>
