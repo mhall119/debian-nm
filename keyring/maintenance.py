@@ -287,8 +287,9 @@ class CheckKeyringLogs(MaintenanceTask):
                 log.info("%s: unknown key ID %s found in log for %s RT#ss", self.IDENTIFIER, key, d, rt)
             else:
                 # TODO: connect to RT and try to fetch person details
-                self._ann_fpr(d, rt, fpr, "keyring logs report a new DM", keyring_status=const.STATUS_DM)
-                #print("./manage.py dm_from_rt %s # %s" % (rt, self.rturl(rt)))
+                self._ann_fpr(d, rt, fpr, "keyring logs report a new DM",
+                              keyring_status=const.STATUS_DM,
+                              fix_cmdline="./manage.py dm_from_rt {}".format(rt))
         elif p.status in (const.STATUS_DM, const.STATUS_DM_GA):
             #print("# %s goes from %s to DM (already known in the database) %s" % (p.lookup_key, p.status, self.rturl(rt)))
             pass # Already a DM
@@ -298,9 +299,9 @@ class CheckKeyringLogs(MaintenanceTask):
             else:
                 new_status = const.STATUS_DM
             self._ann_person(d, rt, p, "keyring logs report change from {} to {}".format(p.status, new_status),
-                             keyring_status=new_status)
-            #print("./manage.py change_status %s %s --date='%s' --message='imported from keyring changelog, RT #%s' # %s" % (
-            #p.lookup_key, new_status, d.strftime("%Y-%m-%d %H:%M:%S"), rt, self.rturl(rt)))
+                             keyring_status=new_status,
+                             fix_cmdline="./manage.py change_status {} {} --date='{}' --message='imported from keyring changelog, RT #{}'".format(
+                                 p.lookup_key, new_status, d.strftime("%Y-%m-%d %H:%M:%S"), rt))
 
     @keyring_log_matcher(r"^\s*\*\s+Add new DD key 0x(?P<key>[0-9A-F]+) \([^)]+\)\s+\(RT #(?P<rt>\d+)")
     def do_new_dd(self, d, key, rt):
@@ -313,11 +314,10 @@ class CheckKeyringLogs(MaintenanceTask):
             #print("# %s goes from %s to DD (already known in the database) %s" % (p.lookup_key, p.status, self.rturl(rt)))
             pass # Already a DD
         else:
-            #print("./manage.py change_status %s %s --date='%s' --message='imported from keyring changelog, RT #%s' # %s" % (
-            #    p.lookup_key, const.STATUS_DD_U, d.strftime("%Y-%m-%d %H:%M:%S"), rt, self.rturl(rt)))
-            self._ann_person(d, rt, p, "keyring logs report change from {} to {}".format(p.status, const.STATUS_DD_U), keyring_status=const.STATUS_DD_U)
-
-    #re_new_dn = re.compile(r"^\s*\*\s+Add new DD key 0x(?P<key>[0-9A-F]+) \([^)]+\)\s+\(RT #(?P<rt>\d+)")
+            self._ann_person(d, rt, p, "keyring logs report change from {} to {}".format(p.status, const.STATUS_DD_U),
+                             keyring_status=const.STATUS_DD_U,
+                             fix_cmdline="./manage.py change_status {} {} --date='{}' --message='imported from keyring changelog, RT #{}'".format(
+                                 p.lookup_key, const.STATUS_DD_U, d.strftime("%Y-%m-%d %H:%M:%S"), rt))
 
     @keyring_log_matcher(r"^\s*\*\s+Move 0x(?P<key>[0-9A-F]+) to [Ee]meritus \([^)]+\)\s+\(RT #(?P<rt>\d+)")
     def do_new_em(self, d, key, rt):
@@ -395,12 +395,12 @@ class CheckKeyringLogs(MaintenanceTask):
             fpr, ktype = self.maint.keyrings.resolve_keyid(key2)
             if fpr is None:
                 self._ann_person(d, rt, p1, "key changed to unknown key {}".format(key2))
+                # print("! %s replaced key %s with %s but could not find %s in keyrings %s" % (p.lookup_key, key1, key2, key2, self.rturl(rt)))
             else:
                 self._ann_person(d, rt, p1, "key changed to {}".format(fpr),
                                  keyring_fpr=fpr,
-                                 keyring_status=ktype)
-            #    print("! %s replaced key %s with %s but could not find %s in keyrings %s" % (p.lookup_key, key1, key2, key2, self.rturl(rt)))
-            #print("./manage.py change_key %s %s # %s" % (p.lookup_key, fpr, self.rturl(rt)))
+                                 keyring_status=ktype,
+                                 fix_cmdline="./manage.py change_key {} {}".format(p1.lookup_key, fpr))
         else:
             # This is very weird, so we log instead of just annotating
             for p in (p1, p2):
