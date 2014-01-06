@@ -16,6 +16,9 @@ import time
 import subprocess
 import cPickle as pickle
 import psycopg2
+import logging
+
+log = logging.getLogger(__name__)
 
 def cursor():
     """
@@ -87,11 +90,6 @@ def read_gpg():
     if proc.wait() != 0:
         raise RuntimeError, "gpg exited with error %d" % proc.returncode
 
-def verbose(*args):
-    print >>sys.stderr, " ".join(args)
-def warning(*args):
-    print >>sys.stderr, " ".join(args)
-
 class Maintainers(object):
     def __init__(self):
         self.conn = psycopg2.connect("service=projectb")
@@ -106,18 +104,18 @@ class Maintainers(object):
             self.timestamp = datetime.datetime.now()
 
     def load_from_pickle(self):
-        verbose("Load from cache...")
+        log.info("projectb: load from cache...")
         self.db = pickle.load(open(CACHE_FILE))
 
     def save_to_pickle(self):
         pickle.dump(self.db, open(CACHE_FILE, "w"))
 
     def load_from_db(self):
-        verbose("Initialise from the keyring...")
+        log.info("projectb: initialise from the keyring...")
         for rec in read_gpg():
             self.db[rec["fpr"]] = rec
 
-        verbose("Add fingerprint, uid and maintainer IDs...")
+        log.info("projectb: add fingerprint, uid and maintainer IDs...")
         cur = self.conn.cursor()
         cur.execute("""
         SELECT f.fingerprint, f.id, f.uid, m.id
@@ -132,10 +130,10 @@ class Maintainers(object):
             rec["pdb_uid"] = row[2]
             rec["pdb_mid"] = row[3]
 
-        verbose("Validate info and fill in the blanks...")
+        log.info("projectb: validate info and fill in the blanks...")
         self.validate()
 
-        verbose("Load source package information...")
+        log.info("projectb: load source package information...")
         for rec in self.db.itervalues():
             rec["sources"] = set(self.get_sources(rec))
 
