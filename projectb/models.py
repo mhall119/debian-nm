@@ -34,33 +34,22 @@ KEYRINGS = getattr(settings, "KEYRINGS", "/srv/keyring.debian.org/keyrings")
 #          with it. I know - I'll fix the suckage and make things
 #          incompatible!'
 re_parse_maintainer = re.compile(r"^\s*(\S.*\S)\s*\<([^\>]+)\>")
-def force_to_utf8(s):
-    """
-    Forces a string to UTF-8.  If the string isn't already UTF-8,
-    it's assumed to be ISO-8859-1.
-    """
-    try:
-        unicode(s, 'utf-8')
-        return s
-    except UnicodeError:
-        latin1_s = unicode(s,'iso8859-1')
-        return latin1_s.encode('utf-8')
 def fix_maintainer(maintainer):
     """
-    Parses a Maintainer or Changed-By field and returns:
-      1. an RFC822 compatible version,
-      2. an RFC2047 compatible version,
-      3. the name
-      4. the email
-
-    The name is forced to UTF-8 for both 1. and 3..  If the name field
-    contains '.' or ',' (as allowed by Debian policy), 1. and 2. are
-    switched to 'email (name)' format.
-
+    Parses a Maintainer or Changed-By field and returns (name, email)
     """
     maintainer = maintainer.strip()
     if not maintainer:
-        return ('', '', '', '')
+        return ('', '')
+
+    # Accept all we can, but work with unicode
+    try:
+        maintainer = maintainer.decode("utf8")
+    except UnicodeError:
+        try:
+            maintainer = maintainer.decode("latin1")
+        except UnicodeError:
+            maintainer = maintainer.decode("utf8", "replace")
 
     if maintainer.find("<") == -1:
         email = maintainer
@@ -71,17 +60,14 @@ def fix_maintainer(maintainer):
     else:
         m = re_parse_maintainer.match(maintainer)
         if not m:
-            raise ParseMaintError, "Doesn't parse as a valid Maintainer field."
+            raise ValueError("Doesn't parse as a valid Maintainer field.")
         name = m.group(1)
         email = m.group(2)
 
-    # Force the name to be UTF-8
-    name = force_to_utf8(name)
-
     if email.find("@") == -1 and email.find("buildd_") != 0:
-        raise ParseMaintError, "No @ found in email address part."
+        raise ValueError("No @ found in email address part.")
 
-    return (name, email)
+    return name, email
 
 def read_gpg():
     "Read DM info from the DB keyring"
