@@ -47,7 +47,7 @@ $(function() {
         {% endfor %}
       </ul>
     </td>
-    <td>{% include "inconsistencies/keytable.html" with inconsistency=i %}</td>
+    <td>{% include "inconsistencies/keytable.html" with inconsistency=i skip_header=True %}</td>
     <td val={{i.created|date:"c"}}>{{i.created|timesince}}</td>
   </tr>
   {% endfor %}
@@ -71,7 +71,7 @@ $(function() {
         {% endfor %}
       </ul>
     </td>
-    <td>{% include "inconsistencies/keytable.html" with inconsistency=i %}</td>
+    <td>{% include "inconsistencies/keytable.html" with inconsistency=i skip_header=True %}</td>
     <td val={{i.created|date:"c"}}>{{i.created|timesince}}</td>
   </tr>
   {% endfor %}
@@ -95,7 +95,7 @@ $(function() {
         {% endfor %}
       </ul>
     </td>
-    <td>{% include "inconsistencies/keytable.html" with inconsistency=i %}</td>
+    <td>{% include "inconsistencies/keytable.html" with inconsistency=i skip_header=True %}</td>
     <td val={{i.created|date:"c"}}>{{i.created|timesince}}</td>
   </tr>
   {% endfor %}

@@ -1,5 +1,7 @@
 <table>
+  {% if not skip_header %}
   <thead><tr><th>Key</th><th>Value</th></tr></thead>
+  {% endif %}
   <tbody>
   {% for k, v in inconsistency.info_items %}
   <tr>
