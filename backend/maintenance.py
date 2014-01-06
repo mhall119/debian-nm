@@ -304,6 +304,18 @@ class Inconsistencies(MaintenanceTask):
         Reset the inconsistency log at the start of maintenance
         """
         if not self.imodels: return
+        # Make a snapshot of the previous inconsistency state
+        self.prev_person = {}
+        for i in self.imodels.InconsistentPerson.objects.all():
+            self.prev_person[i.person.lookup_key] = frozenset(i.info_log)
+        self.prev_process = {}
+        for i in self.imodels.InconsistentProcess.objects.all():
+            self.prev_process[i.process.lookup_key] = frozenset(i.info_log)
+        self.prev_fpr = {}
+        for i in self.imodels.InconsistentFingerprint.objects.all():
+            self.prev_fpr[i.fpr] = frozenset(i.info_log)
+
+        # Reset the database
         self.imodels.InconsistentPerson.objects.all().delete()
         self.imodels.InconsistentProcess.objects.all().delete()
         self.imodels.InconsistentFingerprint.objects.all().delete()
@@ -361,3 +373,20 @@ class Inconsistencies(MaintenanceTask):
                 self.imodels.InconsistentProcess.annotate(process, log=log, **kw)
             for maintproc, fpr, log, kw in self.ann_fpr:
                 self.imodels.InconsistentFingerprint.annotate(fpr, log=log, **kw)
+
+        # Log what is new
+        for i in self.imodels.InconsistentPerson.objects.all():
+            old = self.prev_person.get(i.person.lookup_key, frozenset())
+            for l in i.info_log:
+                if l not in old:
+                    self.logger.warning("%s: new inconsistency for %s: %s", maintproc.IDENTIFIER, self.maint.link(person), l)
+        for i in self.imodels.InconsistentProcess.objects.all():
+            old = self.prev_process.get(i.process.lookup_key, frozenset())
+            for l in i.info_log:
+                if l not in old:
+                    self.logger.warning("%s: new inconsistency for %s: %s", maintproc.IDENTIFIER, self.maint.link(process), l)
+        for i in self.imodels.InconsistentFingerprint.objects.all():
+            old = self.prev_fpr.get(i.fpr, frozenset())
+            for l in i.info_log:
+                if l not in old:
+                    self.logger.warning("%s: new inconsistency for %s: %s", maintproc.IDENTIFIER, i.fpr, l)
