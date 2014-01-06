@@ -42,15 +42,6 @@ def fix_maintainer(maintainer):
     if not maintainer:
         return ('', '')
 
-    # Accept all we can, but work with unicode
-    try:
-        maintainer = maintainer.decode("utf8")
-    except UnicodeError:
-        try:
-            maintainer = maintainer.decode("latin1")
-        except UnicodeError:
-            maintainer = maintainer.decode("utf8", "replace")
-
     if maintainer.find("<") == -1:
         email = maintainer
         name = ""
