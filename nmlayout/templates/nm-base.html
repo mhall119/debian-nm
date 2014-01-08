@@ -1,10 +1,11 @@
 {% extends "debian-base.html" %}
+{% load i18n %}
 
 {% block title %}Debian New Member Front Desk{% endblock %}
 
 {% block head_meta %}
 <link rev="made" href="mailto:nm@debian.org">
-<meta name="Language" content="English">
+<meta name="Language" content="{{request.LANGUAGE_CODE|language_name}}">
 <meta name="Author"   content="Enrico Zini, enrico@debian.org">
 {% endblock %}
 
@@ -54,8 +55,10 @@
 {% endblock %}
 
 {% block footer %}
-<p>Copyright © 2012 Enrico Zini &lt;enrico@debian.org&gt;. See <a href="{% url 'root_license' %}">license terms</a>.
+<p><span>Copyright © 2012 Enrico Zini &lt;enrico@debian.org&gt;. See <a href="{% url 'root_license' %}">license terms</a>.
 Source code is <a href="http://anonscm.debian.org/gitweb/?p=nm/nm2.git;a=summary">available</a>.
 Please report bugs against the <a href="http://bugs.debian.org/nm.debian.org">nm.debian.org</a> pseudo-package.
+</span>
+{% include "nm-langs_snippet.html" %}
 </p>
 {% endblock %}

@@ -25,6 +25,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     url(r'^robots.txt$', TemplateView.as_view(template_name='robots.txt', content_type="text/plain"), name="root_robots_txt"),
+    url(r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^$', TemplateView.as_view(template_name='index.html'), name="home"),
     url(r'^license/$', TemplateView.as_view(template_name='license.html'), name="root_license"),
     url(r'^faq/$', TemplateView.as_view(template_name='faq.html'), name="root_faq"),
