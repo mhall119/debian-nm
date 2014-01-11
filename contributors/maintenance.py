@@ -30,8 +30,8 @@ log = logging.getLogger(__name__)
 
 DC_AUTH_TOKEN = getattr(settings, "DC_AUTH_TOKEN", None)
 DC_SUBMIT_URL = getattr(settings, "DC_SUBMIT_URL", None)
-DC_GIT_REPO_NM = getattr(settings, "DC_GIT_REPO_NM", "/srv/nm.debian.org/nm2")
-DC_GIT_REPO_DC = getattr(settings, "DC_GIT_REPO_DC", "/srv/contributors.debian.org/dc")
+DC_GIT_REPO_NM = getattr(settings, "DC_GIT_REPO_NM", "/srv/nm.debian.org/nm2/.git")
+DC_GIT_REPO_DC = getattr(settings, "DC_GIT_REPO_DC", "/srv/contributors.debian.org/dc/.git")
 
 class SubmitContributors(MaintenanceTask):
     """
