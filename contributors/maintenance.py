@@ -80,7 +80,7 @@ dirs: {git_repo_nm}
                 type="fd", begin=res["since"].date(), end=res["until"].date(),
                 url=self.maint.link(am))
 
-        submission.auth_token = DC_AUTH_TOKEN
+        submission.set_auth_token(DC_AUTH_TOKEN)
         if DC_SUBMIT_URL:
             submission.baseurl = DC_SUBMIT_URL
 
