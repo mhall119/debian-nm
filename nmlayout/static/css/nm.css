@@ -28,6 +28,15 @@ table.personinfo td.personbio#expandedbio {
 table.tablesorter th {
     cursor: pointer
 }
+
+table.tablesorter tr.clickable {
+    cursor: pointer
+}
+
+table.tablesorter#mailstable tr.showable {
+    display: none
+}
+
 table.tablesorter th.headerSortUp {
 }
 table.tablesorter th.headerSortUp:after {

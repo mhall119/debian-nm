@@ -1,0 +1,71 @@
+{% extends "restricted/base.html" %}
+{% load nm %}
+{% load i18n %}
+{% load js %}
+{% load none_if_epoch %}
+
+{% block head_resources %}
+  {{block.super}}
+  {% jsinclude "tables" %}
+{% endblock %}
+
+{% block head %}
+{{block.super}}
+<script type="text/javascript">
+$(function() {
+
+    var mailstable = $("#mailstable");
+
+    mailstable.tablesorter({
+        textExtraction: function(node) {
+            val = node.getAttribute("val");
+            if (val == null)
+                val = node.textContent || node.innerText;
+            return val;
+        },
+    });
+
+    mailstable.find("tbody").find("tr").click(function(ev) {
+      var el = $(this);
+      el.next(".showable").toggle();
+    });
+
+    $("tr.showable").click(function(ev) { $(this).toggle(); });
+
+});
+</script>
+{% endblock %}
+
+{% block breadcrumbs %}{{block.super}}
+{% if process %}
+/ <a href="{{process.get_absolute_url}}">{{process.lookup_key}}</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h1>Mail archive</h1>
+
+<table id="mailstable" class="tablesorter {{class}}">
+<thead>
+    <tr>
+        <th>Date</th>
+        <th>Subject</th>
+        <th>From</th>
+    </tr>
+</thead>
+<tbody>
+    {% for m in mails %}
+    <tr>
+        <td>{{m.Date}}</td>
+        <td>{{m.From}}</td>
+        <td>{{m.Subject}}</td>
+    </tr>
+    <tr class="showable"><td colspan="3">{{m.Body|linebreaks}}</tr>
+    {% empty %}
+    <tr>{% trans "Sorry, this is really strange, no messages in archive." %}<tr>
+    {% endfor %}
+</tbody>
+</table>
+
+{% endblock %}

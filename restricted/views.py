@@ -614,6 +614,24 @@ def mail_archive(request, key):
         outfd.close()
     return res
 
+def display_mail_archive(request, key):
+    process = bmodels.Process.lookup_or_404(key)
+    perms = process.permissions_of(request.person)
+
+    if not perms.can_view_email:
+        raise PermissionDenied
+
+    fname = process.mailbox_file
+    if fname is None:
+        from django.http import Http404
+        raise Http404
+
+    return  render(request, "restricted/display-mail-archive.html", {
+        "mails": backend.email.get_mbox_as_dicts(fname),
+        "process": process,
+        "class": "clickable",
+    })
+
 def assign_am(request, key):
     process = bmodels.Process.lookup_or_404(key)
     perms = process.permissions_of(request.person)

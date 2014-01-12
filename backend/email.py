@@ -5,6 +5,7 @@ from django.template.loader import render_to_string
 from django.utils.log import getLogger
 import email
 import email.utils
+import mailbox
 from . import const
 
 log = getLogger(__name__)
@@ -115,3 +116,11 @@ def send_nonce(template_name, person, nonce=None, encrypted_nonce=None):
         # TODO: remove raise once it works
         raise
         log.debug("failed to sent mail for person %s", person)
+
+
+def get_mbox_as_dicts(filename):
+    try:  ## we are reading, have not to flush with close
+        for message in mailbox.mbox(filename, create=False):
+            yield dict(Body=message.get_payload(), **dict(message))
+    except mailbox.NoSuchMailboxError:
+        return
