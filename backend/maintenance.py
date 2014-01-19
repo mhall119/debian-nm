@@ -357,7 +357,7 @@ class CheckCornerCases(MaintenanceTask):
     def run(self):
         c = bmodels.Person.objects.filter(processes__isnull=True).count()
         if c > 0:
-            log.warning("%s: %d Great Ancients found who have no Process entry", self.IDENTIFIER, c)
+            log.info("%s: %d Great Ancients found who have no Process entry", self.IDENTIFIER, c)
 
         c = bmodels.Person.objects.filter(status_changed__isnull=True).count()
         if c > 0:
