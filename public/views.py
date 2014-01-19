@@ -580,6 +580,11 @@ def newnm_resend_challenge(request, key):
     """
     from keyring.models import UserKey
     person = bmodels.Person.lookup_or_404(key)
+
+    # Deal gracefully with someone clicking the reconfirm link after they have
+    # already confirmed
+    if not person.pending: return redirect(person.get_absolute_url())
+
     confirm_url = request.build_absolute_uri(reverse("public_newnm_confirm", kwargs=dict(nonce=person.pending)))
     plaintext = "Please visit {} to confirm your application at {}\n".format(
             confirm_url,
