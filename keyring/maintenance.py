@@ -121,6 +121,7 @@ class CheckKeyringConsistency(MaintenanceTask):
         people_by_fpr = dict()
         for p in bmodels.Person.objects.all():
             if p.fpr is None: continue
+            if p.fpr.startswith("FIXME"): continue
             people_by_fpr[p.fpr] = p
 
         keyring_by_status = {
