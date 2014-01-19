@@ -1,26 +1,15 @@
-{% spaceless %}
 {% load i18n %}
 
-<a href="#langselector" id="langselector-link">{% trans "Change language" %}</a>
-
+{% get_current_language as cur_lang %}
+{% get_available_languages as languages %}
+{% get_language_info_list for languages as langs %}
 <div id="langselector" class="modalDialog">
-  <div>
-    <a href="#close" title="Close" class="close">X</a>
-    <p>{% trans "This page is also available in the following languages:" %}</p>
-    <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
-      <input type="hidden" name="next" value="{{request.path}}" />
-      {% get_current_language as cur_lang %}
-      {% get_available_languages as languages %}
-      {% get_language_info_list for languages as langs %}
-      {% for l in langs %}
-        {% if cur_lang == l.code %}
-        <input type="radio" title="{% trans l.name %}" name="language" value="{{l.code}}" checked="checked">{{l.name_local}}</input>
-	{% else %}
-	<input type="radio" title="{% trans l.name %}" name="language" value="{{l.code}}">{{l.name_local}}</input>
-	{% endif %}
-      {% endfor %}
-      <input type="submit" value="{% trans 'Confirm choice' %}">
-    </form>
-  </div>
+  <form action="{% url 'set_language' %}" method="post">{% csrf_token %}
+  <input type="hidden" name="next" value="{{request.path}}" />
+  {% trans "This page is also available in the following languages:" %}
+  {% for l in langs %}
+  <button class="{% if cur_lang == l.code %}current{% endif %}"
+      title="{% trans l.name %}" name="language" value="{{l.code}}">{{l.name_local}}{% if not forloop.last %}, {% endif %}</button>
+  {% endfor %}
+  </form>
 </div>
-{% endspaceless %}
