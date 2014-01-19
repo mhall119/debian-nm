@@ -66,7 +66,7 @@ class NewGuestAccountsFromDSA(MaintenanceTask):
     """
     Create new Person entries for guest accounts created by DSA
     """
-    DEPENDS = [BackupDB, MakeLink]
+    DEPENDS = [BackupDB, MakeLink, Inconsistencies]
 
     @transaction.commit_on_success
     def run(self):
@@ -86,7 +86,9 @@ class NewGuestAccountsFromDSA(MaintenanceTask):
             # Check for fingerprint duplicates
             try:
                 p = bmodels.Person.objects.get(fpr=entry.single("keyFingerPrint"))
-                log.warning("%s: %s has the same fingerprint as LDAP uid %s", self.IDENTIFIER, self.maint.link(p), entry.uid)
+                self.maint.inconsistencies.log_person(self, p,
+                                                      "has the same fingerprint as LDAP uid {}".format(entry.uid),
+                                                      ldap_uid=entry.uid)
                 continue
             except bmodels.Person.DoesNotExist:
                 pass
@@ -120,7 +122,13 @@ class CheckLDAPConsistency(MaintenanceTask):
             try:
                 person = bmodels.Person.objects.get(uid=entry.uid)
             except bmodels.Person.DoesNotExist:
-                log.warning("%s: Person %s exists in LDAP but not in our db", self.IDENTIFIER, entry.uid)
+                fpr = entry.single("keyFingerPrint")
+                if fpr:
+                    self.maint.inconsistencies.log_fingerprint(self, fpr,
+                                                               "is in LDAP as {} but not in our db".format(entry.uid),
+                                                               ldap_uid=entry.uid)
+                else:
+                    log.warning("%s: person %s exists (without fingerprint) in LDAP, but not in our db", self.IDENTIFIER, entry.uid)
                 continue
 
             if entry.single("gidNumber") == "800" and entry.single("keyFingerPrint") is not None:
