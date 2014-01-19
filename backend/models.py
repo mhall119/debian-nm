@@ -541,8 +541,8 @@ class Person(models.Model):
         try:
             if "@" in key:
                 return cls.objects.get(email=key)
-            elif len(key) > 32:
-                return cls.objects.get(fpr=key)
+            elif re.match(r"^[0-9A-Fa-f]{32,40}$", key):
+                return cls.objects.get(fpr=key.upper())
             else:
                 return cls.objects.get(uid=key)
         except cls.DoesNotExist:
