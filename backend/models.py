@@ -114,8 +114,8 @@ class FingerprintField(models.CharField):
             value = value.strip()
             if value.startswith("FIXME"):
                 return re.sub("[^a-zA-Z0-9_-]+", "-", value)[:40]
-            value = value.replace(' ', '')
-            if len(value) not in (32, 40):
+            value = value.replace(' ', '').upper()
+            if not re.match(r"^[0-9A-F]{32,40}$", value):
                 raise ValidationError("Fingerprint must be 32 or 40 hex digits")
             return value
 
@@ -123,14 +123,17 @@ class FingerprintField(models.CharField):
         if value == "" or not isinstance(value, basestring):
             # if Django tries to save '' string, send the db None (NULL)
             return None
-        elif len(value.replace(' ', '')) == 40:
-            # otherwise, strip white spaces and upper case string.
-            # Also could we try a soft validation ??
-            return value.replace(' ', '').upper()
-        elif value.startswith("FIXME"):
+        # Strip
+        value = value.strip()
+        # Deal with fixme* fingerprints
+        if value.startswith("FIXME"):
             return re.sub("[^a-zA-Z0-9_-]+", "-", value)[:40]
-        else:
+        # Strip spaces and uppercase
+        value = value.replace(' ', '').upper()
+        # Validate as a proper fingerprint
+        if not re.match(r"^[0-9A-F]{32,40}$", value):
             return None
+        return value
 
     def formfield(self, **kwargs):
         # we want bypass our parent to fix "maxlength" attribute in widget

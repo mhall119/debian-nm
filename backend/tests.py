@@ -347,10 +347,12 @@ class FingerprintTest(TransactionTestCase):
         on_db_empty_fpr = cr.execute("select fpr from person where uid = 'empty'").fetchone()[0]
         self.assertIsNone(on_db_empty_fpr)
 
-        p = bmodels.Person(cn="Invalid", sn="FPR", email="invalid@debian.org", uid="invalid_fpr",
+        p = bmodels.Person(cn="Invalid", sn="FPR", email="invalid1@debian.org", uid="invalid_fpr1",
                        status=bconst.STATUS_MM,
                        fpr="66B4 Invalid FPR BFAB")
-        self.assertRaises(ValueError, p.save)
+        p.save()
+        p1 = bmodels.Person.objects.get(uid="invalid_fpr1")
+        self.assertIsNone(p1.fpr)
 
 
 class PersonExpires(TransactionTestCase):
